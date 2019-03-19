@@ -17,11 +17,11 @@ const MANAGER =
 
 const fromWei = wei => wei / 1000000000000000000;
 
-const API = axios.create({ baseURL: 'http://localhost:31313' });
+const API = axios.create({ baseURL: '/' });
 
-const PROXY_CONFIG = {
-  headers: { 'Access-Control-Allow-Origin': '*' }
-};
+// const PROXY_CONFIG = {
+//   headers: { 'Access-Control-Allow-Origin': '*' }
+// };
 
 // const response = await dict.get(`/api/webster/similar/${term}`);
 
@@ -44,9 +44,19 @@ class App extends Component {
   };
 
   async componentDidMount() {
-    const response = await API.get(`/result?key=${PLAYERS[0]}`, PROXY_CONFIG);
-    const players = response.Response.LotteryResponse.players;
+    const response = await API.get(`/result/${PLAYERS[0]}`);
+    if (
+      !response ||
+      !response.Response ||
+      !response.Response.LotteryResponse ||
+      !response.Response.LotteryResponse.players ||
+      !response.Response.LotteryResponse.balances
+    ) {
+      return;
+    }
+    let players = response.Response.LotteryResponse.players;
     const balances = response.Response.LotteryResponse.balances;
+    players = _.filter(players, player => PLAYERS.findIndex(player) !== -1);
     const newBalances = _.map(this.state.players, player => {
       const id = _.findIndex(players, player);
       if (id === -1) {
@@ -57,7 +67,12 @@ class App extends Component {
     });
     const totalBalance =
       this.state.players.length === 0 ? Number(0) : _.sum(newBalances);
-    this.setState({ ...this.state, balances: newBalances, totalBalance });
+    this.setState({
+      ...this.state,
+      players,
+      balances: newBalances,
+      totalBalance
+    });
   }
 
   onSubmit = async event => {
@@ -69,16 +84,17 @@ class App extends Component {
       message: 'Waiting on transaction success...'
     });
     console.log('querying');
-    const query = `/enter?key=${this.state.key}&amount=${this.state.value}`;
-    console.log(query);
-    await API.get(query, PROXY_CONFIG);
-    this.setState({ ...this.state, message: 'You have been entered!' });
+    await API.get(`/enter/${this.state.key}&${this.state.value}`);
+    this.setState({
+      ...this.state,
+      message: `${this.state.key} has been entered with ${this.state.value}!`
+    });
   };
 
   onClick = async () => {
     this.setState({ message: 'Waiting on transaction success...' });
 
-    await API.get(`/winner`, PROXY_CONFIG);
+    await API.get(`/winner`);
     this.setState({ message: 'A winner has been picked!' });
   };
 
@@ -128,7 +144,7 @@ class App extends Component {
         </ul>
 
         <hr />
-        <h1>{this.state.message}</h1>
+        <h3>{this.state.message}</h3>
       </div>
     );
   }
