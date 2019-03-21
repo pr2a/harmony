@@ -44,35 +44,43 @@ class App extends Component {
   };
 
   async componentDidMount() {
-    const response = await API.get(`/result/${PLAYERS[0]}`);
-    if (
-      !response ||
-      !response.Response ||
-      !response.Response.LotteryResponse ||
-      !response.Response.LotteryResponse.players ||
-      !response.Response.LotteryResponse.balances
-    ) {
+    try {
+      const { data } = await API.get(`/result/${PLAYERS[0]}`);
+
+      const res = data;
+      console.log(res);
+      if (
+        !res ||
+        !res.Response ||
+        !res.Response.LotteryResponse ||
+        !res.Response.LotteryResponse.players ||
+        !res.Response.LotteryResponse.balances
+      ) {
+        return;
+      }
+      let players = res.Response.LotteryResponse.players;
+      const balances = res.Response.LotteryResponse.balances;
+      players = _.filter(players, player => PLAYERS.findIndex(player) !== -1);
+      const newBalances = _.map(this.state.players, player => {
+        const id = _.findIndex(players, player);
+        if (id === -1) {
+          return 0;
+        } else {
+          return Number(balances[id]) / ONE;
+        }
+      });
+      const totalBalance =
+        this.state.players.length === 0 ? Number(0) : _.sum(newBalances);
+      this.setState({
+        ...this.state,
+        players,
+        balances: newBalances,
+        totalBalance
+      });
+    } catch (err) {
+      console.log('failed to call api');
       return;
     }
-    let players = response.Response.LotteryResponse.players;
-    const balances = response.Response.LotteryResponse.balances;
-    players = _.filter(players, player => PLAYERS.findIndex(player) !== -1);
-    const newBalances = _.map(this.state.players, player => {
-      const id = _.findIndex(players, player);
-      if (id === -1) {
-        return 0;
-      } else {
-        return Number(balances[id]) / ONE;
-      }
-    });
-    const totalBalance =
-      this.state.players.length === 0 ? Number(0) : _.sum(newBalances);
-    this.setState({
-      ...this.state,
-      players,
-      balances: newBalances,
-      totalBalance
-    });
   }
 
   onSubmit = async event => {
@@ -84,17 +92,38 @@ class App extends Component {
       message: 'Waiting on transaction success...'
     });
     console.log('querying');
-    await API.get(`/enter/${this.state.key}&${this.state.value}`);
-    this.setState({
-      ...this.state,
-      message: `${this.state.key} has been entered with ${this.state.value}!`
-    });
+    try {
+      const { data } = await API.get(
+        `/enter/${this.state.key}&${this.state.value}`
+      );
+      const res = data;
+
+      console.log(res);
+      if (res.success && res.success === true) {
+        this.setState({
+          ...this.state,
+          message: `${this.state.key} has been entered with ${
+            this.state.value
+          }!`
+        });
+      }
+    } catch (err) {
+      console.log('failed to call api');
+      return;
+    }
   };
 
   onClick = async () => {
     this.setState({ message: 'Waiting on transaction success...' });
 
-    await API.get(`/winner`);
+    try {
+      const { data } = await API.get(`/winner`);
+      console.log(data);
+    } catch (err) {
+      console.log('failed to call api');
+      return;
+    }
+
     this.setState({ message: 'A winner has been picked!' });
   };
 
