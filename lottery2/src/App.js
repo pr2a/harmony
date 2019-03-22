@@ -15,23 +15,9 @@ const PLAYERS = [
 const MANAGER =
   '27978f895b11d9c737e1ab1623fde722c04b4f9ccb4ab776bf15932cc72d7c66';
 
-const fromWei = wei => wei / 1000000000000000000;
+// const fromWei = wei => wei / 1000000000000000000;
 
-const API = axios.create({ baseURL: '/' });
-
-// const PROXY_CONFIG = {
-//   headers: { 'Access-Control-Allow-Origin': '*' }
-// };
-
-// const response = await dict.get(`/api/webster/similar/${term}`);
-
-// curl 'http://127.0.0.1:31313/enter?key=27978f895b11d9c737e1ab1623fde722c04b4f9ccb4ab776bf15932cc72d7c66&amount=1'
-// curl 'http://127.0.0.1:31313/enter?key=371cb68abe6a6101ac88603fc847e0c013a834253acee5315884d2c4e387ebca&amount=1'
-// curl 'http://127.0.0.1:31313/enter?key=3f8af52063c6648be37d4b33559f784feb16d8e5ffaccf082b3657ea35b05977&amount=1'
-// curl 'http://127.0.0.1:31313/enter?key=df77927961152e6a080ac299e7af2135fc0fb02eb044d0d7bbb1e8c5ad523809&amount=1'
-
-// curl 'http://127.0.0.1:31313/result?key=27978f895b11d9c737e1ab1623fde722c04b4f9ccb4ab776bf15932cc72d7c66'
-// curl 'http://127.0.0.1:31313/winner'
+const DELAY_TIME = 500;
 
 class App extends Component {
   state = {
@@ -44,39 +30,51 @@ class App extends Component {
   };
 
   async componentDidMount() {
+    this.needUpdate();
+  }
+
+  async needUpdate() {
     try {
-      const { data } = await API.get(`/result/${PLAYERS[0]}`);
+      console.log('come here3');
+      const { data } = await axios.get(
+        `http://localhost:60000/result/${PLAYERS[0]}`
+      );
 
       const res = data;
       console.log(res);
-      if (
-        !res ||
-        !res.Response ||
-        !res.Response.LotteryResponse ||
-        !res.Response.LotteryResponse.players ||
-        !res.Response.LotteryResponse.balances
-      ) {
+      if (!res || !res.players || !res.balances) {
         return;
       }
-      let players = res.Response.LotteryResponse.players;
-      const balances = res.Response.LotteryResponse.balances;
-      players = _.filter(players, player => PLAYERS.findIndex(player) !== -1);
+      console.log('come a');
+      let players = res.players;
+      console.log('come b');
+      const balances = res.balances;
+      console.log(players);
+      console.log(balances);
+      const currentPlayers = this.state.players;
+      players = _.filter(
+        players,
+        player => currentPlayers.indexOf(player) !== -1
+      );
+      console.log(players);
       const newBalances = _.map(this.state.players, player => {
-        const id = _.findIndex(players, player);
+        const id = _.indexOf(players, player);
+        console.log(id);
         if (id === -1) {
           return 0;
         } else {
           return Number(balances[id]) / ONE;
         }
       });
-      const totalBalance =
-        this.state.players.length === 0 ? Number(0) : _.sum(newBalances);
-      this.setState({
-        ...this.state,
-        players,
-        balances: newBalances,
-        totalBalance
-      });
+      setTimeout(
+        () =>
+          this.setState({
+            ...this.state,
+            players,
+            balances: newBalances
+          }),
+        DELAY_TIME
+      );
     } catch (err) {
       console.log('failed to call api');
       return;
@@ -93,20 +91,26 @@ class App extends Component {
     });
     console.log('querying');
     try {
-      const { data } = await API.get(
-        `/enter/${this.state.key}&${this.state.value}`
+      const { data } = await axios.get(
+        `http://localhost:60000/enter/${this.state.key}&${this.state.value}`
       );
       const res = data;
 
       console.log(res);
-      if (res.success && res.success === true) {
-        this.setState({
-          ...this.state,
-          message: `${this.state.key} has been entered with ${
-            this.state.value
-          }!`
-        });
+      if (res.success) {
+        setTimeout(
+          () =>
+            this.setState({
+              ...this.state,
+              totalBalance: this.state.totalBalance + Number(this.state.value),
+              message: `${this.state.key} has been entered with ${
+                this.state.value
+              }!`
+            }),
+          DELAY_TIME
+        );
       }
+      this.needUpdate();
     } catch (err) {
       console.log('failed to call api');
       return;
@@ -117,14 +121,30 @@ class App extends Component {
     this.setState({ message: 'Waiting on transaction success...' });
 
     try {
-      const { data } = await API.get(`/winner`);
+      const { data } = await axios.get(`http://localhost:60000/winner`);
       console.log(data);
+      setTimeout(
+        () => this.setState({ message: 'A winner has been picked!' }),
+        DELAY_TIME
+      );
+      this.needUpdate();
     } catch (err) {
       console.log('failed to call api');
       return;
     }
+  };
 
-    this.setState({ message: 'A winner has been picked!' });
+  onClickRefresh = async () => {
+    this.needUpdate();
+  };
+
+  onClickClear = async () => {
+    this.setState({
+      ...this.state,
+      players: [],
+      balances: [],
+      totalBalance: 0
+    });
   };
 
   render() {
@@ -134,8 +154,22 @@ class App extends Component {
         <p>
           This contract is managed by {MANAGER}. There are currently{' '}
           {this.state.players.length} people entered, competing to win{' '}
-          {fromWei(this.state.totalBalance)} ONE!
+          {this.state.totalBalance} HMY!
         </p>
+
+        <hr />
+        <h1>Curent players:</h1>
+        <ul>
+          {_.map(_.range(this.state.players.length), i => {
+            return (
+              <li>
+                {this.state.players[i]}: {this.state.balances[i]}
+              </li>
+            );
+          })}
+        </ul>
+        <button onClick={this.onClickRefresh}>Refresh</button>
+        <button onClick={this.onClickClear}>Clear</button>
 
         <hr />
 
@@ -163,7 +197,7 @@ class App extends Component {
         <button onClick={this.onClick}>Pick a winner!</button>
 
         <hr />
-        <h1>Players:</h1>
+        <h1>All Players:</h1>
         {/* <ul>{PLAYERS.map(player => `<li> ${player} </li>`)}</ul> */}
         <ul>
           <li>{PLAYERS[0]}</li>

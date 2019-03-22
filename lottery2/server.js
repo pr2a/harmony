@@ -1,9 +1,4 @@
-const {
-  processEnter,
-  processWinner,
-  processResult
-} = require('./grpc/client2');
-
+const { processEnter, processWinner, processResult } = require('./rest/client');
 const express = require('express');
 const cors = require('cors');
 const app = express();

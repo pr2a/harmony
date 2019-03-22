@@ -3,8 +3,6 @@ const msg = require('./message_pb');
 const services = require('./message_grpc_pb');
 const grpc = require('grpc');
 
-const API = axios.create({ baseURL: 'localhost:30000/' });
-
 // const PROXY_CONFIG = {
 //   headers: { 'Access-Control-Allow-Origin': '*' }
 // };
@@ -29,17 +27,19 @@ const processEnter = async (key, amount, res) => {
   // const result = await client.process(message);
   // const result = await client.process(message);
   try {
-    const result = await API.get(`/enter?key=${key}&amount=${amount}`);
+    const result = await axios.get(
+      `http://localhost:30000/enter?key=${key}&amount=${amount}`
+    );
+    console.log(result);
+    if (result.success && result.success === true) {
+      res.json({ success: true });
+    } else {
+      res.json({ success: false });
+    }
   } catch (err) {
     res.json({ success: false, message: 'failed to call api' });
+    console.log(err);
     return;
-  }
-
-  console.log(result);
-  if (result.success && result.success === true) {
-    res.json({ success: true });
-  } else {
-    res.json({ success: false });
   }
 };
 
@@ -47,15 +47,15 @@ const processWinner = async res => {
   // let message = createMessage('WINNER');
 
   try {
-    const result = await API.get(`/winner`);
+    const result = await axios.get(`http://localhost:30000/winner`);
+    if (result.success && result.success === true) {
+      res.json({ success: true });
+    } else {
+      res.json({ success: false });
+    }
   } catch (err) {
     res.json({ success: false, message: 'failed to call api' });
     return;
-  }
-  if (result.success && result.success === true) {
-    res.json({ success: true });
-  } else {
-    res.json({ success: false });
   }
 };
 
@@ -66,13 +66,13 @@ const processResult = async (key, res) => {
   //   res.json(response);
   // });
   try {
-    const result = await API.get(`/result?key=${key}`);
+    const result = await axios.get(`http://localhost:30000/result?key=${key}`);
+    console.log(result);
+    res.json(result);
   } catch (err) {
     res.json({ success: false, message: 'failed to call api' });
     return;
   }
-  console.log(result);
-  res.json(result);
 };
 
 const createMessage = (requestType, key = null, amount = null) => {
