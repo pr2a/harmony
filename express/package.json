@@ -1,0 +1,24 @@
+{
+  "name": "custom-server-express",
+  "version": "1.0.0",
+  "scripts": {
+    "prestart": "next build",
+    "dev": "node server.js",
+    "build": "next build",
+    "start": "NODE_ENV=production node server.js"
+  },
+  "engines": {
+    "node": "10.15.1"
+  },
+  "dependencies": {
+    "@zeit/next-css": "^1.0.1",
+    "axios": "^0.18.0",
+    "cors": "^2.8.5",
+    "express": "^4.14.0",
+    "firebase-admin": "^7.1.1",
+    "lodash": "^4.17.11",
+    "next": "^8.0.3",
+    "react": "^16.8.5",
+    "react-dom": "^16.8.5"
+  }
+}
