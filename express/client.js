@@ -4,7 +4,7 @@ const { firestore } = require('./db');
 const OWNER_KEY =
   '27978f895b11d9c737e1ab1623fde722c04b4f9ccb4ab776bf15932cc72d7c66';
 // const LEADER_ADDRESS = '54.85.140.165';
-const LEADER_ADDRESS = '18.236.187.250';
+const LEADER_ADDRESS = '54.175.2.80';
 // const LEADER_ADDRESS = '127.0.0.1';
 
 const PLAYERS = firestore.collection('players');
