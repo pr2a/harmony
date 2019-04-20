@@ -57,7 +57,7 @@ class Index extends Component {
     });
     console.log('querying');
     try {
-      const { data } = await axios.get(`${HOST}/enter/${this.state.key}&1`);
+      const { data } = await axios.get(`${HOST}/enter/${this.state.key}&1&${this.state.email}`);
       this.setState({
         ...this.state,
         message: data.message
@@ -145,6 +145,21 @@ class Index extends Component {
                 onChange={event => this.setState({ key: event.target.value })}
               />
 
+              <input
+                className="enterKey__key"
+                type="text"
+                name="email"
+                required=""
+                placeholder="Enter PLAYER's email here"
+                autoComplete="off"
+                autoCorrect="off"
+                autoCapitalize="off"
+                spellCheck="false"
+                autoFocus
+                value={this.state.email}
+                onChange={event => this.setState({ email: event.target.value })}
+              />
+
               <button
                 className="btn btn__full enterKey__submit"
                 value="playerKey"
@@ -160,7 +175,7 @@ class Index extends Component {
                 className="enterKey__key"
                 type="text"
                 name="player"
-                placeholder="Enter ADMIN 's private key here"
+                placeholder="Enter ADMIN's private key here"
                 autoComplete="off"
                 autoCorrect="off"
                 autoCapitalize="off"

@@ -77,22 +77,24 @@ const makeSessionOver = async () => {
   }
 };
 
-const addNewPlayer = async (key, amount = 1) => {
+const addNewPlayer = async (key, amount = 1, email) => {
   const currentSession = await CURRENT_SESSION.get();
   const data = currentSession.data();
   try {
     PLAYERS.add({
       key,
       amount,
+      email,
       session: data.session
     });
     return true;
   } catch (err) {
+    console.log('addNewPlayer Error');
     return false;
   }
 };
 
-const processEnter = async (key, amount, res) => {
+const processEnter = async (key, amount, email, res) => {
   try {
     const active = await checkActiveSession();
     if (!active) {
@@ -110,12 +112,13 @@ const processEnter = async (key, amount, res) => {
     //   return;
     // }
     const { data } = await axios.get(
-      `http://${LEADER_ADDRESS}:30000/enter?key=${key}&amount=${amount}`
+      `http://${LEADER_ADDRESS}:30000/enter?key=${key}&amount=${amount}&email=${email}`
     );
+    console.log("processEnter");
     console.log(data);
     if (data.success) {
-      if (await addNewPlayer(key, amount)) {
-        res.json({ success: true, message: `Player ${key} entered` });
+      if (await addNewPlayer(key, amount, email)) {
+        res.json({ success: true, message: `Player ${key}/${email} entered` });
       } else {
         res.json({
           success: false,
