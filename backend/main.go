@@ -2,16 +2,35 @@ package main
 
 import (
 	"context"
+	"flag"
 	"fmt"
 	"log"
+	"os"
+	"path"
 
 	"cloud.google.com/go/firestore"
 	"google.golang.org/api/iterator"
 	"google.golang.org/api/option"
 )
 
-const (
-	TestPlayers = "test_players"
+var (
+	version string
+	builtBy string
+	builtAt string
+	commit  string
+)
+
+func printVersion(me string) {
+	fmt.Fprintf(os.Stderr, "Harmony (C) 2019. %v, version %v-%v (%v %v)\n", path.Base(me), version, commit, builtBy, builtAt)
+	os.Exit(0)
+}
+
+var (
+	collection = flag.String("collection", "players", "name of collection")
+	key        = flag.String("key", "./keys/benchmark_account_key.json", "key filename")
+	project    = flag.String("project", "lottery-demo-leo", "project ID of firebase")
+
+	versionFlag = flag.Bool("version", false, "Output version info")
 )
 
 // Find more examples here: https://cloud.google.com/firestore/docs/quickstart-servers
@@ -29,8 +48,8 @@ func AddData(client *firestore.Client) {
 }
 
 // ReadData --
-func ReadData(client *firestore.Client, ctx context.Context) {
-	iter := client.Collection(TestPlayers).Documents(ctx)
+func ReadData(ctx context.Context, client *firestore.Client, collection string) {
+	iter := client.Collection(collection).Documents(ctx)
 	for {
 		doc, err := iter.Next()
 		if err == iterator.Done {
@@ -45,11 +64,15 @@ func ReadData(client *firestore.Client, ctx context.Context) {
 }
 
 func main() {
-	projectID := "benchmark-209420"
+	flag.Parse()
+	if *versionFlag {
+		printVersion(os.Args[0])
+	}
+
 	// Get a Firestore client.
 	ctx := context.Background()
-	opt := option.WithCredentialsFile("./keys/benchmark_account_key.json")
-	client, err := firestore.NewClient(ctx, projectID, opt)
+	opt := option.WithCredentialsFile(*key)
+	client, err := firestore.NewClient(ctx, *project, opt)
 	if err != nil {
 		log.Fatalf("Failed to create client: %v", err)
 	}
@@ -57,5 +80,5 @@ func main() {
 	// Close client when done.
 	defer client.Close()
 
-	ReadData(client, ctx)
+	ReadData(ctx, client, *collection)
 }
