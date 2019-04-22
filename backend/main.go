@@ -7,10 +7,13 @@ import (
 	"log"
 	"os"
 	"path"
+	"time"
 
 	"cloud.google.com/go/firestore"
 	"google.golang.org/api/iterator"
 	"google.golang.org/api/option"
+
+	"github.com/harmony-one/demo-apps/backend/client"
 )
 
 var (
@@ -29,8 +32,13 @@ var (
 	collection = flag.String("collection", "players", "name of collection")
 	key        = flag.String("key", "./keys/benchmark_account_key.json", "key filename")
 	project    = flag.String("project", "lottery-demo-leo", "project ID of firebase")
+	ip         = flag.String("server_ip", "34.222.210.98", "the IP address of the server")
 
 	versionFlag = flag.Bool("version", false, "Output version info")
+)
+
+const (
+	port = "30000"
 )
 
 // Find more examples here: https://cloud.google.com/firestore/docs/quickstart-servers
@@ -81,4 +89,30 @@ func main() {
 	defer client.Close()
 
 	ReadData(ctx, client, *collection)
+
+	player, err := restclient.GetPlayer(*ip, port)
+	if err != nil {
+		log.Fatalf("GetPlayer Error: %v", err)
+	} else {
+		fmt.Printf("Player: %v\n", player)
+	}
+
+	winner, err := restclient.GetWinner(*ip, port)
+	if err != nil {
+		log.Fatalf("GetWinner Error: %v", err)
+	} else {
+		fmt.Printf("Winner: %v\n", winner)
+	}
+
+	// wait for the execution of smart contracts
+	time.Sleep(2 * time.Second)
+
+	player, err = restclient.GetPlayer(*ip, port)
+	if err != nil {
+		log.Fatalf("GetPlayer Error: %v", err)
+	} else {
+		fmt.Printf("Player: %v\n", player)
+	}
+
+	os.Exit(0)
 }
