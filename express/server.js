@@ -18,11 +18,12 @@ app.prepare().then(() => {
   const server = express();
   server.use(cors());
 
-  server.get('/enter/:key&:amount', (req, res) => {
+  server.get('/enter/:key&:amount&:email', (req, res) => {
     const key = req.params.key;
     const amount = req.params.amount;
-    console.log('received ENTER request with', key, ' ', amount);
-    processEnter(key, amount, res);
+    const email = req.params.email;
+    console.log('received ENTER request with', key, ' ', amount, 'email:', email);
+    processEnter(key, amount, email, res);
   });
 
   server.get('/winner/:admin', (req, res) => {
