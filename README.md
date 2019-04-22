@@ -8,14 +8,25 @@
 
 The lottery app will show following data when it once opens the webapp:
 
-- `left_time`:
-  - `left_time` indicates how much time left of the current session is.
-  - If `left_time` is positive, the webapp will show the clock of countdown.
-  - If `left_time` is 0, the webapp will disable `enter` function. The webapp will keep querying the left_time from database until new `left_time` is achieved. In this context, the backend is trigging `pickWinner` and generating and adding new winner as well update the `left_time` for the next session.
-- Collection `current_players` (not stored in db):
-  - This is the list of current players from smart contract. They are queried by sending `getPlayers` transaction to the smart contract.
-- `previous winners`:
-  - This is a collection of tuple (`time`, `previous_winner`, `transaction_id`). The transaction_id is the transaction of pickWinner is presented as the proof of that action in blockchain.
+- `players` collection.
+  - Each doc of players collection will have fields: `email`, `private_key`, `public_key`, `email_keys`, `notified`, `session_id`.
+  - `email` (string) is the user email specified in the email and it's required to participate into the lottery.
+  - `private_key` and `public_key` (string) is generated in web server. If the player also has email in our database, we can get the keys which we generated for them before.
+  - `email_keys`(bool) is whether we sent the user an email of keys he/she had for the current session of the lottery.
+  - `notified` (bool) is whether we sent the user an email of the result of his/her participation session.
+  - `session_id` (number) is the session_id of that entering to the lottery.
+- `session` collection.
+
+  - Each doc will have fields: `deadline`, `is_current`, `id`.
+  - `deadline` (string or time) is the time point when the session ends.
+  - `current` (bool) is to specify if the session is the current session.
+  - `id` (int) is the session id.
+
+- `winners` collection:
+  - Each doc will have fields: `session_id`, `winner_public_key`, `won_amount`.
+  - `session_id` (int) is the session id.
+  - `winner_public_key` (string) is the public key of the winner.
+  - `won_amount` (int) is how much the winner won.
 
 ### Front End
 
