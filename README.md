@@ -29,7 +29,18 @@ The lottery app will show following data when it once opens the webapp:
   - `won_amount` (int) is how much the winner won.
 
 ### Front End
+The Front End will take user's email and generate private/pub keypairs and save them into firebase player db.
+The emailKey is set to false.
 
 ### BackEnd
+The backend will run in two different intervals.
 
-The backend will periodically generate pickWinner transaction to blockchain. Before sending the pickWinner, they need to check the balances of all current_player so that, after sending pickWinner and the smart contract calcualting a winner and sending lottery amount to the winner blance, we can figure out who is the winner. As it figure out who is the winner, it needs to write the `winner` address together with the`winning amount`, `transation_id`, and `time`.
+* Run every 10 seconds to find the new players.
+  Send email to new player about their private/public keys.
+  Set the emailKey to true after sending email.
+
+* Run every 5 minutes (pre-defined) to pick winner by sending /winner RPC call to blockchain node (leader).
+  Before send pickWinner call, it needs to find all the current players in this session. And find all the balances of the players.
+  After sending the pickWinner call, it checks all the balances again, and figure out who the winner is.
+  Send email to the winner.
+  Write the winner pubKey and email to `winners` database table, `transaction_id`, and `time`.
