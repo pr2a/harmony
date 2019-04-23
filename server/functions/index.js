@@ -1,9 +1,6 @@
 const { getRandomWallet } = require('./keygen');
 const functions = require('firebase-functions');
-// const { firestore } = require('./db');
-
 var admin = require('firebase-admin');
-
 var serviceAccount = require('./keys/benchmark_account_key.json');
 
 admin.initializeApp({
@@ -13,50 +10,21 @@ admin.initializeApp({
 
 const firestore = admin.firestore();
 
-// Create and Deploy Your First Cloud Functions
-// https://firebase.google.com/docs/functions/write-firebase-functions
-
-const OWNER_KEY =
-  '27978f895b11d9c737e1ab1623fde722c04b4f9ccb4ab776bf15932cc72d7c66';
-// const LEADER_ADDRESS = '54.85.140.165';
-// const LEADER_ADDRESS = '54.175.2.80';
-// const PLAYERS = firestore.collection('players');
-// const CURRENT_SESSION = firestore.collection('session').doc('current_session');
-
-// const checkActiveSession = async () => {
-//   const currentSession = await CURRENT_SESSION.get();
-//   const data = currentSession.data();
-//   console.log('calling checkActiveSesion: ', data.active);
-//   return data.active;
-// };
-
-// const HasEntered = async player => {
-//   const currentSession = await CURRENT_SESSION.get();
-//   const data = currentSession.data();
-//   const players = await firestore
-//     .collection(`players`)
-//     .where('key', '==', player)
-//     .where('session', '==', data.session)
-//     .get();
-//   const empty = players.empty;
-//   return !empty;
-// };
-
-// console.log('start');
-// var citiesRef = db.collection('cities');
-// try {
-//   var allCitiesSnapShot = await citiesRef.get();
-//   allCitiesSnapShot.forEach(doc => {
-//     console.log(doc.id, '=>', doc.data().name);
-//   });
-//   console.log('end');
-// } catch (err) {
-//   console.log('Error getting documents', err);
-// }
+function validateEmail(email) {
+  var re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+  return re.test(String(email).toLowerCase());
+}
 
 exports.enter = functions.https.onRequest(async (req, res) => {
+  res.set('Access-Control-Allow-Origin', '*');
+  res.set('Access-Control-Allow-Methods', 'GET, POST');
+
   const email = req.query.email;
   try {
+    if (!validateEmail(email)) {
+      res.json({ status: 'failed', message: 'invalid email' });
+      return;
+    }
     const active_session = await firestore
       .collection('session')
       .where('is_current', '==', true)
@@ -161,43 +129,3 @@ exports.previous_winners = functions.https.onRequest(async (req, res) => {
     res.json({});
   }
 });
-
-// const _ = require('lodash');
-// const FuzzyTrie = require('fuzzytrie');
-
-// const MAX_DISTANCE = 1;
-// const MAX_RETURN = 12;
-
-// let trie = new FuzzyTrie();
-// const jsonData = require('./en_vn.json');
-// let dict = {};
-// _.forEach(jsonData, item => {
-//     const word = item.word;
-//     if (!word.includes(' ')) {
-//         trie.add(word);
-//         dict[item.word] = item;
-//     }
-// });
-
-// const functions = require('firebase-functions');
-
-// // English to Vietnamese.
-// exports.envn = functions.https.onRequest((req, res) => {
-//     const word = req.query.word;
-//     if (word in dict) {
-//         res.json({ def: dict[word] });
-//     } else {
-//         res.json({});
-//     }
-// });
-
-// exports.similar = functions.https.onRequest((req, res) => {
-//     const word = req.query.word;
-//     let result = [];
-//     _.forEach(trie.find(word, MAX_DISTANCE), (value, key) =>
-//         result.push({ word: key, value })
-//     );
-
-//     result = _.sortBy(result, item => item.value);
-//     res.json({ similar: result.slice(0, MAX_RETURN) });
-// });
