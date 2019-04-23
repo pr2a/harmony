@@ -9,13 +9,12 @@
 The lottery app will show following data when it once opens the webapp:
 
 - `players` collection.
-  - Each doc of players collection will have fields: `email`, `private_key`, `address`, `keys_notified`, `result_notified`, `session_id`.
+  - Each doc of players collection will have fields: `email`, `private_key`, `public_key`, `keys_notified`, `result_notified`, `session_id`.
   - `email` (string) is the user email specified in the email and it's required to participate into the lottery.
-  - `private_key` and `address` (string) is generated in web server. If the player also has email in our database, we can get the keys which we generated for them before.
+  - `private_key` and `public_key` (string) is generated in web server. If the player also has email in our database, we can get the keys which we generated for them before.
   - `keys_notified`(bool) is whether we sent the user an email of keys he/she had for the current session of the lottery.
   - `result_notified` (bool) is whether we sent the user an email of the result of his/her participation session.
   - `session_id` (number) is the session_id of that entering to the lottery.
-  - `amount` (number) is the amount the user bets into the lottery.
 - `session` collection.
 
   - Each doc will have fields: `deadline`, `is_current`, `id`.
@@ -24,19 +23,19 @@ The lottery app will show following data when it once opens the webapp:
   - `id` (int) is the session id.
 
 - `winners` collection:
-  - Each doc will have fields: `session_id`, `address`, `amount`.
+  - Each doc will have fields: `session_id`, `winner_public_key`, `amount`.
   - `session_id` (int) is the session id.
-  - `address` (string) is the public key of the winner.
-  - `amount` (int) is how much the winner won.
+  - `winner_public_key` (string) is the public key of the winner.
+  - `mount` (int) is how much the winner won.
 
 ### REST API specs
 
 - `/current_players`
   - It will returns a list of public keys.
-  - For example: {current_players: ['fdklsafhl32lrj23', 'fdsfsfa']}
+  - For example: ['fdklsafhl32lrj23', 'fdsfsfa']
 - `/previous_winners`
-  - It will returns a list of winners, each represented by {`address`, `sessions_id`, `amount`}.
-  - For example: {previous_winner: [{`address`: '434fdsf', `session_id`: 1, `amount`: 3}, {`address`: '434fdsf', `session_id`: 1, `amount`: 3}, ]}
+  - It will returns a list of winners, each represented by {`public_key`, `sessions_id`, `amount`}.
+  - For example: [{`public_key`: '434fdsf', `session_id`: 1, `amount`: 3}, {`public_key`: '434fdsf', `session_id`: 1, `amount`: 3}, ]
 - `/current_session`
   - If receives error or empty, meaning there is no active session.
   - Else it should return {`deadline`, `id`} where `deadline` is a timestamp, `id` is an integer.
@@ -47,13 +46,6 @@ The lottery app will show following data when it once opens the webapp:
   - When the `status` is `failed` then `message` will be `Your email has been used in this session` or `There is no active session`.
   - When the `status` is `success` then `message` will be `You entered in the current lottery session`.
   - For example: {`status`: 'success', `message`: 'You entered in the current lottery session' }.
-
-Currently we can try here:
-- https://us-central1-benchmark-209420.cloudfunctions.net/current_players
-- https://us-central1-benchmark-209420.cloudfunctions.net/current_session
-- https://us-central1-benchmark-209420.cloudfunctions.net/previous_winners
-- https://us-central1-benchmark-209420.cloudfunctions.net/enter?email=xxx@email.com
-
 
 ### Front End
 The Front End will take user's email and generate private/pub keypairs and save them into firebase player db.
