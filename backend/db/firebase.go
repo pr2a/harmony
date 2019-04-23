@@ -146,14 +146,14 @@ func (fdb *Fdb) GetSession(all bool) []*Session {
 
 //GetPlayers returns a list of players in the current session
 //all: true, return all players
-func (fdb *Fdb) GetPlayers(all bool, sess int) []*Player {
+func (fdb *Fdb) GetPlayers(key, op string, value interface{}) []*Player {
 	var iter *firestore.DocumentIterator
 	var ok bool
 
-	if all {
+	if key == "" {
 		iter = fdb.client.Collection(playersCollection).Documents(ctx)
 	} else {
-		iter = fdb.client.Collection(playersCollection).Where("session_id", "==", sess).Documents(ctx)
+		iter = fdb.client.Collection(playersCollection).Where(key, op, value).Documents(ctx)
 	}
 
 	players := make([]*Player, 0)
