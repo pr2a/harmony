@@ -4,7 +4,7 @@ const { firestore } = require('./db');
 const OWNER_KEY =
   '27978f895b11d9c737e1ab1623fde722c04b4f9ccb4ab776bf15932cc72d7c66';
 // const LEADER_ADDRESS = '54.85.140.165';
-const LEADER_ADDRESS = '54.175.2.80';
+const LEADER_ADDRESS = '34.222.211.100';
 // const LEADER_ADDRESS = '127.0.0.1';
 
 const PLAYERS = firestore.collection('players');
@@ -13,7 +13,7 @@ const CURRENT_SESSION = firestore.collection('lottery').doc('current_session');
 const checkActiveSession = async () => {
   const currentSession = await CURRENT_SESSION.get();
   const data = currentSession.data();
-  console.log('calling checkActiveSesion: ', data.active);
+  console.log('calling checkActiveSesion: ', data);
   return data.active;
 };
 
@@ -77,24 +77,22 @@ const makeSessionOver = async () => {
   }
 };
 
-const addNewPlayer = async (key, amount = 1, email) => {
+const addNewPlayer = async (key, amount = 1) => {
   const currentSession = await CURRENT_SESSION.get();
   const data = currentSession.data();
   try {
     PLAYERS.add({
       key,
       amount,
-      email,
       session: data.session
     });
     return true;
   } catch (err) {
-    console.log('addNewPlayer Error');
     return false;
   }
 };
 
-const processEnter = async (key, amount, email, res) => {
+const processEnter = async (key, amount, res) => {
   try {
     const active = await checkActiveSession();
     if (!active) {
@@ -112,13 +110,12 @@ const processEnter = async (key, amount, email, res) => {
     //   return;
     // }
     const { data } = await axios.get(
-      `http://${LEADER_ADDRESS}:30000/enter?key=${key}&amount=${amount}&email=${email}`
+      `http://${LEADER_ADDRESS}:30000/enter?key=${key}&amount=${amount}`
     );
-    console.log("processEnter");
     console.log(data);
     if (data.success) {
-      if (await addNewPlayer(key, amount, email)) {
-        res.json({ success: true, message: `Player ${key}/${email} entered` });
+      if (await addNewPlayer(key, amount)) {
+        res.json({ success: true, message: `Player ${key} entered` });
       } else {
         res.json({
           success: false,
@@ -213,3 +210,6 @@ module.exports = {
   processResult,
   newSession
 };
+
+console.log(checkActiveSession());
+// console.log(HasEntered());
