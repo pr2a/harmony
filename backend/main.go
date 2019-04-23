@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"flag"
 	"fmt"
 	"log"
@@ -9,11 +8,8 @@ import (
 	"path"
 	"time"
 
-	"cloud.google.com/go/firestore"
-	"google.golang.org/api/iterator"
-	"google.golang.org/api/option"
-
 	"github.com/harmony-one/demo-apps/backend/client"
+	"github.com/harmony-one/demo-apps/backend/db"
 )
 
 var (
@@ -41,54 +37,23 @@ const (
 	port = "30000"
 )
 
-// Find more examples here: https://cloud.google.com/firestore/docs/quickstart-servers
-
-// AddData --
-func AddData(client *firestore.Client) {
-	// _, _, err = client.Collection("users").Add(ctx, map[string]interface{}{
-	// 	"first": "Ada",
-	// 	"last":  "Lovelace",
-	// 	"born":  1815,
-	// })
-	// if err != nil {
-	// 	log.Fatalf("Failed adding alovelace: %v", err)
-	// }
-}
-
-// ReadData --
-func ReadData(ctx context.Context, client *firestore.Client, collection string) {
-	iter := client.Collection(collection).Documents(ctx)
-	for {
-		doc, err := iter.Next()
-		if err == iterator.Done {
-			break
-		}
-		if err != nil {
-			log.Fatalf("Failed to iterate: %v", err)
-		}
-		fmt.Println(doc.Data())
-	}
-
-}
-
 func main() {
 	flag.Parse()
 	if *versionFlag {
 		printVersion(os.Args[0])
 	}
 
-	// Get a Firestore client.
-	ctx := context.Background()
-	opt := option.WithCredentialsFile(*key)
-	client, err := firestore.NewClient(ctx, *project, opt)
+	fdb, err := fdb.NewFdb(*key, *project)
+
 	if err != nil {
-		log.Fatalf("Failed to create client: %v", err)
+		log.Fatalf("Failed to create Fdb client: %v", err)
+		os.Exit(1)
 	}
 
-	// Close client when done.
-	defer client.Close()
+	// Close FDB when done.
+	defer fdb.CloseFdb()
 
-	ReadData(ctx, client, *collection)
+	fdb.GetPlayers(true)
 
 	player, err := restclient.GetPlayer(*ip, port)
 	if err != nil {
