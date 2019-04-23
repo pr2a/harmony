@@ -4,6 +4,7 @@ package fdb
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"cloud.google.com/go/firestore"
 	"google.golang.org/api/iterator"
@@ -22,10 +23,20 @@ const (
 
 // Player represents the struct of player in players db
 type Player struct {
-	Email   string
-	Key     string
-	Session int
-	Amount  int
+	Email    string
+	RegEmail bool
+	PrivKey  string
+	PubKey   string
+	Session  int64
+	Notified bool
+	Amount   int
+}
+
+// Session represents the struct of the session in session collection
+type Session struct {
+	Deadline time.Time
+	Current  bool
+	ID       int64
 }
 
 // Fdb is the struct to communicate with the Lottery App Firebase DB
@@ -90,19 +101,107 @@ func (fdb *Fdb) readData(collection string) []interface{} {
 }
 
 //GetSession return the currrent session number
-func (fdb *Fdb) GetSession() int {
-	return 0
+func (fdb *Fdb) GetSession(all bool) []*Session {
+	var iter *firestore.DocumentIterator
+	var ok bool
+
+	if all {
+		iter = fdb.client.Collection(sessionCollection).Documents(ctx)
+	} else {
+		iter = fdb.client.Collection(sessionCollection).Where("current", "==", true).Documents(ctx)
+	}
+	sessions := make([]*Session, 0)
+
+	for {
+		doc, err := iter.Next()
+		if err == iterator.Done {
+			break
+		}
+		if err != nil {
+			fmt.Printf("Failed to iterate: %v", err)
+			continue
+		}
+		data := doc.Data()
+		one := new(Session)
+
+		one.Deadline, ok = data["deadline"].(time.Time)
+		if !ok {
+			fmt.Printf("Failed to convert \"deadline\": %v\n", data["deadline"])
+			continue
+		}
+		one.Current, ok = data["current"].(bool)
+		if !ok {
+			fmt.Printf("Failed to convert \"current\"\n")
+			continue
+		}
+		one.ID, ok = data["id"].(int64)
+		if !ok {
+			fmt.Printf("Failed to convert \"id\"\n")
+			continue
+		}
+		sessions = append(sessions, one)
+	}
+	return sessions
 }
 
 //GetPlayers returns a list of players in the current session
 //all: true, return all players
-func (fdb *Fdb) GetPlayers(all bool) int {
+func (fdb *Fdb) GetPlayers(all bool, sess int) []*Player {
+	var iter *firestore.DocumentIterator
+	var ok bool
+
 	if all {
-		players := fdb.readData(playersCollection)
-		for i, p := range players {
-			fmt.Printf("%v => %v\n", i, p)
-		}
-		return len(players)
+		iter = fdb.client.Collection(playersCollection).Documents(ctx)
+	} else {
+		iter = fdb.client.Collection(playersCollection).Where("session_id", "==", sess).Documents(ctx)
 	}
-	return 0
+
+	players := make([]*Player, 0)
+
+	for {
+		doc, err := iter.Next()
+		if err == iterator.Done {
+			break
+		}
+		if err != nil {
+			fmt.Printf("Failed to iterate: %v", err)
+			continue
+		}
+		data := doc.Data()
+		one := new(Player)
+
+		one.Email, ok = data["email"].(string)
+		if !ok {
+			fmt.Printf("Failed to convert \"email\": %v\n")
+			continue
+		}
+		one.RegEmail, ok = data["email_key"].(bool)
+		if !ok {
+			fmt.Printf("Failed to convert \"email_key\"\n")
+			continue
+		}
+		one.PrivKey, ok = data["private_key"].(string)
+		if !ok {
+			fmt.Printf("Failed to convert \"private_key\"\n")
+			continue
+		}
+		one.PubKey, ok = data["public_key"].(string)
+		if !ok {
+			fmt.Printf("Failed to convert \"public_key\"\n")
+			continue
+		}
+		one.Session, ok = data["session_id"].(int64)
+		if !ok {
+			fmt.Printf("Failed to convert \"session_id\"\n")
+			continue
+		}
+		one.Notified, ok = data["notified"].(bool)
+		if !ok {
+			fmt.Printf("Failed to convert \"notified\"\n")
+			continue
+		}
+
+		players = append(players, one)
+	}
+	return players
 }

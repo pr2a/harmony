@@ -53,7 +53,17 @@ func main() {
 	// Close FDB when done.
 	defer fdb.CloseFdb()
 
-	fdb.GetPlayers(true)
+	players := fdb.GetPlayers(true, 0)
+	for i, p := range players {
+		fmt.Printf("%v => %v\n", i, p)
+	}
+
+	session := fdb.GetSession(false)
+	if len(session) > 0 {
+		fmt.Printf("Current Session ID: %v\n", session[0].ID)
+	} else {
+		fmt.Printf("Get No Session\n")
+	}
 
 	player, err := restclient.GetPlayer(*ip, port)
 	if err != nil {
