@@ -15,6 +15,7 @@ The lottery app will show following data when it once opens the webapp:
   - `keys_notified`(bool) is whether we sent the user an email of keys he/she had for the current session of the lottery.
   - `result_notified` (bool) is whether we sent the user an email of the result of his/her participation session.
   - `session_id` (number) is the session_id of that entering to the lottery.
+  - `amount` (number) is the amount the user bets into the lottery.
 - `session` collection.
 
   - Each doc will have fields: `deadline`, `is_current`, `id`.
