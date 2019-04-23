@@ -40,6 +40,12 @@ The lottery app will show following data when it once opens the webapp:
   - If receives error or empty, meaning there is no active session.
   - Else it should return {`deadline`, `id`} where `deadline` is a timestamp, `id` is an integer.
   - For example: {`deadline`: 4343434343, `id`: 2}
+- `/enter?email=xxx@gmail.com`
+  - If receives error or empty, meaning there is no active session.
+  - Else it should return {`status`, `message`} where `status` can be either `success` or `failed`.
+  - When the `status` is `failed` then `message` will be `Your email has been used in this session` or `There is no active session`.
+  - When the `status` is `success` then `message` will be `You entered in the current lottery session`.
+  - For example: {`status`: 'success', `message`: 'You entered in the current lottery session' }.
 
 ### Front End
 The Front End will take user's email and generate private/pub keypairs and save them into firebase player db.
