@@ -12,6 +12,7 @@ import (
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/params"
+	"github.com/jinzhu/copier"
 
 	restclient "github.com/harmony-one/demo-apps/backend/client"
 	fdb "github.com/harmony-one/demo-apps/backend/db"
@@ -92,11 +93,18 @@ func FetchBalance(address common.Address) map[uint32]AccountState {
 
 func processBalancesCommand(players []*fdb.Player) {
 	for _, player := range players {
+		if player == nil {
+			continue
+		}
 		addr := common.HexToAddress(player.Address)
-		fmt.Printf("Address: %s\n", player.Address)
+		if *verbose {
+			fmt.Printf("Address: %s\n", player.Address)
+		}
 		// assuming number of shard is 1
 		for shardID, balanceNonce := range FetchBalance(addr) {
-			fmt.Printf("    Balance in Shard %d:  %s, nonce: %v \n", shardID, convertBalanceIntoReadableFormat(balanceNonce.balance), balanceNonce.nonce)
+			if *verbose {
+				fmt.Printf("Balance in Shard %d:  %s, nonce: %v \n", shardID, convertBalanceIntoReadableFormat(balanceNonce.balance), balanceNonce.nonce)
+			}
 			player.Balance = balanceNonce.balance
 		}
 	}
@@ -155,6 +163,17 @@ func sendRegEmail() {
 func pickWinner() {
 	currentPlayers := getPlayer()
 	//	allPlayers := getAllPlayer()
+	existingPlayers := make([]*fdb.Player, 0)
+	for _, p := range currentPlayers {
+		onePlayer := fdb.Player{}
+		copier.Copy(&onePlayer, p)
+		existingPlayers = append(existingPlayers, &onePlayer)
+	}
+
+	if *verbose {
+		fmt.Printf("currentPlayers: %v\n", currentPlayers)
+		fmt.Printf("existingPlayers: %v\n", existingPlayers)
+	}
 
 	//Run the get winner smart contract
 	winner, err := restclient.GetWinner(leader.IP, port)
@@ -165,11 +184,21 @@ func pickWinner() {
 	}
 
 	// wait for the execution of smart contracts
-	time.Sleep(2 * time.Second)
+	time.Sleep(5 * time.Second)
 
-	processBalancesCommand(currentPlayers)
+	processBalancesCommand(existingPlayers)
 
-	//TODO: find the winner and send email
+	for i, p := range existingPlayers {
+		if p == nil {
+			continue
+		}
+		if p.Balance.Cmp(currentPlayers[i].Balance) > 0 {
+			fmt.Printf("%s is the winner\n", p.Address)
+			// TODO: send the email to winner
+		} else {
+			fmt.Printf("%s is NOT the winner\n", p.Address)
+		}
+	}
 
 	return
 }
@@ -178,7 +207,7 @@ func getBalances(players []*fdb.Player) {
 	processBalancesCommand(players)
 	if *verbose {
 		for _, p := range players {
-			fmt.Printf("[pickWinner] new players account: %v, balances: %v\n", p.Address, convertBalanceIntoReadableFormat(p.Balance))
+			fmt.Printf("[pickWinner] new players account: %v, balances: %s\n", p.Address, convertBalanceIntoReadableFormat(p.Balance))
 		}
 	}
 }
@@ -223,7 +252,7 @@ func getPlayer() []*fdb.Player {
 
 	if *verbose && currentPlayers != nil {
 		for i, p := range currentPlayers {
-			fmt.Printf("[getPlayer:%v] account: %v, balances: %v\n", i, p.Address, convertBalanceIntoReadableFormat(p.Balance))
+			fmt.Printf("[getPlayer:%v] account: %v, balances: %v/%v\n", i, p.Address, convertBalanceIntoReadableFormat(p.Balance), p.Balance)
 		}
 	}
 	return currentPlayers
