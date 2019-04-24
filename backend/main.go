@@ -49,7 +49,8 @@ var (
 	key        = flag.String("key", "./keys/leo_account_key.json", "key filename")
 	project    = flag.String("project", "lottery-demo-leo", "project ID of firebase")
 	ip         = flag.String("server_ip", "34.222.210.98", "the IP address of the server")
-	action     = flag.String("action", "player", "action of the program. Valid (player, reg, winner, notify)")
+	action     = flag.String("action", "player", "action of the program. Valid (player, reg, winner, notify, players)")
+	verbose    = flag.Bool("verbose", true, "verbose log print at every step")
 
 	versionFlag = flag.Bool("version", false, "Output version info")
 
@@ -150,30 +151,8 @@ func sendRegEmail() {
 }
 
 func pickWinner() {
-	//Get a list of all current players
-	players, err := restclient.GetPlayer(*ip, port)
-	if err != nil {
-		log.Fatalf("GetPlayer Error: %v", err)
-	} else {
-		fmt.Printf("Player: %v\n", players)
-	}
-
-	currentPlayers := fdb.NewPlayer(players)
-
-	/*
-		session := db.GetSession(false)
-		if len(session) > 0 {
-			fmt.Printf("Current Session ID: %v\n", session[0].ID)
-		} else {
-			fmt.Printf("Get No Session\n")
-		}
-	*/
-
-	//Get all player from DB
-	allPlayers := db.GetPlayers("", "", nil)
-	for i, p := range allPlayers {
-		fmt.Printf("%v => %v\n", i, p)
-	}
+	currentPlayers := getPlayer()
+	//	allPlayers := getAllPlayer()
 
 	//Run the get winner smart contract
 	winner, err := restclient.GetWinner(*ip, port)
@@ -186,31 +165,63 @@ func pickWinner() {
 	// wait for the execution of smart contracts
 	time.Sleep(2 * time.Second)
 
-	//TODO: check the balances of all players again
-
 	processBalancesCommand(currentPlayers)
 
-	for _, p := range currentPlayers {
-		fmt.Printf("current players account: %v, balances: %v\n", p.Address, convertBalanceIntoReadableFormat(p.Balance))
+	if *verbose {
+		for _, p := range currentPlayers {
+			fmt.Printf("[pickWinner] new players account: %v, balances: %v\n", p.Address, convertBalanceIntoReadableFormat(p.Balance))
+		}
 	}
+
+	//TODO: find the winner and send email
 
 	return
 }
 
-func getPlayer() {
+func getSession() int64 {
+	session := db.GetSession(false)
+	if len(session) > 0 {
+		if *verbose {
+			fmt.Printf("Current Session ID: %v\n", session[0].ID)
+		}
+		return session[0].ID
+	}
+	fmt.Printf("[getSession] ERROR: get No Session\n")
+	return 0
+}
+
+func getAllPlayer() []*fdb.Player {
+	//Get all player from DB
+	allPlayers := db.GetPlayers("", "", nil)
+	if *verbose {
+		for i, p := range allPlayers {
+			fmt.Printf("[getAllPlayer] %v => %v\n", i, p)
+		}
+	}
+
+	return allPlayers
+}
+
+func getPlayer() []*fdb.Player {
 	//Get a list of all current players
 	players, err := restclient.GetPlayer(*ip, port)
 	if err != nil {
 		log.Fatalf("GetPlayer Error: %v", err)
-	} else {
-		fmt.Printf("Player: %v\n", players)
+		return nil
+	}
+
+	if *verbose {
+		fmt.Printf("[getPlayer] REST: %v\n", players)
 	}
 
 	currentPlayers := fdb.NewPlayer(players)
 
-	for i, p := range currentPlayers {
-		fmt.Printf("[getPlayer:%v] account: %v, balances: %v\n", i, p.Address, convertBalanceIntoReadableFormat(p.Balance))
+	if *verbose && currentPlayers != nil {
+		for i, p := range currentPlayers {
+			fmt.Printf("[getPlayer:%v] account: %v, balances: %v\n", i, p.Address, convertBalanceIntoReadableFormat(p.Balance))
+		}
 	}
+	return currentPlayers
 }
 
 func notifyWinner() {
@@ -242,6 +253,8 @@ func main() {
 		pickWinner()
 	case "player":
 		getPlayer()
+	case "players":
+		getAllPlayer()
 	case "notify":
 		notifyWinner()
 	default:
