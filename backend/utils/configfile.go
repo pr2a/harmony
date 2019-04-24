@@ -9,21 +9,21 @@ import (
 	ini "gopkg.in/ini.v1"
 )
 
-// WalletProfile contains a section and key value pair map
-type WalletProfile struct {
+// BackendProfile contains a section and key value pair map
+type BackendProfile struct {
 	Profile   string
 	Bootnodes []string
 	Shards    int
 	RPCServer [][]p2p.Peer
 }
 
-// ReadWalletProfile reads an ini file and return WalletProfile
-func ReadWalletProfile(fn string, profile string) (*WalletProfile, error) {
+// ReadBackendProfile reads an ini file and return BackendProfile
+func ReadBackendProfile(fn string, profile string) (*BackendProfile, error) {
 	cfg, err := ini.ShadowLoad(fn)
 	if err != nil {
 		return nil, err
 	}
-	config := new(WalletProfile)
+	config := new(BackendProfile)
 	config.Profile = profile
 
 	// get the profile section
