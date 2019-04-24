@@ -26,7 +26,7 @@ type Player struct {
 	Email    string
 	RegEmail bool
 	PrivKey  string
-	PubKey   string
+	Address  string
 	Session  int64
 	Notified bool
 	Amount   int
@@ -175,9 +175,9 @@ func (fdb *Fdb) GetPlayers(key, op string, value interface{}) []*Player {
 			fmt.Printf("Failed to convert \"email\": %v\n")
 			continue
 		}
-		one.RegEmail, ok = data["email_key"].(bool)
+		one.RegEmail, ok = data["keys_notified"].(bool)
 		if !ok {
-			fmt.Printf("Failed to convert \"email_key\"\n")
+			fmt.Printf("Failed to convert \"keys_notified\"\n")
 			continue
 		}
 		one.PrivKey, ok = data["private_key"].(string)
@@ -185,9 +185,9 @@ func (fdb *Fdb) GetPlayers(key, op string, value interface{}) []*Player {
 			fmt.Printf("Failed to convert \"private_key\"\n")
 			continue
 		}
-		one.PubKey, ok = data["public_key"].(string)
+		one.Address, ok = data["address"].(string)
 		if !ok {
-			fmt.Printf("Failed to convert \"public_key\"\n")
+			fmt.Printf("Failed to convert \"address\"\n")
 			continue
 		}
 		one.Session, ok = data["session_id"].(int64)
@@ -195,9 +195,9 @@ func (fdb *Fdb) GetPlayers(key, op string, value interface{}) []*Player {
 			fmt.Printf("Failed to convert \"session_id\"\n")
 			continue
 		}
-		one.Notified, ok = data["notified"].(bool)
+		one.Notified, ok = data["result_notified"].(bool)
 		if !ok {
-			fmt.Printf("Failed to convert \"notified\"\n")
+			fmt.Printf("Failed to convert \"result_notified\"\n")
 			continue
 		}
 
