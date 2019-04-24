@@ -12,8 +12,10 @@ import (
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/params"
-	"github.com/harmony-one/demo-apps/backend/client"
+
+	restclient "github.com/harmony-one/demo-apps/backend/client"
 	fdb "github.com/harmony-one/demo-apps/backend/db"
+	p2p "github.com/harmony-one/demo-apps/backend/p2p"
 	clientService "github.com/harmony-one/demo-apps/backend/service"
 	utils "github.com/harmony-one/demo-apps/backend/utils"
 )
@@ -44,31 +46,31 @@ func printVersion(me string) {
 }
 
 var (
-	profile    = flag.String("profile", "default", "name of the profile")
+	profile    = flag.String("profile", defaultProfile, "name of the profile")
 	collection = flag.String("collection", "players", "name of collection")
 	key        = flag.String("key", "./keys/leo_account_key.json", "key filename")
 	project    = flag.String("project", "lottery-demo-leo", "project ID of firebase")
-	ip         = flag.String("server_ip", "34.222.210.98", "the IP address of the server")
-	action     = flag.String("action", "player", "action of the program. Valid (player, reg, winner, notify, players)")
+	action     = flag.String("action", "player", "action of the program. Valid (player, reg, winner, notify, players, balances)")
 	verbose    = flag.Bool("verbose", true, "verbose log print at every step")
 
 	versionFlag = flag.Bool("version", false, "Output version info")
 
-	db            *fdb.Fdb
-	walletProfile *utils.WalletProfile
+	db             *fdb.Fdb
+	backendProfile *utils.BackendProfile
+	leader         p2p.Peer
 )
 
 // FetchBalance fetches account balance of specified address from the Harmony network
 func FetchBalance(address common.Address) map[uint32]AccountState {
 	result := make(map[uint32]AccountState)
-	for i := 0; i < walletProfile.Shards; i++ {
+	for i := 0; i < backendProfile.Shards; i++ {
 		balance := big.NewInt(0)
 		var nonce uint64
 
 		result[uint32(i)] = AccountState{balance, 0}
 
 		for retry := 0; retry < rpcRetry; retry++ {
-			server := walletProfile.RPCServer[i][rand.Intn(len(walletProfile.RPCServer[i]))]
+			server := backendProfile.RPCServer[i][rand.Intn(len(backendProfile.RPCServer[i]))]
 			client, err := clientService.NewClient(server.IP, server.Port)
 			if err != nil {
 				continue
@@ -91,7 +93,7 @@ func FetchBalance(address common.Address) map[uint32]AccountState {
 func processBalancesCommand(players []*fdb.Player) {
 	for _, player := range players {
 		addr := common.HexToAddress(player.Address)
-		fmt.Printf("Address: %s\n", addr)
+		fmt.Printf("Address: %s\n", player.Address)
 		// assuming number of shard is 1
 		for shardID, balanceNonce := range FetchBalance(addr) {
 			fmt.Printf("    Balance in Shard %d:  %s, nonce: %v \n", shardID, convertBalanceIntoReadableFormat(balanceNonce.balance), balanceNonce.nonce)
@@ -155,7 +157,7 @@ func pickWinner() {
 	//	allPlayers := getAllPlayer()
 
 	//Run the get winner smart contract
-	winner, err := restclient.GetWinner(*ip, port)
+	winner, err := restclient.GetWinner(leader.IP, port)
 	if err != nil {
 		log.Fatalf("GetWinner Error: %v", err)
 	} else {
@@ -167,15 +169,18 @@ func pickWinner() {
 
 	processBalancesCommand(currentPlayers)
 
-	if *verbose {
-		for _, p := range currentPlayers {
-			fmt.Printf("[pickWinner] new players account: %v, balances: %v\n", p.Address, convertBalanceIntoReadableFormat(p.Balance))
-		}
-	}
-
 	//TODO: find the winner and send email
 
 	return
+}
+
+func getBalances(players []*fdb.Player) {
+	processBalancesCommand(players)
+	if *verbose {
+		for _, p := range players {
+			fmt.Printf("[pickWinner] new players account: %v, balances: %v\n", p.Address, convertBalanceIntoReadableFormat(p.Balance))
+		}
+	}
 }
 
 func getSession() int64 {
@@ -204,7 +209,7 @@ func getAllPlayer() []*fdb.Player {
 
 func getPlayer() []*fdb.Player {
 	//Get a list of all current players
-	players, err := restclient.GetPlayer(*ip, port)
+	players, err := restclient.GetPlayer(leader.IP, port)
 	if err != nil {
 		log.Fatalf("GetPlayer Error: %v", err)
 		return nil
@@ -229,6 +234,19 @@ func notifyWinner() {
 	return
 }
 
+// readProfile read the ini file and return the leader's IP
+func readProfile(profile string) p2p.Peer {
+	fmt.Printf("Using %s profile for backend\n", profile)
+	var err error
+	backendProfile, err = utils.ReadBackendProfile(defaultConfigFile, profile)
+	if err != nil {
+		fmt.Printf("Read backend profile error: %v\nExiting ...\n", err)
+		os.Exit(2)
+	}
+
+	return backendProfile.RPCServer[0][0]
+}
+
 func main() {
 	flag.Parse()
 	if *versionFlag {
@@ -245,6 +263,7 @@ func main() {
 
 	// Close FDB when done.
 	defer db.CloseFdb()
+	leader = readProfile(*profile)
 
 	switch *action {
 	case "reg":
@@ -257,6 +276,9 @@ func main() {
 		getAllPlayer()
 	case "notify":
 		notifyWinner()
+	case "balances":
+		allPlayers := getAllPlayer()
+		getBalances(allPlayers)
 	default:
 		fmt.Printf("Wrong action: %v", action)
 	}
