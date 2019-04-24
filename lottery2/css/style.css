@@ -197,7 +197,7 @@ html {
 }
 
 .section-players {
-  height: 45vh;
+  /* height: 45vh; */
   width: 100vw;
   background: #f4fbff;
   position: relative;
