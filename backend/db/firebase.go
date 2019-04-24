@@ -4,11 +4,14 @@ package fdb
 import (
 	"context"
 	"fmt"
+	"math/big"
 	"time"
 
 	"cloud.google.com/go/firestore"
 	"google.golang.org/api/iterator"
 	"google.golang.org/api/option"
+
+	"github.com/harmony-one/demo-apps/backend/client"
 )
 
 var (
@@ -30,6 +33,7 @@ type Player struct {
 	Session  int64
 	Notified bool
 	Amount   int
+	Balance  *big.Int
 }
 
 // Session represents the struct of the session in session collection
@@ -65,6 +69,25 @@ func NewFdb(key, project string) (*Fdb, error) {
 // CloseFdb will close the Firebase DB connection
 func (fdb *Fdb) CloseFdb() {
 	fdb.client.Close()
+}
+
+// NewPlayer convert db struct from rest API to DB player
+func NewPlayer(players *restclient.Player) []*Player {
+	dbPlayers := make([]*Player, 0)
+	for i, p := range players.Players {
+		n := new(big.Int)
+		n, ok := n.SetString(players.Balances[i], 10)
+		if !ok {
+			fmt.Printf("SetString Error")
+			continue
+		}
+		onePlayer := Player{
+			Address: p,
+			Balance: n,
+		}
+		dbPlayers = append(dbPlayers, &onePlayer)
+	}
+	return dbPlayers
 }
 
 // Find more examples here: https://cloud.google.com/firestore/docs/quickstart-servers

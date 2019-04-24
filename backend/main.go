@@ -10,8 +10,6 @@ import (
 	"path"
 	"time"
 
-	"github.com/jinzhu/copier"
-
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/params"
 	"github.com/harmony-one/demo-apps/backend/client"
@@ -48,10 +46,10 @@ func printVersion(me string) {
 var (
 	profile    = flag.String("profile", "default", "name of the profile")
 	collection = flag.String("collection", "players", "name of collection")
-	key        = flag.String("key", "./keys/benchmark_account_key.json", "key filename")
+	key        = flag.String("key", "./keys/leo_account_key.json", "key filename")
 	project    = flag.String("project", "lottery-demo-leo", "project ID of firebase")
 	ip         = flag.String("server_ip", "34.222.210.98", "the IP address of the server")
-	action     = flag.String("action", "reg", "action of the program. Valid (reg, winner)")
+	action     = flag.String("action", "player", "action of the program. Valid (player, reg, winner, notify)")
 
 	versionFlag = flag.Bool("version", false, "Output version info")
 
@@ -89,14 +87,14 @@ func FetchBalance(address common.Address) map[uint32]AccountState {
 	return result
 }
 
-func processBalancesCommand(addresses []string, balances []uint64) {
-	for i, address := range addresses {
-		addr := common.HexToAddress(address)
+func processBalancesCommand(players []*fdb.Player) {
+	for _, player := range players {
+		addr := common.HexToAddress(player.Address)
 		fmt.Printf("Address: %s\n", addr)
 		// assuming number of shard is 1
 		for shardID, balanceNonce := range FetchBalance(addr) {
 			fmt.Printf("    Balance in Shard %d:  %s, nonce: %v \n", shardID, convertBalanceIntoReadableFormat(balanceNonce.balance), balanceNonce.nonce)
-			balances[i] = balanceNonce.balance.Uint64()
+			player.Balance = balanceNonce.balance
 		}
 	}
 }
@@ -142,11 +140,6 @@ func convertBalanceIntoReadableFormat(balance *big.Int) string {
 }
 
 func sendRegEmail() {
-	if db == nil {
-		fmt.Printf("[sendRegEmail] fdb is nil")
-		return
-	}
-
 	players := db.GetPlayers("email_key", "==", false)
 
 	for i, p := range players {
@@ -157,20 +150,15 @@ func sendRegEmail() {
 }
 
 func pickWinner() {
-	if db == nil {
-		fmt.Printf("[pickWinner] fdb is nil")
-		return
-	}
-
 	//Get a list of all current players
-	player, err := restclient.GetPlayer(*ip, port)
+	players, err := restclient.GetPlayer(*ip, port)
 	if err != nil {
 		log.Fatalf("GetPlayer Error: %v", err)
 	} else {
-		fmt.Printf("Player: %v\n", player)
+		fmt.Printf("Player: %v\n", players)
 	}
-	var currentPlayers restclient.Player
-	copier.Copy(&currentPlayers, player)
+
+	currentPlayers := fdb.NewPlayer(players)
 
 	/*
 		session := db.GetSession(false)
@@ -182,8 +170,8 @@ func pickWinner() {
 	*/
 
 	//Get all player from DB
-	players := db.GetPlayers("", "", nil)
-	for i, p := range players {
+	allPlayers := db.GetPlayers("", "", nil)
+	for i, p := range allPlayers {
 		fmt.Printf("%v => %v\n", i, p)
 	}
 
@@ -200,12 +188,33 @@ func pickWinner() {
 
 	//TODO: check the balances of all players again
 
-	processBalancesCommand(currentPlayers.Players, currentPlayers.Balances)
+	processBalancesCommand(currentPlayers)
 
-	for i, p := range currentPlayers.Players {
-		fmt.Printf("account: %v, balances: %v\n", p, currentPlayers.Balances[i])
+	for _, p := range currentPlayers {
+		fmt.Printf("current players account: %v, balances: %v\n", p.Address, convertBalanceIntoReadableFormat(p.Balance))
 	}
 
+	return
+}
+
+func getPlayer() {
+	//Get a list of all current players
+	players, err := restclient.GetPlayer(*ip, port)
+	if err != nil {
+		log.Fatalf("GetPlayer Error: %v", err)
+	} else {
+		fmt.Printf("Player: %v\n", players)
+	}
+
+	currentPlayers := fdb.NewPlayer(players)
+
+	for i, p := range currentPlayers {
+		fmt.Printf("[getPlayer:%v] account: %v, balances: %v\n", i, p.Address, convertBalanceIntoReadableFormat(p.Balance))
+	}
+}
+
+func notifyWinner() {
+	// TODO: send email to winner
 	return
 }
 
@@ -218,7 +227,7 @@ func main() {
 	var err error
 	db, err = fdb.NewFdb(*key, *project)
 
-	if err != nil {
+	if err != nil || db == nil {
 		log.Fatalf("Failed to create Fdb client: %v", err)
 		os.Exit(1)
 	}
@@ -231,6 +240,10 @@ func main() {
 		sendRegEmail()
 	case "winner":
 		pickWinner()
+	case "player":
+		getPlayer()
+	case "notify":
+		notifyWinner()
 	default:
 		fmt.Printf("Wrong action: %v", action)
 	}
