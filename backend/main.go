@@ -59,6 +59,7 @@ var (
 	db             *fdb.Fdb
 	backendProfile *utils.BackendProfile
 	leader         p2p.Peer
+	allPlayers     []*fdb.Player
 )
 
 // FetchBalance fetches account balance of specified address from the Harmony network
@@ -162,8 +163,10 @@ func sendRegEmail() {
 
 func pickWinner() {
 	currentPlayers := getPlayer()
-	//	allPlayers := getAllPlayer()
 	existingPlayers := make([]*fdb.Player, 0)
+
+	go getAllPlayer()
+
 	for _, p := range currentPlayers {
 		onePlayer := fdb.Player{}
 		copier.Copy(&onePlayer, p)
@@ -226,7 +229,7 @@ func getSession() int64 {
 
 func getAllPlayer() []*fdb.Player {
 	//Get all player from DB
-	allPlayers := db.GetPlayers("", "", nil)
+	allPlayers = db.GetPlayers("", "", nil)
 	if *verbose {
 		for i, p := range allPlayers {
 			fmt.Printf("[getAllPlayer] %v => %v\n", i, p)
