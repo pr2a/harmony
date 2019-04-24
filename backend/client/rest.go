@@ -23,7 +23,7 @@ type Winner struct {
 //All the players in the lottery
 type Player struct {
 	Players  []string `json:players`
-	Balances []string `json:balances`
+	Balances []uint64 `json:balances`
 	Success  bool     `json:success`
 }
 
