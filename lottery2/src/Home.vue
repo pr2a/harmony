@@ -93,6 +93,22 @@ export default {
     };
   },
   methods: {
+    // countdown(end) {
+    //   // this.initialTime = this.selectedTime;
+    //   intervalTimer = setInterval(() => {
+    //     const secondsLeft = Math.round((end - Date.now()) / 1000);
+
+    //     if(secondsLeft === 0) {
+    //       this.endTime = 0;
+    //     }
+
+    //     if(secondsLeft < 0) {
+    //       clearInterval(intervalTimer);
+    //       return;
+    //     }
+    //     this.displayTimeLeft(secondsLeft)
+    //   }, 1000);
+    // },
     emailSubmit() {
       try {
         if (!validateEmail(this.email)) {
@@ -150,7 +166,7 @@ export default {
         } else if (data.status == "failed") {
           this.message = data.message;
         } else {
-          this.message = data.message;
+          this.message = `There are ${data.current_players.length} players.`;
         }
       });
     },
@@ -171,7 +187,9 @@ export default {
         } else if (data.status == "failed") {
           this.message = data.message;
         } else {
-          this.message = data.message;
+          this.message = `There are ${
+            data.previous_winners.length
+          } previous winners.`;
         }
       });
     }
