@@ -10,9 +10,12 @@ import (
 	"path"
 	"time"
 
+	"net/http"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/params"
 	"github.com/jinzhu/copier"
+	"google.golang.org/appengine"
+	"google.golang.org/appengine/mail"
 
 	restclient "github.com/harmony-one/demo-apps/backend/client"
 	fdb "github.com/harmony-one/demo-apps/backend/db"
@@ -39,6 +42,12 @@ const (
 	defaultConfigFile = ".hmy/backend.ini"
 	defaultProfile    = "default"
 	port              = "30000"
+	winningEmailBody = "Congratulations!!! You are the winner of the current lottery session."
+	losingEmailBody = "Sorry the lottery randomly picked someone else as the winner. Please try your luck again in next session!"
+	winningEmailBodyHtml = ""
+	losingEmailBodyHtml = ""
+	winnerEmailTitle = "You are the Harmony Lottery winner!"
+	losingEmailTitle = "Harmony Lottery result revealed"
 )
 
 func printVersion(me string) {
@@ -53,6 +62,7 @@ var (
 	project    = flag.String("project", "lottery-demo-leo", "project ID of firebase")
 	action     = flag.String("action", "player", "action of the program. Valid (player, reg, winner, notify, players, balances)")
 	verbose    = flag.Bool("verbose", true, "verbose log print at every step")
+	local    = flag.Bool("local", false, "Run locally")
 
 	versionFlag = flag.Bool("version", false, "Output version info")
 
@@ -195,6 +205,7 @@ func pickWinner() {
 		if p == nil {
 			continue
 		}
+		// TODO: mark the winner explicitly in smart contract
 		if p.Balance.Cmp(currentPlayers[i].Balance) > 0 {
 			fmt.Printf("%s is the winner\n", p.Address)
 			// TODO: send the email to winner
@@ -261,11 +272,26 @@ func getPlayer() []*fdb.Player {
 	return currentPlayers
 }
 
-func notifyWinner() {
-	// TODO: send email to winner
+func notifyWinner(winnerEmails, nonWinnerEmails []string, r *http.Request) {
+	sendEmail(winnerEmails, winnerEmailTitle, winningEmailBody, winningEmailBodyHtml, r)
+	sendEmail(nonWinnerEmails, losingEmailTitle, losingEmailBody, losingEmailBodyHtml, r)
 	return
 }
 
+func sendEmail(recipients []string, title, body, htmlBody string, r *http.Request) {
+	ctx := appengine.NewContext(r)
+	msg := &mail.Message{
+		Sender:   "admin@harmony-lottery-app.appspotmail.com",
+		To:       recipients,
+		Subject:  title,
+		Body:     body,
+		HTMLBody: htmlBody,
+	}
+	log.Printf("Sending email: %s", msg)
+	if err := mail.Send(ctx, msg); err != nil {
+		log.Println(ctx, "Couldn't send email", err)
+	}
+}
 // readProfile read the ini file and return the leader's IP
 func readProfile(profile string) p2p.Peer {
 	fmt.Printf("Using %s profile for backend\n", profile)
@@ -297,23 +323,51 @@ func main() {
 	defer db.CloseFdb()
 	leader = readProfile(*profile)
 
-	switch *action {
-	case "reg":
-		sendRegEmail()
-	case "winner":
-		pickWinner()
-	case "player":
-		getPlayer()
-	case "players":
-		getAllPlayer()
-	case "notify":
-		notifyWinner()
-	case "balances":
-		allPlayers := getAllPlayer()
-		getBalances(allPlayers)
-	default:
-		fmt.Printf("Wrong action: %v", action)
+	if *local {
+		switch *action {
+		case "reg":
+			sendRegEmail()
+		case "winner":
+			pickWinner()
+		case "player":
+			getPlayer()
+		case "players":
+			getAllPlayer()
+		case "notify":
+			notifyWinner([]string{}, []string{}, nil)
+		case "balances":
+			allPlayers := getAllPlayer()
+			getBalances(allPlayers)
+		default:
+			fmt.Printf("Wrong action: %v", action)
+		}
+
+		os.Exit(0)
+	} else {
+		http.HandleFunc("/", indexHandler)
+		http.HandleFunc("/pickwinner", pickWinnerHandler)
+
+		appengine.Main()
+	}
+}
+
+// indexHandler responds to requests with our greeting.
+func indexHandler(w http.ResponseWriter, r *http.Request) {
+	if r.URL.Path != "/" {
+		http.NotFound(w, r)
+		return
+	}
+	fmt.Fprint(w, "Hello, World!")
+}
+
+// pickWinnerHandler responds to requests for the pick winner cron job.
+func pickWinnerHandler(w http.ResponseWriter, r *http.Request) {
+	if r.URL.Path != "/pickwinner" {
+		http.NotFound(w, r)
+		return
 	}
 
-	os.Exit(0)
+	// TODO: pickWinner returns winner and losers emails and feed into notifyWinner
+	pickWinner()
+	notifyWinner([]string{}, []string{}, r)
 }
