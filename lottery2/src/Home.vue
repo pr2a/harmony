@@ -111,12 +111,14 @@ export default {
     // },
     emailSubmit() {
       try {
+        this.key_message = "";
+        this.message = "Validating email.";
         if (!validateEmail(this.email)) {
           this.message = BAD_EMAIL;
           return;
         }
-        this.key_message = "";
 
+        this.message = "Checking if email has been used before.";
         axios.get(`${HOST}/existed?email=${this.email}`).then(res => {
           const existed = res.data;
           console.log("test1");
@@ -141,7 +143,6 @@ export default {
               address = "0x" + wallet.address;
               private_key = wallet.private_key;
             }
-
             axios
               .get(
                 `${HOST}/enter?email=${

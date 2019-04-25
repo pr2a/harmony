@@ -132,13 +132,13 @@ exports.enter = functions.https.onRequest(async (req, res) => {
               return;
             }
             {
-              console.log(
-                `getting balance of this address ${address}: url: ${LEADER_ADDRESS}/balance?key=${address}`
-              );
-              const { data } = await axios.get(
-                `${LEADER_ADDRESS}/balance?key=${address}`
-              );
-              console.log('balance:', data);
+              // console.log(
+              //   `getting balance of this address ${address}: url: ${LEADER_ADDRESS}/balance?key=${address}`
+              // );
+              // const { data } = await axios.get(
+              //   `${LEADER_ADDRESS}/balance?key=${address}`
+              // );
+              // console.log('balance:', data);
             }
           } catch (err) {
             console.log('err', err);
