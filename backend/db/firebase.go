@@ -106,17 +106,14 @@ func (fdb *Fdb) UpdateSession() {
 	iter := q.Documents(ctx)
 	defer iter.Stop()
 
-	/* TODO: get it working
 	doc, err := iter.Next()
-	_, err = doc.Set(ctx, map[string]interface{}{
+	_, err = doc.Ref.Set(ctx, map[string]interface{}{
 		"is_current": false,
 	}, firestore.MergeAll)
 	if err != nil {
 		// Handle any errors in an appropriate way, such as returning them.
 		log.Printf("An error has occurred: %s", err)
 	}
-	*/
-
 }
 
 // AddSession add new session id to session collection
