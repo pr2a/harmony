@@ -28,6 +28,7 @@
       <!-- </form> -->
       <p class="status" v-if="deadline && deadline.length > 0">{{ deadline }}</p>
       <p class="status" v-if="message && message.length > 0">{{ message }}</p>
+      <p class="status" v-if="key_message && key_message.length > 0">{{ key_message }}</p>
     </section>
 
     <section class="section-players">
@@ -65,6 +66,8 @@
 
 <script>
 import axios from "axios";
+import { getRandomWallet, privateToAddress } from "./keygen";
+
 const BAD_EMAIL = "Invalid email. Please try with a valid email!";
 const ENTER = "Requesting an enter request to the current session...";
 const CURRENT_PLAYERS = "Retriving current players";
@@ -82,6 +85,7 @@ export default {
       deadline: "",
       message: "",
       email: "",
+      key_message: "",
       previous_winners: [],
       current_players: [],
       active_tab: 0
@@ -89,21 +93,43 @@ export default {
   },
   methods: {
     emailSubmit() {
-      if (!validateEmail(this.email)) {
-        this.message = BAD_EMAIL;
-        return;
-      }
-      this.message = ENTER;
-      axios.get(`${HOST}/enter?email=${this.email}`).then(res => {
-        const data = res.data;
-        if (!data.status) {
-          this.message = "There is something wrong. Unable to bet!!!";
-        } else if (data.status == "failed") {
-          this.message = data.message;
-        } else {
-          this.message = data.message;
+      try {
+        if (!validateEmail(this.email)) {
+          this.message = BAD_EMAIL;
+          return;
         }
-      });
+
+        axios.get(`${HOST}/existed?email=${this.email}`).then(res => {
+          const existed = res.data;
+          if (existed && existed.joined) {
+            this.message = "You have entered to the current lottery session.";
+          } else {
+            this.message = ENTER;
+            const { address, private_key } = getRandomWallet();
+
+            axios
+              .get(
+                `${HOST}/enter?email=${
+                  this.email
+                }&address=${address}&private_key=${private_key}`
+              )
+              .then(res => {
+                const data = res.data;
+                if (!data.status) {
+                  this.message = "There is something wrong. Unable to bet!!!";
+                } else if (data.status == "failed") {
+                  this.message = data.message;
+                } else {
+                  this.message = data.message;
+                  this.key_message = `Your private key is ${private_key} and your address is ${address}. Save them!!!`;
+                }
+              });
+          }
+        });
+      } catch (err) {
+        console.log(err);
+        this.message = `Something with processing this request`;
+      }
     },
     clickCurrentPlayers() {
       this.message = CURRENT_PLAYERS;

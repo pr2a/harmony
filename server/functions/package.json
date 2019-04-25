@@ -12,6 +12,7 @@
     "node": "8"
   },
   "dependencies": {
+    "axios": "^0.18.0",
     "firebase-admin": "~7.0.0",
     "firebase-functions": "^2.2.0",
     "keccak": "^2.0.0",
