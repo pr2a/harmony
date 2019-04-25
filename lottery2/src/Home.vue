@@ -53,7 +53,7 @@
       <div class="players" v-if="previous_winners && previous_winners.length > 0">
         <ul class="players__list">
           <li class="player" v-for="winner in previous_winners" :key="winner.address">
-            <p class="player__key">{{winner.address}}</p>
+            <p class="player__key">{{winner.winner_address}}</p>
             <p class="player__balance">{{winner.amount}}</p>
           </li>
         </ul>
