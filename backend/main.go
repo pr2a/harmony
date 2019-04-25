@@ -15,15 +15,15 @@ import (
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/params"
+	"github.com/harmony-one/demo-apps/backend/client"
+	"github.com/harmony-one/demo-apps/backend/db"
+	"github.com/harmony-one/demo-apps/backend/p2p"
+	clientService "github.com/harmony-one/demo-apps/backend/service"
+	"github.com/harmony-one/demo-apps/backend/utils"
 	"github.com/jinzhu/copier"
 	"google.golang.org/appengine"
 	"google.golang.org/appengine/mail"
-
-	restclient "github.com/harmony-one/demo-apps/backend/client"
-	fdb "github.com/harmony-one/demo-apps/backend/db"
-	p2p "github.com/harmony-one/demo-apps/backend/p2p"
-	clientService "github.com/harmony-one/demo-apps/backend/service"
-	utils "github.com/harmony-one/demo-apps/backend/utils"
+	app_log "google.golang.org/appengine/log"
 )
 
 var (
@@ -187,7 +187,9 @@ func sendWinningEmail(email string) {
 	log.Printf("Sending email to winner: %v", email)
 }
 
-func pickWinner() ([]string, []string) {
+func pickWinner(r *http.Request) ([]string, []string) {
+	ctx := appengine.NewContext(r)
+	app_log.Infof(ctx, "network leader: %v", leader)
 	currentPlayers := getPlayer()
 	existingPlayers := make([]*fdb.Player, 0)
 
@@ -200,16 +202,16 @@ func pickWinner() ([]string, []string) {
 	}
 
 	if *verbose {
-		fmt.Printf("currentPlayers: %v\n", currentPlayers)
-		fmt.Printf("existingPlayers: %v\n", existingPlayers)
+		app_log.Infof(ctx, "currentPlayers: %v\n", currentPlayers)
+		app_log.Infof(ctx, "existingPlayers: %v\n", existingPlayers)
 	}
 
 	//Run the get winner smart contract
 	winner, err := restclient.GetWinner(leader.IP, port)
 	if err != nil {
-		log.Fatalf("GetWinner Error: %v", err)
+		app_log.Criticalf(ctx, "GetWinner Error: %v", err)
 	} else {
-		fmt.Printf("Winner: %v\n", winner)
+		app_log.Infof(ctx, "Winner: %v\n", winner)
 	}
 
 	// wait for the execution of smart contracts
@@ -227,10 +229,10 @@ func pickWinner() ([]string, []string) {
 		email := findEmail(p.Address)
 		// TODO: mark the winner explicitly in smart contract
 		if p.Balance.Cmp(currentPlayers[i].Balance) > 0 {
-			fmt.Printf("%s is the winner\n", p.Address)
+			app_log.Infof(ctx, "%s is the winner\n", p.Address)
 			winners = append(winners, email)
 		} else {
-			fmt.Printf("%s is NOT the winner\n", p.Address)
+			app_log.Infof(ctx, "%s is NOT the winner\n", p.Address)
 			losers = append(losers, email)
 		}
 	}
@@ -309,6 +311,10 @@ func notifyWinner(winnerEmails, nonWinnerEmails []string, r *http.Request) {
 
 func sendEmail(recipients []string, title, body, htmlBody string, r *http.Request) {
 	ctx := appengine.NewContext(r)
+	if len(recipients) == 0 {
+		app_log.Infof(ctx, "Recipients list is empty")
+		return
+	}
 	msg := &mail.Message{
 		Sender:   "admin@harmony-lottery-app.appspotmail.com",
 		To:       recipients,
@@ -316,9 +322,9 @@ func sendEmail(recipients []string, title, body, htmlBody string, r *http.Reques
 		Body:     body,
 		HTMLBody: htmlBody,
 	}
-	log.Printf("Sending email: %s", msg)
+	app_log.Infof(ctx, "Sending email: %s", msg)
 	if err := mail.Send(ctx, msg); err != nil {
-		log.Println(ctx, "Couldn't send email", err)
+		app_log.Errorf(ctx, "Couldn't send email", err)
 	}
 }
 
@@ -358,7 +364,7 @@ func main() {
 		case "reg":
 			sendRegEmail()
 		case "winner":
-			pickWinner()
+			pickWinner(nil)
 		case "player":
 			getPlayer()
 		case "players":
@@ -398,6 +404,6 @@ func pickWinnerHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// TODO: pickWinner returns winner and losers emails and feed into notifyWinner
-	winners, losers := pickWinner()
+	winners, losers := pickWinner(r)
 	notifyWinner(winners, losers, r)
 }
