@@ -17,6 +17,13 @@ function validateEmail(email) {
   var re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
   return re.test(String(email).toLowerCase());
 }
+function anonymousEmail(email) {
+  var emailPattern = /^([a-zA-Z0-9._-]+)@([a-zA-Z0-9.-]+)\.([a-zA-Z]{2,4})$/;
+  const res = email.match(emailPattern);
+  return (
+    '...' + res[1].slice(-3) + '@' + '...' + res[2].slice(-3) + '.' + res[3]
+  );
+}
 
 exports.existed = functions.https.onRequest(async (req, res) => {
   res.set('Access-Control-Allow-Origin', '*');
@@ -186,7 +193,11 @@ exports.current_session = functions.https.onRequest(async (req, res) => {
     } else {
       active_session.forEach(async doc => {
         const data = doc.data();
-        res.json({ deadline: data.deadline, session_id: data.session_id });
+        res.json({
+          deadline: data.deadline,
+          session_id: data.session_id,
+          status: 'success'
+        });
       });
     }
   } catch (err) {
@@ -216,9 +227,12 @@ exports.current_players = functions.https.onRequest(async (req, res) => {
           .get();
         let result = [];
         players.forEach(player => {
-          result.push(player.data().address);
+          result.push({
+            address: player.data().address,
+            email: anonymousEmail(player.data().email)
+          });
         });
-        res.json({ current_players: result });
+        res.json({ current_players: result, status: 'success' });
       });
     }
   } catch (err) {
@@ -237,7 +251,7 @@ exports.previous_winners = functions.https.onRequest(async (req, res) => {
     winners.forEach(winner => {
       result.push({ ...winner.data() });
     });
-    res.json({ previous_winners: result });
+    res.json({ previous_winners: result, status: 'success' });
   } catch (err) {
     console.log(err);
     res.json({});

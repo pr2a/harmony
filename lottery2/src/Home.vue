@@ -44,9 +44,9 @@
       </div>
       <div class="players" v-if="current_players && current_players.length > 0">
         <ul class="players__list">
-          <li class="player" v-for="player in current_players" :key="player">
-            <p class="player__key">{{player}}</p>
-            <p class="player__balance">$100</p>
+          <li class="player" v-for="player in current_players" :key="player.address">
+            <p class="player__key">{{player.address}}</p>
+            <p class="player__balance">{{player.email}}</p>
           </li>
         </ul>
       </div>
@@ -73,6 +73,7 @@ const ENTER = "Requesting an enter request to the current session...";
 const CURRENT_PLAYERS = "Retriving current players";
 const PREVIOUS_WINNERS = "Retriving previous winners";
 const HOST = `https://us-central1-benchmark-209420.cloudfunctions.net`;
+// const HOST = `http://localhost:5000/benchmark-209420/us-central1`;
 function validateEmail(email) {
   var re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
   return re.test(String(email).toLowerCase());
@@ -158,13 +159,13 @@ export default {
       this.message = PREVIOUS_WINNERS;
       axios.get(`${HOST}/previous_winners`).then(res => {
         const data = res.data;
-        console.log(data.current_players);
+        console.log(data);
         if (data.previous_winners) {
           this.previous_winners = data.previous_winners;
           console.log(data.previous_winners);
           this.current_players = null;
         }
-        if (!data.status) {
+        if (!data || !data.status) {
           this.message =
             "Something wrong. Unable to retreieve previous winners.";
         } else if (data.status == "failed") {
