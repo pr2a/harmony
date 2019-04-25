@@ -119,17 +119,23 @@ export default {
 
         axios.get(`${HOST}/existed?email=${this.email}`).then(res => {
           const existed = res.data;
+          console.log("test1");
           if (!existed) {
+            console.log("test2");
             this.message = "Something wrong with backend";
           } else if (!existed.has_active_session) {
+            console.log("test3");
             this.message = "There is no active lottery session to enter.";
           } else {
+            console.log("test4");
             let address;
             let private_key;
             if (existed.joined) {
+              console.log("test5");
               address = existed.address;
               private_key = existed.private_key;
             } else {
+              console.log("test6");
               this.message = ENTER;
               const wallet = getRandomWallet();
               address = wallet.address;

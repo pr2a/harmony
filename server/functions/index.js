@@ -158,7 +158,7 @@ exports.enter = functions.https.onRequest(async (req, res) => {
             });
             res.json({
               status: 'success',
-              message: 'You have entered to the current lottery session.'
+              message: 'You just entered to the current lottery session.'
             });
           } else {
             res.json({
