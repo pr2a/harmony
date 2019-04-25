@@ -22,7 +22,6 @@ import (
 	"github.com/harmony-one/demo-apps/backend/p2p"
 	clientService "github.com/harmony-one/demo-apps/backend/service"
 	"github.com/harmony-one/demo-apps/backend/utils"
-	"github.com/jinzhu/copier"
 	"google.golang.org/appengine"
 	app_log "google.golang.org/appengine/log"
 	"google.golang.org/appengine/mail"
@@ -204,12 +203,12 @@ func pickWinner(r *http.Request) ([]string, []string) {
 
 	for _, p := range currentPlayers {
 		onePlayer := new(fdb.Player)
-		copier.Copy(onePlayer, p)
+		onePlayer.Address = p.Address
 		existingPlayers = append(existingPlayers, onePlayer)
 
 		if *verbose {
-			app_log.Infof(ctx, "currentPlayer: %v\n", p)
-			app_log.Infof(ctx, "existingPlayer: %v\n", onePlayer)
+			app_log.Infof(ctx, "currentPlayer: %s\n", p)
+			app_log.Infof(ctx, "existingPlayer: %s\n", onePlayer)
 		}
 	}
 
@@ -235,8 +234,8 @@ func pickWinner(r *http.Request) ([]string, []string) {
 			continue
 		}
 		email := findEmail(p.Address)
-		app_log.Infof(ctx, "%s New Balance: %s/%v\n", p.Address, convertBalanceIntoReadableFormat(p.Balance), p.Balance)
-		app_log.Infof(ctx, "%s Original Balance: %s/%v\n", p.Address, convertBalanceIntoReadableFormat(currentPlayers[i].Balance), currentPlayers[i].Balance)
+		app_log.Infof(ctx, "%s New Balance: %s\n", p.Address, convertBalanceIntoReadableFormat(p.Balance))
+		app_log.Infof(ctx, "%s Original Balance: %s\n", p.Address, convertBalanceIntoReadableFormat(currentPlayers[i].Balance))
 		// TODO: mark the winner explicitly in smart contract
 		if p.Balance.Cmp(currentPlayers[i].Balance) > 0 {
 			app_log.Infof(ctx, "%s/%s is the winner.\n", p.Address, email)

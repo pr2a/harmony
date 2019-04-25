@@ -37,6 +37,10 @@ type Player struct {
 	Balance  *big.Int
 }
 
+func (p *Player) String() string {
+	return fmt.Sprintf("player:%s/%s (%v/%v)", p.Address, p.Email, p.Amount, p.Balance)
+}
+
 // Winner of the lottery
 type Winner struct {
 	Session int64
