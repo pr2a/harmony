@@ -83,13 +83,11 @@ func (fdb *Fdb) CloseFdb() {
 func NewPlayer(players *restclient.Player) []*Player {
 	dbPlayers := make([]*Player, 0)
 	for i, p := range players.Players {
-		n := new(big.Int)
-		n.SetString(players.Balances[i], 10)
-		onePlayer := Player{
-			Address: p,
-			Balance: n,
-		}
-		dbPlayers = append(dbPlayers, &onePlayer)
+		onePlayer := new(Player)
+		onePlayer.Address = p
+		onePlayer.Balance = big.NewInt(0)
+		onePlayer.Balance.SetString(players.Balances[i], 10)
+		dbPlayers = append(dbPlayers, onePlayer)
 	}
 	return dbPlayers
 }

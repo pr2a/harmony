@@ -107,7 +107,8 @@ func FetchBalance(address common.Address) map[uint32]AccountState {
 	return result
 }
 
-func processBalancesCommand(players []*fdb.Player) {
+func processBalancesCommand(players []*fdb.Player, r *http.Request) {
+	ctx := appengine.NewContext(r)
 	for _, player := range players {
 		if player == nil {
 			continue
@@ -119,7 +120,8 @@ func processBalancesCommand(players []*fdb.Player) {
 		// assuming number of shard is 1
 		for shardID, balanceNonce := range FetchBalance(addr) {
 			if *verbose {
-				fmt.Printf("Balance in Shard %d:  %s, nonce: %v \n", shardID, convertBalanceIntoReadableFormat(balanceNonce.balance), balanceNonce.nonce)
+				app_log.Infof(ctx, "Balance in Shard %d:  %s/%v\n", shardID, convertBalanceIntoReadableFormat(balanceNonce.balance), balanceNonce.balance)
+				fmt.Printf("Balance in Shard %d:  %s/%v\n", shardID, convertBalanceIntoReadableFormat(balanceNonce.balance), balanceNonce.balance)
 			}
 			player.Balance.Set(balanceNonce.balance)
 		}
@@ -201,11 +203,11 @@ func pickWinner(r *http.Request) ([]string, []string) {
 		onePlayer := fdb.Player{}
 		copier.Copy(&onePlayer, p)
 		existingPlayers = append(existingPlayers, &onePlayer)
-	}
 
-	if *verbose {
-		app_log.Infof(ctx, "currentPlayers: %v\n", currentPlayers)
-		app_log.Infof(ctx, "existingPlayers: %v\n", existingPlayers)
+		if *verbose {
+			app_log.Infof(ctx, "currentPlayer: %v\n", p)
+			app_log.Infof(ctx, "existingPlayer: %v\n", onePlayer)
+		}
 	}
 
 	//Run the get winner smart contract
@@ -219,7 +221,7 @@ func pickWinner(r *http.Request) ([]string, []string) {
 	// wait for the execution of smart contracts
 	time.Sleep(15 * time.Second)
 
-	processBalancesCommand(existingPlayers)
+	processBalancesCommand(existingPlayers, r)
 
 	winners := make([]string, 0)
 	losers := make([]string, 0)
@@ -269,7 +271,7 @@ func pickWinner(r *http.Request) ([]string, []string) {
 }
 
 func getBalances(players []*fdb.Player) {
-	processBalancesCommand(players)
+	processBalancesCommand(players, nil)
 	if *verbose {
 		for _, p := range players {
 			fmt.Printf("[pickWinner] new players account: %v, balances: %s\n", p.Address, convertBalanceIntoReadableFormat(p.Balance))
