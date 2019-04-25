@@ -49,8 +49,8 @@ const (
 	losingEmailBody      = "Sorry the lottery randomly picked someone else as the winner. Please try your luck again in next session!"
 	winningEmailBodyHTML = ""
 	losingEmailBodyHTML  = ""
-	winnerEmailTitle     = "You are the Harmony Lottery winner!"
-	losingEmailTitle     = "Harmony Lottery result revealed"
+	winnerEmailTitle     = "Feeling lucky? And the winner..."
+	losingEmailTitle     = "Feeling lucky? And the winner..."
 )
 
 func printVersion(me string) {
@@ -114,6 +114,7 @@ func processBalancesCommand(players []*fdb.Player, r *http.Request) {
 		}
 		addr := common.HexToAddress(player.Address)
 		if *verbose {
+			app_log.Infof(ctx, "Address: %s\n", player.Address)
 			fmt.Printf("Address: %s\n", player.Address)
 		}
 		// assuming number of shard is 1
@@ -204,6 +205,7 @@ func pickWinner(r *http.Request) ([]string, []string) {
 	for _, p := range currentPlayers {
 		onePlayer := new(fdb.Player)
 		onePlayer.Address = p.Address
+		onePlayer.Balance = new(big.Int)
 		existingPlayers = append(existingPlayers, onePlayer)
 
 		if *verbose {
