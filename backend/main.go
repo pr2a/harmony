@@ -207,7 +207,8 @@ func pickWinner(r *http.Request) ([]string, []string) {
 	currentPlayers := getPlayer(r)
 	existingPlayers := make([]*fdb.Player, 0)
 
-	go getAllPlayer()
+	winningInfo.Session = getSession()
+	go getAllPlayer(winningInfo.Session)
 
 	for _, p := range currentPlayers {
 		onePlayer := new(fdb.Player)
@@ -248,7 +249,6 @@ func pickWinner(r *http.Request) ([]string, []string) {
 			losers = append(losers, email)
 		}
 	}
-	winningInfo.Session = getSession()
 	sessionID := winningInfo.Session + 1
 	// set current is_current to false
 	db.UpdateSession()
@@ -292,9 +292,13 @@ func getSession() int64 {
 }
 
 //getAllPlayer will get all players from DB
-func getAllPlayer() []*fdb.Player {
+func getAllPlayer(sess int64) []*fdb.Player {
 	mux.Lock()
-	allPlayers = db.GetPlayers("", "", nil)
+	if sess > 0 {
+		allPlayers = db.GetPlayers("session_id", "==", sess)
+	} else {
+		allPlayers = db.GetPlayers("", "", nil)
+	}
 	mux.Unlock()
 
 	if *verbose {
@@ -451,11 +455,11 @@ func main() {
 		case "player":
 			getPlayer(nil)
 		case "players":
-			getAllPlayer()
+			getAllPlayer(0)
 		case "notify":
 			notifyWinner([]string{}, []string{}, nil)
 		case "balances":
-			allPlayers := getAllPlayer()
+			allPlayers := getAllPlayer(0)
 			getBalances(allPlayers)
 		default:
 			fmt.Printf("Wrong action: %v", action)
