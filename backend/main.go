@@ -1,6 +1,7 @@
 package main
 
 import (
+   "context"
 	"flag"
 	"fmt"
 	"log"
@@ -22,8 +23,8 @@ import (
 	"github.com/harmony-one/demo-apps/backend/utils"
 	"github.com/jinzhu/copier"
 	"google.golang.org/appengine"
-	"google.golang.org/appengine/mail"
 	app_log "google.golang.org/appengine/log"
+	"google.golang.org/appengine/mail"
 )
 
 var (
@@ -190,7 +191,7 @@ func sendWinningEmail(email string) {
 func pickWinner(r *http.Request) ([]string, []string) {
 	ctx := appengine.NewContext(r)
 	app_log.Infof(ctx, "network leader: %v", leader)
-	currentPlayers := getPlayer()
+	currentPlayers := getPlayer(nil)
 	existingPlayers := make([]*fdb.Player, 0)
 
 	go getAllPlayer()
@@ -215,7 +216,7 @@ func pickWinner(r *http.Request) ([]string, []string) {
 	}
 
 	// wait for the execution of smart contracts
-	time.Sleep(5 * time.Second)
+	time.Sleep(15 * time.Second)
 
 	processBalancesCommand(existingPlayers)
 
@@ -238,9 +239,19 @@ func pickWinner(r *http.Request) ([]string, []string) {
 	}
 
 	if *verbose {
+		app_log.Infof(ctx, "Winner: %v\n", winners)
+		app_log.Infof(ctx, "Loser: %v\n", losers)
 		fmt.Printf("WINNER: %v\n", winners)
 		fmt.Printf("LOSERS: %v\n", losers)
 	}
+
+	sessionID := getSession() + 1
+
+	// set current is_current to false
+	db.UpdateSession()
+
+	// add a new session id
+	db.AddSession(sessionID)
 
 	return winners, losers
 }
@@ -281,7 +292,13 @@ func getAllPlayer() []*fdb.Player {
 	return allPlayers
 }
 
-func getPlayer() []*fdb.Player {
+func getPlayer(r *http.Request) []*fdb.Player {
+   var ctx context.Context
+
+   if ! *local {
+      ctx = appengine.NewContext(r)
+   }
+
 	//Get a list of all current players
 	players, err := restclient.GetPlayer(leader.IP, port)
 	if err != nil {
@@ -291,6 +308,9 @@ func getPlayer() []*fdb.Player {
 
 	if *verbose {
 		fmt.Printf("[getPlayer] REST: %v\n", players)
+		if !*local {
+			app_log.Infof(ctx, "[getPlayer]: %v\n", players)
+		}
 	}
 
 	currentPlayers := fdb.NewPlayer(players)
@@ -298,6 +318,9 @@ func getPlayer() []*fdb.Player {
 	if *verbose && currentPlayers != nil {
 		for i, p := range currentPlayers {
 			fmt.Printf("[getPlayer:%v] account: %v, balances: %v/%v\n", i, p.Address, convertBalanceIntoReadableFormat(p.Balance), p.Balance)
+			if !*local {
+				app_log.Infof(ctx, "[getPlayer:%v] account: %v, balances: %v/%v\n", i, p.Address, convertBalanceIntoReadableFormat(p.Balance), p.Balance)
+			}
 		}
 	}
 	return currentPlayers
@@ -366,7 +389,7 @@ func main() {
 		case "winner":
 			pickWinner(nil)
 		case "player":
-			getPlayer()
+			getPlayer(nil)
 		case "players":
 			getAllPlayer()
 		case "notify":
@@ -382,6 +405,7 @@ func main() {
 	} else {
 		http.HandleFunc("/", indexHandler)
 		http.HandleFunc("/pickwinner", pickWinnerHandler)
+		http.HandleFunc("/player", playerHandler)
 
 		appengine.Main()
 	}
@@ -406,4 +430,12 @@ func pickWinnerHandler(w http.ResponseWriter, r *http.Request) {
 	// TODO: pickWinner returns winner and losers emails and feed into notifyWinner
 	winners, losers := pickWinner(r)
 	notifyWinner(winners, losers, r)
+}
+
+func playerHandler(w http.ResponseWriter, r *http.Request) {
+	if r.URL.Path != "/player" {
+		http.NotFound(w, r)
+		return
+	}
+	getPlayer(r)
 }

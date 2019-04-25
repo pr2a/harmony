@@ -4,6 +4,7 @@ package fdb
 import (
 	"context"
 	"fmt"
+	"log"
 	"math/big"
 	"time"
 
@@ -92,21 +93,42 @@ func NewPlayer(players *restclient.Player) []*Player {
 
 // Find more examples here: https://cloud.google.com/firestore/docs/quickstart-servers
 
-// AddData --
-func addData(client *firestore.Client) {
-	// _, _, err = client.Collection("users").Add(ctx, map[string]interface{}{
-	// 	"first": "Ada",
-	// 	"last":  "Lovelace",
-	// 	"born":  1815,
-	// })
-	// if err != nil {
-	// 	log.Fatalf("Failed adding alovelace: %v", err)
-	// }
+// UpdateSession will set is_current to 'false'
+func (fdb *Fdb) UpdateSession() {
+	q := fdb.client.Collection(sessionCollection).Select().Where("is_current", "==", true)
+	iter := q.Documents(ctx)
+	defer iter.Stop()
+
+	/* TODO: get it working
+	doc, err := iter.Next()
+	_, err = doc.Set(ctx, map[string]interface{}{
+		"is_current": false,
+	}, firestore.MergeAll)
+	if err != nil {
+		// Handle any errors in an appropriate way, such as returning them.
+		log.Printf("An error has occurred: %s", err)
+	}
+	*/
+
+}
+
+// AddSession add new session id to session collection
+func (fdb *Fdb) AddSession(id int64) {
+	_, _, err := fdb.client.Collection(sessionCollection).Add(ctx, map[string]interface{}{
+		"deadline":   time.Now(),
+		"is_current": true,
+		"session_id": id,
+	})
+	if err != nil {
+		log.Fatalf("Failed adding a new session: %v", err)
+	}
 }
 
 // readData read data from firebase
 func (fdb *Fdb) readData(collection string) []interface{} {
 	iter := fdb.client.Collection(collection).Documents(ctx)
+	defer iter.Stop()
+
 	data := make([]interface{}, 0)
 
 	for {
@@ -131,7 +153,7 @@ func (fdb *Fdb) GetSession(all bool) []*Session {
 	if all {
 		iter = fdb.client.Collection(sessionCollection).Documents(ctx)
 	} else {
-		iter = fdb.client.Collection(sessionCollection).Where("current", "==", true).Documents(ctx)
+		iter = fdb.client.Collection(sessionCollection).Where("is_current", "==", true).Documents(ctx)
 	}
 	sessions := make([]*Session, 0)
 
@@ -152,14 +174,14 @@ func (fdb *Fdb) GetSession(all bool) []*Session {
 			fmt.Printf("Failed to convert \"deadline\": %v\n", data["deadline"])
 			continue
 		}
-		one.Current, ok = data["current"].(bool)
+		one.Current, ok = data["is_current"].(bool)
 		if !ok {
-			fmt.Printf("Failed to convert \"current\"\n")
+			fmt.Printf("Failed to convert \"is_current\"\n")
 			continue
 		}
-		one.ID, ok = data["id"].(int64)
+		one.ID, ok = data["session_id"].(int64)
 		if !ok {
-			fmt.Printf("Failed to convert \"id\"\n")
+			fmt.Printf("Failed to convert \"session_id\"\n")
 			continue
 		}
 		sessions = append(sessions, one)
