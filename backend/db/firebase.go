@@ -84,11 +84,7 @@ func NewPlayer(players *restclient.Player) []*Player {
 	dbPlayers := make([]*Player, 0)
 	for i, p := range players.Players {
 		n := new(big.Int)
-		n, ok := n.SetString(players.Balances[i], 10)
-		if !ok {
-			fmt.Printf("SetString Error")
-			continue
-		}
+		n.SetString(players.Balances[i], 10)
 		onePlayer := Player{
 			Address: p,
 			Balance: n,

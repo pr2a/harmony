@@ -121,7 +121,7 @@ func processBalancesCommand(players []*fdb.Player) {
 			if *verbose {
 				fmt.Printf("Balance in Shard %d:  %s, nonce: %v \n", shardID, convertBalanceIntoReadableFormat(balanceNonce.balance), balanceNonce.nonce)
 			}
-			player.Balance = balanceNonce.balance
+			player.Balance.Set(balanceNonce.balance)
 		}
 	}
 }
