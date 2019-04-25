@@ -131,9 +131,9 @@ func (fdb *Fdb) AddSession(id int64) {
 // AddWinner add a new document in winner collection
 func (fdb *Fdb) AddWinner(win *Winner) {
 	_, _, err := fdb.client.Collection(winnersCollection).Add(ctx, map[string]interface{}{
-		"amount":            win.Amount,
-		"session_id":        win.Session,
-		"winner_public_key": win.Address,
+		"amount":         win.Amount,
+		"session_id":     win.Session,
+		"winner_address": win.Address,
 	})
 	if err != nil {
 		log.Fatalf("Failed adding a new session: %v", err)
