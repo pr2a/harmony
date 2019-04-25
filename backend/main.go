@@ -45,12 +45,12 @@ const (
 	defaultConfigFile    = ".hmy/backend.ini"
 	defaultProfile       = "default"
 	port                 = "30000"
-	winningEmailBody     = "Congratulations!!! You are the winner of the current lottery session."
-	losingEmailBody      = "Sorry the lottery randomly picked someone else as the winner. Please try your luck again in next session!"
+	winningEmailBody     = "Great work! You did it\nYou slayed dragons and conquered new land and you are the winner of the current Harmony lottery session.\nTo claim your Harmony tokens, join in our [discord, telegram, twitter]\nBut can you win again at http://lottery.harmony.one?"
+	losingEmailBody      = "Try again at http://lottery.harmony.one!\nYou can do it!\nChak De Phatte!"
 	winningEmailBodyHTML = ""
 	losingEmailBodyHTML  = ""
-	winnerEmailTitle     = "Feeling lucky? And the winner..."
-	losingEmailTitle     = "Feeling lucky? And the winner..."
+	winnerEmailTitle     = "Feeling lucky? And the winner is..."
+	losingEmailTitle     = "Feeling lucky? And the winner is..."
 )
 
 func printVersion(me string) {
