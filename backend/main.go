@@ -293,8 +293,8 @@ func getPlayer() []*fdb.Player {
 }
 
 func notifyWinner(winnerEmails, nonWinnerEmails []string, r *http.Request) {
-	sendEmail(winnerEmails, winnerEmailTitle, winningEmailBody, winningEmailBodyHtml, r)
-	sendEmail(nonWinnerEmails, losingEmailTitle, losingEmailBody, losingEmailBodyHtml, r)
+	sendEmail(winnerEmails, winnerEmailTitle, winningEmailBody, winningEmailBodyHTML, r)
+	sendEmail(nonWinnerEmails, losingEmailTitle, losingEmailBody, losingEmailBodyHTML, r)
 	return
 }
 
