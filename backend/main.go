@@ -191,7 +191,7 @@ func sendWinningEmail(email string) {
 func pickWinner(r *http.Request) ([]string, []string) {
 	ctx := appengine.NewContext(r)
 	app_log.Infof(ctx, "network leader: %v", leader)
-	currentPlayers := getPlayer(nil)
+	currentPlayers := getPlayer(r)
 	existingPlayers := make([]*fdb.Player, 0)
 
 	go getAllPlayer()
