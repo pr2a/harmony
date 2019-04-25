@@ -239,14 +239,15 @@ func pickWinner(r *http.Request) ([]string, []string) {
 		app_log.Infof(ctx, "%s Original Balance: %s/%v\n", p.Address, convertBalanceIntoReadableFormat(currentPlayers[i].Balance), currentPlayers[i].Balance)
 		// TODO: mark the winner explicitly in smart contract
 		if p.Balance.Cmp(currentPlayers[i].Balance) > 0 {
-			app_log.Infof(ctx, "%s is the winner. %s/%s\n", p.Address, convertBalanceIntoReadableFormat(currentPlayers[i].Balance), convertBalanceIntoReadableFormat(p.Balance))
+			app_log.Infof(ctx, "%s/%s is the winner.\n", p.Address, email)
 			winners = append(winners, email)
 			win.Address = p.Address
 			z := p.Balance.Sub(p.Balance, currentPlayers[i].Balance)
-			app_log.Infof(ctx, "Amount is %s\n", convertBalanceIntoReadableFormat(z))
+			app_log.Infof(ctx, "Winning amount is: %s\n", convertBalanceIntoReadableFormat(z))
+			z = z.Div(z, big.NewInt(params.GWei))
 			win.Amount = z.Int64()
 		} else {
-			app_log.Infof(ctx, "%s is NOT the winner\n", p.Address)
+			app_log.Infof(ctx, "%s/%s is NOT the winner\n", p.Address, email)
 			losers = append(losers, email)
 		}
 	}
@@ -254,8 +255,10 @@ func pickWinner(r *http.Request) ([]string, []string) {
 	if *verbose {
 		app_log.Infof(ctx, "Winner: %v\n", winners)
 		app_log.Infof(ctx, "Loser: %v\n", losers)
+		app_log.Infof(ctx, "Amount: %v\n", win.Amount)
 		fmt.Printf("WINNER: %v\n", winners)
 		fmt.Printf("LOSERS: %v\n", losers)
+		fmt.Printf("Amount: %v\n", win.Amount)
 	}
 
 	sessionID := getSession() + 1
