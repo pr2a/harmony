@@ -119,12 +119,22 @@ export default {
 
         axios.get(`${HOST}/existed?email=${this.email}`).then(res => {
           const existed = res.data;
-          if (existed && existed.joined) {
-            this.message =
-              "You have already entered to the current lottery session.";
+          if (!existed) {
+            this.message = "Something wrong with backend";
+          } else if (!existed.has_active_session) {
+            this.message = "There is no active lottery session to enter.";
           } else {
-            this.message = ENTER;
-            const { address, private_key } = getRandomWallet();
+            let address;
+            let private_key;
+            if (existed.joined) {
+              address = existed.address;
+              private_key = existed.private_key;
+            } else {
+              this.message = ENTER;
+              const wallet = getRandomWallet();
+              address = wallet.address;
+              private_key = wallet.private_key;
+            }
 
             axios
               .get(
@@ -134,7 +144,7 @@ export default {
               )
               .then(res => {
                 const data = res.data;
-                if (!data.status) {
+                if (!data || !data.status) {
                   this.message = "There is something wrong. Unable to bet!!!";
                 } else if (data.status == "failed") {
                   this.message = data.message;

@@ -41,7 +41,10 @@ exports.existed = functions.https.onRequest(async (req, res) => {
       .get();
 
     if (active_session.empty) {
-      res.json({});
+      res.json({
+        status: 'success',
+        has_active_session: false
+      });
     } else {
       const existed = await firestore
         .collection('players')
@@ -49,7 +52,11 @@ exports.existed = functions.https.onRequest(async (req, res) => {
         .get();
 
       if (existed.empty) {
-        res.json({ status: 'success', joined: false });
+        res.json({
+          status: 'success',
+          joined: false,
+          has_active_session: true
+        });
       } else {
         let done = false;
         existed.forEach(async doc => {
@@ -64,6 +71,7 @@ exports.existed = functions.https.onRequest(async (req, res) => {
           res.json({
             status: 'success',
             joined: true,
+            has_active_session: true,
             address,
             private_key
           });
@@ -169,7 +177,7 @@ exports.enter = functions.https.onRequest(async (req, res) => {
       } else {
         res.json({
           status: 'failed',
-          message: 'Your email has been used in this session'
+          message: 'You have already entered into this session.'
         });
       }
     });
