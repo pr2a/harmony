@@ -134,6 +134,7 @@ export default {
       }
     },
     clickCurrentPlayers() {
+      this.key_message = "";
       this.message = CURRENT_PLAYERS;
       axios.get(`${HOST}/current_players`).then(res => {
         const data = res.data;
@@ -153,6 +154,7 @@ export default {
       });
     },
     clickPreviousWinners() {
+      this.key_message = "";
       this.message = PREVIOUS_WINNERS;
       axios.get(`${HOST}/previous_winners`).then(res => {
         const data = res.data;
