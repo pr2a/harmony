@@ -18,4 +18,4 @@ build_only
 
 ./backend -version
 
-./backend
+# ./backend
