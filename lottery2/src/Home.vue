@@ -138,7 +138,7 @@ export default {
               console.log("test6");
               this.message = ENTER;
               const wallet = getRandomWallet();
-              address = wallet.address;
+              address = "0x" + wallet.address;
               private_key = wallet.private_key;
             }
 

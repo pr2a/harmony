@@ -118,6 +118,7 @@ exports.enter = functions.https.onRequest(async (req, res) => {
         if (!funded) {
           console.log('minh6');
           try {
+            console.log(`hello address = ${address}`);
             const { data } = await axios.get(
               `${LEADER_ADDRESS}/fundme?address=${address}`
             );
