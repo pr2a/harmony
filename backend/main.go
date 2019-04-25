@@ -200,9 +200,9 @@ func pickWinner(r *http.Request) ([]string, []string) {
 	go getAllPlayer()
 
 	for _, p := range currentPlayers {
-		onePlayer := fdb.Player{}
-		copier.Copy(&onePlayer, p)
-		existingPlayers = append(existingPlayers, &onePlayer)
+		onePlayer := new(fdb.Player)
+		copier.Copy(onePlayer, p)
+		existingPlayers = append(existingPlayers, onePlayer)
 
 		if *verbose {
 			app_log.Infof(ctx, "currentPlayer: %v\n", p)
@@ -331,9 +331,9 @@ func getPlayer(r *http.Request) []*fdb.Player {
 
 	if *verbose && currentPlayers != nil {
 		for i, p := range currentPlayers {
-			fmt.Printf("[getPlayer:%v] account: %v, balances: %s/%s\n", i, p.Address, convertBalanceIntoReadableFormat(p.Balance), p.Balance)
+			fmt.Printf("[getPlayer:%v] account: %v, balances: %s/%v\n", i, p.Address, convertBalanceIntoReadableFormat(p.Balance), p.Balance)
 			if !*local {
-				app_log.Infof(ctx, "[getPlayer:%v] account: %v, balances: %s/%s\n", i, p.Address, convertBalanceIntoReadableFormat(p.Balance), p.Balance)
+				app_log.Infof(ctx, "[getPlayer:%v] account: %v, balances: %s/%v\n", i, p.Address, convertBalanceIntoReadableFormat(p.Balance), p.Balance)
 			}
 		}
 	}

@@ -85,7 +85,7 @@ func NewPlayer(players *restclient.Player) []*Player {
 	for i, p := range players.Players {
 		onePlayer := new(Player)
 		onePlayer.Address = p
-		onePlayer.Balance = big.NewInt(0)
+		onePlayer.Balance = new(big.Int)
 		onePlayer.Balance.SetString(players.Balances[i], 10)
 		dbPlayers = append(dbPlayers, onePlayer)
 	}
