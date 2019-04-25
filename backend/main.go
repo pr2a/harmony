@@ -230,6 +230,8 @@ func pickWinner(r *http.Request) ([]string, []string) {
 			continue
 		}
 		email := findEmail(p.Address)
+		app_log.Infof(ctx, "%s New Balance: %s/%v\n", p.Address, convertBalanceIntoReadableFormat(p.Balance), p.Balance)
+		app_log.Infof(ctx, "%s Original Balance: %s/%v\n", p.Address, convertBalanceIntoReadableFormat(currentPlayers[i].Balance), currentPlayers[i].Balance)
 		// TODO: mark the winner explicitly in smart contract
 		if p.Balance.Cmp(currentPlayers[i].Balance) > 0 {
 			app_log.Infof(ctx, "%s is the winner. %s/%s\n", p.Address, convertBalanceIntoReadableFormat(currentPlayers[i].Balance), convertBalanceIntoReadableFormat(p.Balance))
@@ -327,9 +329,9 @@ func getPlayer(r *http.Request) []*fdb.Player {
 
 	if *verbose && currentPlayers != nil {
 		for i, p := range currentPlayers {
-			fmt.Printf("[getPlayer:%v] account: %v, balances: %v/%v\n", i, p.Address, convertBalanceIntoReadableFormat(p.Balance), p.Balance)
+			fmt.Printf("[getPlayer:%v] account: %v, balances: %s/%s\n", i, p.Address, convertBalanceIntoReadableFormat(p.Balance), p.Balance)
 			if !*local {
-				app_log.Infof(ctx, "[getPlayer:%v] account: %v, balances: %v/%v\n", i, p.Address, convertBalanceIntoReadableFormat(p.Balance), p.Balance)
+				app_log.Infof(ctx, "[getPlayer:%v] account: %v, balances: %s/%s\n", i, p.Address, convertBalanceIntoReadableFormat(p.Balance), p.Balance)
 			}
 		}
 	}
