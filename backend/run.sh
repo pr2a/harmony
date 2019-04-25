@@ -16,6 +16,6 @@ function build_only
 
 build_only
 
-./backend -version
+./backend -local -version
 
 # ./backend
