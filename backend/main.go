@@ -60,8 +60,8 @@ func printVersion(me string) {
 var (
 	profile    = flag.String("profile", defaultProfile, "name of the profile")
 	collection = flag.String("collection", "players", "name of collection")
-	key        = flag.String("key", "./keys/leo_account_key.json", "key filename")
-	project    = flag.String("project", "lottery-demo-leo", "project ID of firebase")
+	key        = flag.String("key", "./keys/benchmark_account_key.json", "key filename")
+	project    = flag.String("project", "benchmark-209420", "project ID of firebase")
 	action     = flag.String("action", "player", "action of the program. Valid (player, reg, winner, notify, players, balances)")
 	verbose    = flag.Bool("verbose", true, "verbose log print at every step")
 	local      = flag.Bool("local", false, "Run locally")
