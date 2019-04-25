@@ -231,10 +231,12 @@ func pickWinner(r *http.Request) ([]string, []string) {
 		email := findEmail(p.Address)
 		// TODO: mark the winner explicitly in smart contract
 		if p.Balance.Cmp(currentPlayers[i].Balance) > 0 {
-			app_log.Infof(ctx, "%s is the winner\n", p.Address)
+			app_log.Infof(ctx, "%s is the winner. %s/%s\n", p.Address, convertBalanceIntoReadableFormat(currentPlayers[i].Balance), convertBalanceIntoReadableFormat(p.Balance))
 			winners = append(winners, email)
 			win.Address = p.Address
-			win.Amount = p.Balance.Sub(p.Balance, currentPlayers[i].Balance).Int64()
+			z := p.Balance.Sub(p.Balance, currentPlayers[i].Balance)
+			app_log.Infof(ctx, "Amount is %s\n", convertBalanceIntoReadableFormat(z))
+			win.Amount = z.Int64()
 		} else {
 			app_log.Infof(ctx, "%s is NOT the winner\n", p.Address)
 			losers = append(losers, email)
