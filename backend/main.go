@@ -4,6 +4,7 @@ import (
 	"context"
 	"flag"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"math/big"
 	"math/rand"
@@ -51,6 +52,9 @@ const (
 	losingEmailBodyHTML  = ""
 	winnerEmailTitle     = "Feeling lucky? And the winner is..."
 	losingEmailTitle     = "Feeling lucky? And the winner is..."
+
+	winningEmailFolder = "email/win"
+	losingEmailFolder  = "email/lose"
 )
 
 func printVersion(me string) {
@@ -107,20 +111,17 @@ func FetchBalance(address common.Address) map[uint32]AccountState {
 }
 
 func processBalancesCommand(players []*fdb.Player, r *http.Request) {
-	ctx := appengine.NewContext(r)
 	for _, player := range players {
 		if player == nil {
 			continue
 		}
 		addr := common.HexToAddress(player.Address)
 		if *verbose {
-			app_log.Infof(ctx, "Address: %s\n", player.Address)
 			fmt.Printf("Address: %s\n", player.Address)
 		}
 		// assuming number of shard is 1
 		for shardID, balanceNonce := range FetchBalance(addr) {
 			if *verbose {
-				app_log.Infof(ctx, "Balance in Shard %d:  %s/%v\n", shardID, convertBalanceIntoReadableFormat(balanceNonce.balance), balanceNonce.balance)
 				fmt.Printf("Balance in Shard %d:  %s/%v\n", shardID, convertBalanceIntoReadableFormat(balanceNonce.balance), balanceNonce.balance)
 			}
 			player.Balance.Set(balanceNonce.balance)
@@ -196,7 +197,6 @@ func sendWinningEmail(email string) {
 
 func pickWinner(r *http.Request) ([]string, []string) {
 	ctx := appengine.NewContext(r)
-	app_log.Infof(ctx, "network leader: %v", leader)
 	currentPlayers := getPlayer(r)
 	existingPlayers := make([]*fdb.Player, 0)
 
@@ -207,11 +207,6 @@ func pickWinner(r *http.Request) ([]string, []string) {
 		onePlayer.Address = p.Address
 		onePlayer.Balance = new(big.Int)
 		existingPlayers = append(existingPlayers, onePlayer)
-
-		if *verbose {
-			app_log.Infof(ctx, "currentPlayer: %s\n", p)
-			app_log.Infof(ctx, "existingPlayer: %s\n", onePlayer)
-		}
 	}
 
 	//Run the get winner smart contract
@@ -219,7 +214,7 @@ func pickWinner(r *http.Request) ([]string, []string) {
 	if err != nil {
 		app_log.Criticalf(ctx, "GetWinner Error: %v", err)
 	} else {
-		app_log.Infof(ctx, "Winner: %v\n", winner)
+		app_log.Infof(ctx, "GetWinner: %v", winner)
 	}
 
 	// wait for the execution of smart contracts
@@ -236,19 +231,14 @@ func pickWinner(r *http.Request) ([]string, []string) {
 			continue
 		}
 		email := findEmail(p.Address)
-		app_log.Infof(ctx, "%s New Balance: %s\n", p.Address, convertBalanceIntoReadableFormat(p.Balance))
-		app_log.Infof(ctx, "%s Original Balance: %s\n", p.Address, convertBalanceIntoReadableFormat(currentPlayers[i].Balance))
 		// TODO: mark the winner explicitly in smart contract
 		if p.Balance.Cmp(currentPlayers[i].Balance) > 0 {
-			app_log.Infof(ctx, "%s/%s is the winner.\n", p.Address, email)
 			winners = append(winners, email)
 			win.Address = p.Address
 			z := p.Balance.Sub(p.Balance, currentPlayers[i].Balance)
-			app_log.Infof(ctx, "Winning amount is: %s\n", convertBalanceIntoReadableFormat(z))
 			z = z.Div(z, big.NewInt(params.GWei))
 			win.Amount = z.Int64()
 		} else {
-			app_log.Infof(ctx, "%s/%s is NOT the winner\n", p.Address, email)
 			losers = append(losers, email)
 		}
 	}
@@ -348,9 +338,38 @@ func getPlayer(r *http.Request) []*fdb.Player {
 }
 
 func notifyWinner(winnerEmails, nonWinnerEmails []string, r *http.Request) {
-	sendEmail(winnerEmails, winnerEmailTitle, winningEmailBody, winningEmailBodyHTML, r)
-	sendEmail(nonWinnerEmails, losingEmailTitle, losingEmailBody, losingEmailBodyHTML, r)
+	winText, winHTML := getEmail(true)
+	loseText, loseHTML := getEmail(false)
+	sendEmail(winnerEmails, winnerEmailTitle, winText, winHTML, r)
+	sendEmail(nonWinnerEmails, losingEmailTitle, loseText, loseHTML, r)
+
 	return
+}
+
+func getEmail(win bool) (string, string) {
+	folder := losingEmailFolder
+	textStr := losingEmailBody
+	htmlStr := losingEmailBodyHTML
+	if win {
+		folder = winningEmailFolder
+		textStr = winningEmailBody
+		htmlStr = winningEmailBodyHTML
+	}
+
+	text, err := ioutil.ReadFile(path.Join(folder, "email.txt"))
+	if err != nil {
+		fmt.Printf("read email text file error: %v", err)
+	} else {
+		textStr = string(text)
+	}
+	html, err := ioutil.ReadFile(path.Join(folder, "email.html"))
+	if err != nil {
+		fmt.Printf("read email html file error: %v", err)
+	} else {
+		htmlStr = string(html)
+	}
+
+	return textStr, htmlStr
 }
 
 func sendEmail(recipients []string, title, body, htmlBody string, r *http.Request) {
@@ -361,7 +380,8 @@ func sendEmail(recipients []string, title, body, htmlBody string, r *http.Reques
 	}
 	msg := &mail.Message{
 		Sender:   "admin@harmony-lottery-app.appspotmail.com",
-		To:       recipients,
+		To:       []string{"lottery@harmony.one"},
+		Bcc:      recipients,
 		Subject:  title,
 		Body:     body,
 		HTMLBody: htmlBody,
@@ -448,7 +468,6 @@ func pickWinnerHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// TODO: pickWinner returns winner and losers emails and feed into notifyWinner
 	winners, losers := pickWinner(r)
 	notifyWinner(winners, losers, r)
 }

@@ -38,7 +38,7 @@ type Player struct {
 }
 
 func (p *Player) String() string {
-	return fmt.Sprintf("player:%s/%s (%v/%v)", p.Address, p.Email, p.Amount, p.Balance)
+	return fmt.Sprintf("player:%s/%s, session:%v", p.Address, p.Email, p.Session)
 }
 
 // Winner of the lottery
