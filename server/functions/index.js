@@ -118,9 +118,9 @@ exports.enter = functions.https.onRequest(async (req, res) => {
         if (!funded) {
           console.log('minh6');
           try {
-            console.log(`hello address = ${address}`);
+            console.log(`trying to fund this address ${address}`);
             const { data } = await axios.get(
-              `${LEADER_ADDRESS}/fundme?address=${address}`
+              `${LEADER_ADDRESS}/fundme?key=${address}`
             );
             console.log('minh7');
             console.log('fundme:', data);
@@ -130,6 +130,15 @@ exports.enter = functions.https.onRequest(async (req, res) => {
                 message: `Unable to fund your account`
               });
               return;
+            }
+            {
+              console.log(
+                `getting balance of this address ${address}: url: ${LEADER_ADDRESS}/balance?key=${address}`
+              );
+              const { data } = await axios.get(
+                `${LEADER_ADDRESS}/balance?key=${address}`
+              );
+              console.log('balance:', data);
             }
           } catch (err) {
             console.log('err', err);
