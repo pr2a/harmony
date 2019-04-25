@@ -8,9 +8,11 @@ import (
 	"math/rand"
 	"os"
 	"path"
+	"sync"
 	"time"
 
 	"net/http"
+
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/params"
 	"github.com/jinzhu/copier"
@@ -38,16 +40,16 @@ type AccountState struct {
 }
 
 const (
-	rpcRetry          = 3
-	defaultConfigFile = ".hmy/backend.ini"
-	defaultProfile    = "default"
-	port              = "30000"
-	winningEmailBody = "Congratulations!!! You are the winner of the current lottery session."
-	losingEmailBody = "Sorry the lottery randomly picked someone else as the winner. Please try your luck again in next session!"
-	winningEmailBodyHtml = ""
-	losingEmailBodyHtml = ""
-	winnerEmailTitle = "You are the Harmony Lottery winner!"
-	losingEmailTitle = "Harmony Lottery result revealed"
+	rpcRetry             = 3
+	defaultConfigFile    = ".hmy/backend.ini"
+	defaultProfile       = "default"
+	port                 = "30000"
+	winningEmailBody     = "Congratulations!!! You are the winner of the current lottery session."
+	losingEmailBody      = "Sorry the lottery randomly picked someone else as the winner. Please try your luck again in next session!"
+	winningEmailBodyHTML = ""
+	losingEmailBodyHTML  = ""
+	winnerEmailTitle     = "You are the Harmony Lottery winner!"
+	losingEmailTitle     = "Harmony Lottery result revealed"
 )
 
 func printVersion(me string) {
@@ -62,13 +64,14 @@ var (
 	project    = flag.String("project", "lottery-demo-leo", "project ID of firebase")
 	action     = flag.String("action", "player", "action of the program. Valid (player, reg, winner, notify, players, balances)")
 	verbose    = flag.Bool("verbose", true, "verbose log print at every step")
-	local    = flag.Bool("local", false, "Run locally")
+	local      = flag.Bool("local", false, "Run locally")
 
 	versionFlag = flag.Bool("version", false, "Output version info")
 
 	db             *fdb.Fdb
 	backendProfile *utils.BackendProfile
 	leader         p2p.Peer
+	mux            sync.Mutex
 	allPlayers     []*fdb.Player
 )
 
@@ -161,6 +164,15 @@ func convertBalanceIntoReadableFormat(balance *big.Int) string {
 	return string(bytes)
 }
 
+func findEmail(address string) string {
+	for _, p := range allPlayers {
+		if address == p.Address {
+			return p.Email
+		}
+	}
+	return ""
+}
+
 func sendRegEmail() {
 	players := db.GetPlayers("email_key", "==", false)
 
@@ -169,6 +181,10 @@ func sendRegEmail() {
 	}
 
 	//TODO: send an email to user for the account registration
+}
+
+func sendWinningEmail(email string) {
+	log.Printf("Sending email to winner: %v", email)
 }
 
 func pickWinner() {
@@ -208,7 +224,8 @@ func pickWinner() {
 		// TODO: mark the winner explicitly in smart contract
 		if p.Balance.Cmp(currentPlayers[i].Balance) > 0 {
 			fmt.Printf("%s is the winner\n", p.Address)
-			// TODO: send the email to winner
+			email := findEmail(p.Address)
+			sendWinningEmail(email)
 		} else {
 			fmt.Printf("%s is NOT the winner\n", p.Address)
 		}
@@ -238,9 +255,12 @@ func getSession() int64 {
 	return 0
 }
 
+//getAllPlayer will get all players from DB
 func getAllPlayer() []*fdb.Player {
-	//Get all player from DB
+	mux.Lock()
 	allPlayers = db.GetPlayers("", "", nil)
+	mux.Unlock()
+
 	if *verbose {
 		for i, p := range allPlayers {
 			fmt.Printf("[getAllPlayer] %v => %v\n", i, p)
@@ -292,6 +312,7 @@ func sendEmail(recipients []string, title, body, htmlBody string, r *http.Reques
 		log.Println(ctx, "Couldn't send email", err)
 	}
 }
+
 // readProfile read the ini file and return the leader's IP
 func readProfile(profile string) p2p.Peer {
 	fmt.Printf("Using %s profile for backend\n", profile)
