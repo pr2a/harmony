@@ -9,6 +9,7 @@ import (
 	"math/rand"
 	"os"
 	"path"
+	"strings"
 	"sync"
 	"time"
 
@@ -167,7 +168,7 @@ func convertBalanceIntoReadableFormat(balance *big.Int) string {
 
 func findEmail(address string) string {
 	for _, p := range allPlayers {
-		if address == p.Address {
+		if strings.ToLower(address) == strings.ToLower(p.Address) {
 			return p.Email
 		}
 	}
