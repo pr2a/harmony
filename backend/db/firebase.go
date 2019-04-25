@@ -37,6 +37,13 @@ type Player struct {
 	Balance  *big.Int
 }
 
+// Winner of the lottery
+type Winner struct {
+	Session int64
+	Amount  int64
+	Address string
+}
+
 // Session represents the struct of the session in session collection
 type Session struct {
 	Deadline time.Time
@@ -99,17 +106,14 @@ func (fdb *Fdb) UpdateSession() {
 	iter := q.Documents(ctx)
 	defer iter.Stop()
 
-	/* TODO: get it working
 	doc, err := iter.Next()
-	_, err = doc.Set(ctx, map[string]interface{}{
+	_, err = doc.Ref.Set(ctx, map[string]interface{}{
 		"is_current": false,
 	}, firestore.MergeAll)
 	if err != nil {
 		// Handle any errors in an appropriate way, such as returning them.
 		log.Printf("An error has occurred: %s", err)
 	}
-	*/
-
 }
 
 // AddSession add new session id to session collection
@@ -118,6 +122,18 @@ func (fdb *Fdb) AddSession(id int64) {
 		"deadline":   time.Now(),
 		"is_current": true,
 		"session_id": id,
+	})
+	if err != nil {
+		log.Fatalf("Failed adding a new session: %v", err)
+	}
+}
+
+// AddWinner add a new document in winner collection
+func (fdb *Fdb) AddWinner(win *Winner) {
+	_, _, err := fdb.client.Collection(winnersCollection).Add(ctx, map[string]interface{}{
+		"amount":            win.Amount,
+		"session_id":        win.Session,
+		"winner_public_key": win.Address,
 	})
 	if err != nil {
 		log.Fatalf("Failed adding a new session: %v", err)

@@ -1,7 +1,7 @@
 package main
 
 import (
-   "context"
+	"context"
 	"flag"
 	"fmt"
 	"log"
@@ -222,6 +222,7 @@ func pickWinner(r *http.Request) ([]string, []string) {
 
 	winners := make([]string, 0)
 	losers := make([]string, 0)
+	win := new(fdb.Winner)
 
 	for i, p := range existingPlayers {
 		if p == nil {
@@ -232,6 +233,8 @@ func pickWinner(r *http.Request) ([]string, []string) {
 		if p.Balance.Cmp(currentPlayers[i].Balance) > 0 {
 			app_log.Infof(ctx, "%s is the winner\n", p.Address)
 			winners = append(winners, email)
+			win.Address = p.Address
+			win.Amount = p.Balance.Sub(p.Balance, currentPlayers[i].Balance).Int64()
 		} else {
 			app_log.Infof(ctx, "%s is NOT the winner\n", p.Address)
 			losers = append(losers, email)
@@ -252,6 +255,10 @@ func pickWinner(r *http.Request) ([]string, []string) {
 
 	// add a new session id
 	db.AddSession(sessionID)
+
+	win.Session = sessionID - 1
+
+	db.AddWinner(win)
 
 	return winners, losers
 }
@@ -293,11 +300,11 @@ func getAllPlayer() []*fdb.Player {
 }
 
 func getPlayer(r *http.Request) []*fdb.Player {
-   var ctx context.Context
+	var ctx context.Context
 
-   if ! *local {
-      ctx = appengine.NewContext(r)
-   }
+	if !*local {
+		ctx = appengine.NewContext(r)
+	}
 
 	//Get a list of all current players
 	players, err := restclient.GetPlayer(leader.IP, port)
