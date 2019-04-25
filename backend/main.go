@@ -4,6 +4,8 @@ import (
 	"context"
 	"flag"
 	"fmt"
+	"google.golang.org/appengine/urlfetch"
+	"gopkg.in/sendgrid/sendgrid-go.v2"
 	"io/ioutil"
 	"log"
 	"math/big"
@@ -14,8 +16,6 @@ import (
 	"sync"
 	"time"
 
-	"net/http"
-
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/params"
 	"github.com/harmony-one/demo-apps/backend/client"
@@ -25,7 +25,7 @@ import (
 	"github.com/harmony-one/demo-apps/backend/utils"
 	"google.golang.org/appengine"
 	app_log "google.golang.org/appengine/log"
-	"google.golang.org/appengine/mail"
+	"net/http"
 )
 
 var (
@@ -207,6 +207,7 @@ func pickWinner(r *http.Request) ([]string, []string) {
 	currentPlayers := getPlayer(r)
 	existingPlayers := make([]*fdb.Player, 0)
 
+	winningInfo = new(fdb.Winner)
 	winningInfo.Session = getSession()
 	go getAllPlayer(winningInfo.Session)
 
@@ -345,6 +346,11 @@ func getPlayer(r *http.Request) []*fdb.Player {
 }
 
 func notifyWinner(winnerEmails, nonWinnerEmails []string, r *http.Request) {
+	noWinner := false
+	if winningInfo == nil {
+		winningInfo = new(fdb.Winner)
+		noWinner = true
+	}
 	rep := []replaceInEmail{
 		{
 			"$SESSION$",
@@ -358,9 +364,11 @@ func notifyWinner(winnerEmails, nonWinnerEmails []string, r *http.Request) {
 
 	winText, winHTML := getEmail(true, rep)
 	loseText, loseHTML := getEmail(false, rep)
-	sendEmail(winnerEmails, winnerEmailTitle, winText, winHTML, r)
-	sendEmail(nonWinnerEmails, losingEmailTitle, loseText, loseHTML, r)
 
+	if !noWinner {
+		sendEmail(winnerEmails, winnerEmailTitle, winText, winHTML, r, false)
+	}
+	sendEmail(nonWinnerEmails, losingEmailTitle, loseText, loseHTML, r, true)
 	return
 }
 
@@ -388,30 +396,59 @@ func getEmail(win bool, r []replaceInEmail) (string, string) {
 	}
 
 	for _, s := range r {
-		textStr = strings.ReplaceAll(textStr, s.oldStr, s.newStr)
-		htmlStr = strings.ReplaceAll(htmlStr, s.oldStr, s.newStr)
+		textStr = strings.Replace(textStr, s.oldStr, s.newStr, -1)
+		htmlStr = strings.Replace(htmlStr, s.oldStr, s.newStr, -1)
 	}
 
 	return textStr, htmlStr
 }
 
-func sendEmail(recipients []string, title, body, htmlBody string, r *http.Request) {
+func sendEmail(recipients []string, title, body, htmlBody string, r *http.Request, batch bool) {
 	ctx := appengine.NewContext(r)
 	if len(recipients) == 0 {
 		app_log.Infof(ctx, "Recipients list is empty")
 		return
 	}
-	msg := &mail.Message{
-		Sender:   "admin@harmony-lottery-app.appspotmail.com",
-		To:       []string{"lottery@harmony.one"},
-		Bcc:      recipients,
-		Subject:  title,
-		Body:     body,
-		HTMLBody: htmlBody,
-	}
-	app_log.Infof(ctx, "Sending email: %s", msg)
-	if err := mail.Send(ctx, msg); err != nil {
-		app_log.Errorf(ctx, "Couldn't send email", err)
+
+	sg := sendgrid.NewSendGridClient("", "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")
+
+	// Set http.Client to use the App Engine urlfetch client
+	sg.Client = urlfetch.Client(ctx)
+
+	if batch {
+		// Batch for losers
+		message := sendgrid.NewMail()
+		message.AddTo("lottery@harmony.one")
+		for _, email := range recipients {
+			if email != "" {
+				message.AddBcc(email)
+			}
+		}
+		message.SetSubject(title)
+		message.SetText(body)
+		message.SetHTML(htmlBody)
+		message.SetFrom("admin@harmony-lottery-app.appspotmail.com")
+
+		app_log.Infof(ctx, "Sending email batch: %s", message)
+		if err := sg.Send(message); err != nil {
+			app_log.Errorf(ctx, "Couldn't send email", err)
+		}
+	} else {
+		for _, email := range recipients {
+			if email != "" {
+				message := sendgrid.NewMail()
+				message.AddTo(email)
+				message.SetSubject(title)
+				message.SetText(body)
+				message.SetHTML(htmlBody)
+				message.SetFrom("admin@harmony-lottery-app.appspotmail.com")
+
+				app_log.Infof(ctx, "Sending email separately: %s", message)
+				if err := sg.Send(message); err != nil {
+					app_log.Errorf(ctx, "Couldn't send email", err)
+				}
+			}
+		}
 	}
 }
 
