@@ -129,8 +129,11 @@ func processBalancesCommand(players []*fdb.Player, r *http.Request) {
 }
 
 func convertBalanceIntoReadableFormat(balance *big.Int) string {
-	balance = balance.Div(balance, big.NewInt(params.GWei))
-	strBalance := fmt.Sprintf("%d", balance.Uint64())
+	curBalance := big.NewInt(0)
+	curBalance.SetBytes(balance.Bytes())
+
+	curBalance = curBalance.Div(curBalance, big.NewInt(params.GWei))
+	strBalance := fmt.Sprintf("%d", curBalance.Uint64())
 
 	bytes := []byte(strBalance)
 	hasDecimal := false
