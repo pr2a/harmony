@@ -98,11 +98,13 @@ export default {
           this.message = BAD_EMAIL;
           return;
         }
+        this.key_message = "";
 
         axios.get(`${HOST}/existed?email=${this.email}`).then(res => {
           const existed = res.data;
           if (existed && existed.joined) {
-            this.message = "You have entered to the current lottery session.";
+            this.message =
+              "You have already entered to the current lottery session.";
           } else {
             this.message = ENTER;
             const { address, private_key } = getRandomWallet();
