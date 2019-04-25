@@ -1,4 +1,4 @@
-const { getRandomWallet } = require('./keygen');
+const axios = require('axios');
 const functions = require('firebase-functions');
 var admin = require('firebase-admin');
 var serviceAccount = require('./keys/benchmark_account_key.json');
@@ -8,8 +8,8 @@ admin.initializeApp({
   databaseURL: 'https://benchmark-209420.firebaseio.com'
 });
 
-// const LEADER_ADDRESS = `34.222.210.98`;
-const LEADER_ADDRESS = `127.0.0.1`;
+const LEADER_ADDRESS = `http://34.222.204.72:30000`;
+// const LEADER_ADDRESS = `127.0.0.1:30000`;
 
 const firestore = admin.firestore();
 
@@ -76,32 +76,47 @@ exports.enter = functions.https.onRequest(async (req, res) => {
   const private_key = req.query.private_key;
   const address = req.query.address;
   const funded = req.query.funded;
+  console.log('minh1');
   try {
     if (!validateEmail(email)) {
       res.json({ status: 'failed', message: 'invalid email' });
       return;
     }
+
+    console.log('minh2');
     const active_session = await firestore
       .collection('session')
       .where('is_current', '==', true)
       .get();
 
     active_session.forEach(async doc => {
+      console.log('minh3');
       const session_id = doc.data().session_id;
-      console.log('come 6', session_id);
       const existed = await firestore
         .collection('players')
         .where('session_id', '==', session_id)
         .where('email', '==', email)
         .get();
 
+      console.log('minh4');
       if (existed.empty) {
         if (!funded) {
-          const { data } = await axios.get(
-            `LEADER_ADDRESS/fundme?address=${address}`
-          );
-          console.log('fundme:', data);
-          if (!data || !data.success) {
+          console.log('minh6');
+          try {
+            const { data } = await axios.get(
+              `${LEADER_ADDRESS}/fundme?address=${address}`
+            );
+            console.log('minh7');
+            console.log('fundme:', data);
+            if (!data || !data.success) {
+              res.json({
+                status: false,
+                message: `Unable to fund your account`
+              });
+              return;
+            }
+          } catch (err) {
+            console.log('err', err);
             res.json({
               status: false,
               message: `Unable to fund your account`
@@ -110,29 +125,39 @@ exports.enter = functions.https.onRequest(async (req, res) => {
           }
         }
 
-        const { data } = await axios.get(
-          `http://${LEADER_ADDRESS}:30000/enter?key=${key}&amount=1`
-        );
-        console.log(data);
-        if (data && data.success) {
-          await firestore.collection('players').add({
-            email,
-            private_key,
-            address,
-            keys_notified: false,
-            result_notified: false,
-            session_id
-          });
-          res.json({
-            status: 'success',
-            message: 'You have entered to the current lottery session.'
-          });
-        } else {
+        console.log('minh5');
+
+        try {
+          const { data } = await axios.get(
+            `${LEADER_ADDRESS}/enter?key=${private_key}&amount=1`
+          );
+          console.log(data);
+          if (data && data.success) {
+            await firestore.collection('players').add({
+              email,
+              private_key,
+              address,
+              keys_notified: false,
+              result_notified: false,
+              session_id
+            });
+            res.json({
+              status: 'success',
+              message: 'You have entered to the current lottery session.'
+            });
+          } else {
+            res.json({
+              status: false,
+              message: 'Failed to process enter in blockchain.'
+            });
+            return;
+          }
+        } catch (err) {
+          console.log('err 3 ', err);
           res.json({
             status: false,
             message: 'Failed to process enter in blockchain.'
           });
-          return;
         }
       } else {
         res.json({
