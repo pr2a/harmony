@@ -187,7 +187,7 @@ func sendWinningEmail(email string) {
 	log.Printf("Sending email to winner: %v", email)
 }
 
-func pickWinner() {
+func pickWinner() ([]string, []string) {
 	currentPlayers := getPlayer()
 	existingPlayers := make([]*fdb.Player, 0)
 
@@ -217,21 +217,30 @@ func pickWinner() {
 
 	processBalancesCommand(existingPlayers)
 
+	winners := make([]string, 0)
+	losers := make([]string, 0)
+
 	for i, p := range existingPlayers {
 		if p == nil {
 			continue
 		}
+		email := findEmail(p.Address)
 		// TODO: mark the winner explicitly in smart contract
 		if p.Balance.Cmp(currentPlayers[i].Balance) > 0 {
 			fmt.Printf("%s is the winner\n", p.Address)
-			email := findEmail(p.Address)
-			sendWinningEmail(email)
+			winners = append(winners, email)
 		} else {
 			fmt.Printf("%s is NOT the winner\n", p.Address)
+			losers = append(losers, email)
 		}
 	}
 
-	return
+	if *verbose {
+		fmt.Printf("WINNER: %v\n", winners)
+		fmt.Printf("LOSERS: %v\n", losers)
+	}
+
+	return winners, losers
 }
 
 func getBalances(players []*fdb.Player) {
@@ -389,6 +398,6 @@ func pickWinnerHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// TODO: pickWinner returns winner and losers emails and feed into notifyWinner
-	pickWinner()
-	notifyWinner([]string{}, []string{}, r)
+	winners, losers := pickWinner()
+	notifyWinner(winners, losers, r)
 }
