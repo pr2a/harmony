@@ -199,7 +199,6 @@ html {
 .section-players {
   /* height: 45vh; */
   width: 100vw;
-  background: #f4fbff;
   position: relative;
 }
 
@@ -212,6 +211,9 @@ html {
 }
 
 .players {
+  padding-top: 6rem;
+  margin-top: -6rem;
+  background: #f4fbff;
   margin: 0 auto;
   text-align: center;
 }
