@@ -41,6 +41,12 @@ type AccountState struct {
 	nonce   uint64
 }
 
+// replaceInEmail keep track of replacement string in email text/html
+type replaceInEmail struct {
+	oldStr string
+	newStr string
+}
+
 const (
 	rpcRetry             = 3
 	defaultConfigFile    = ".hmy/backend.ini"
@@ -78,6 +84,7 @@ var (
 	leader         p2p.Peer
 	mux            sync.Mutex
 	allPlayers     []*fdb.Player
+	winningInfo    *fdb.Winner
 )
 
 // FetchBalance fetches account balance of specified address from the Harmony network
@@ -224,7 +231,6 @@ func pickWinner(r *http.Request) ([]string, []string) {
 
 	winners := make([]string, 0)
 	losers := make([]string, 0)
-	win := new(fdb.Winner)
 
 	for i, p := range existingPlayers {
 		if p == nil {
@@ -234,35 +240,32 @@ func pickWinner(r *http.Request) ([]string, []string) {
 		// TODO: mark the winner explicitly in smart contract
 		if p.Balance.Cmp(currentPlayers[i].Balance) > 0 {
 			winners = append(winners, email)
-			win.Address = p.Address
+			winningInfo.Address = p.Address
 			z := p.Balance.Sub(p.Balance, currentPlayers[i].Balance)
 			z = z.Div(z, big.NewInt(params.GWei))
-			win.Amount = z.Int64()
+			winningInfo.Amount = z.Int64()
 		} else {
 			losers = append(losers, email)
 		}
 	}
-
-	if *verbose {
-		app_log.Infof(ctx, "Winner: %v\n", winners)
-		app_log.Infof(ctx, "Loser: %v\n", losers)
-		app_log.Infof(ctx, "Amount: %v\n", win.Amount)
-		fmt.Printf("WINNER: %v\n", winners)
-		fmt.Printf("LOSERS: %v\n", losers)
-		fmt.Printf("Amount: %v\n", win.Amount)
-	}
-
-	sessionID := getSession() + 1
-
+	winningInfo.Session = getSession()
+	sessionID := winningInfo.Session + 1
 	// set current is_current to false
 	db.UpdateSession()
 
 	// add a new session id
 	db.AddSession(sessionID)
 
-	win.Session = sessionID - 1
+	if *verbose {
+		app_log.Infof(ctx, "Winner: %v\n", winners)
+		app_log.Infof(ctx, "Loser: %v\n", losers)
+		app_log.Infof(ctx, "Amount: %v\n", winningInfo.Amount)
+		fmt.Printf("WINNER: %v\n", winners)
+		fmt.Printf("LOSERS: %v\n", losers)
+		fmt.Printf("Amount: %v\n", winningInfo.Amount)
+	}
 
-	db.AddWinner(win)
+	db.AddWinner(winningInfo)
 
 	return winners, losers
 }
@@ -338,15 +341,26 @@ func getPlayer(r *http.Request) []*fdb.Player {
 }
 
 func notifyWinner(winnerEmails, nonWinnerEmails []string, r *http.Request) {
-	winText, winHTML := getEmail(true)
-	loseText, loseHTML := getEmail(false)
+	rep := []replaceInEmail{
+		{
+			"$SESSION$",
+			fmt.Sprintf("%v", winningInfo.Session),
+		},
+		{
+			"$AMOUNT$",
+			fmt.Sprintf("%v", winningInfo.Amount/1000000000),
+		},
+	}
+
+	winText, winHTML := getEmail(true, rep)
+	loseText, loseHTML := getEmail(false, rep)
 	sendEmail(winnerEmails, winnerEmailTitle, winText, winHTML, r)
 	sendEmail(nonWinnerEmails, losingEmailTitle, loseText, loseHTML, r)
 
 	return
 }
 
-func getEmail(win bool) (string, string) {
+func getEmail(win bool, r []replaceInEmail) (string, string) {
 	folder := losingEmailFolder
 	textStr := losingEmailBody
 	htmlStr := losingEmailBodyHTML
@@ -367,6 +381,11 @@ func getEmail(win bool) (string, string) {
 		fmt.Printf("read email html file error: %v", err)
 	} else {
 		htmlStr = string(html)
+	}
+
+	for _, s := range r {
+		textStr = strings.ReplaceAll(textStr, s.oldStr, s.newStr)
+		htmlStr = strings.ReplaceAll(htmlStr, s.oldStr, s.newStr)
 	}
 
 	return textStr, htmlStr
