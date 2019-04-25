@@ -172,6 +172,9 @@ exports.enter = functions.https.onRequest(async (req, res) => {
 });
 
 exports.current_session = functions.https.onRequest(async (req, res) => {
+  res.set('Access-Control-Allow-Origin', '*');
+  res.set('Access-Control-Allow-Methods', 'GET, POST');
+
   try {
     const active_session = await firestore
       .collection('session')
@@ -193,6 +196,9 @@ exports.current_session = functions.https.onRequest(async (req, res) => {
 });
 
 exports.current_players = functions.https.onRequest(async (req, res) => {
+  res.set('Access-Control-Allow-Origin', '*');
+  res.set('Access-Control-Allow-Methods', 'GET, POST');
+
   try {
     const active_session = await firestore
       .collection('session')
@@ -222,6 +228,9 @@ exports.current_players = functions.https.onRequest(async (req, res) => {
 });
 
 exports.previous_winners = functions.https.onRequest(async (req, res) => {
+  res.set('Access-Control-Allow-Origin', '*');
+  res.set('Access-Control-Allow-Methods', 'GET, POST');
+
   try {
     const winners = await firestore.collection('winners').get();
     let result = [];
