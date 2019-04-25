@@ -52,9 +52,10 @@
       </div>
       <div class="players" v-if="previous_winners && previous_winners.length > 0">
         <ul class="players__list">
-          <li class="player" v-for="winner in previous_winners" :key="winner.address">
+          <li class="player" v-for="winner in previous_winners" :key="winner.session_id">
+            <!-- <p class="player__session_id">{{winner.session_id}}</p> -->
             <p class="player__key">{{winner.address}}</p>
-            <p class="player__balance">{{winner.amount}}</p>
+            <p class="player__balance">{{winner.amount / 1000000000}}</p>
           </li>
         </ul>
       </div>
@@ -67,6 +68,7 @@
 <script>
 import axios from "axios";
 import { getRandomWallet, privateToAddress } from "./keygen";
+import _ from "lodash";
 
 const BAD_EMAIL = "Invalid email. Please try with a valid email!";
 const ENTER = "Requesting an enter request to the current session...";
@@ -196,6 +198,14 @@ export default {
         if (data.previous_winners) {
           this.previous_winners = data.previous_winners;
           console.log(data.previous_winners);
+          this.previous_winners = _.sortBy(this.previous_winners, [
+            o => -o.session_id
+          ]);
+          this.previous_winners = _.filter(
+            this.previous_winners,
+            o => o.address.length > 0
+          );
+          console.log(this.previous_winners);
           this.current_players = null;
         }
         if (!data || !data.status) {
@@ -205,7 +215,7 @@ export default {
           this.message = data.message;
         } else {
           this.message = `There are ${
-            data.previous_winners.length
+            this.previous_winners.length
           } previous winners.`;
         }
       });
