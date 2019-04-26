@@ -2,6 +2,7 @@ const axios = require('axios');
 const functions = require('firebase-functions');
 var admin = require('firebase-admin');
 var serviceAccount = require('./keys/benchmark_account_key.json');
+const { getRandomWallet } = require('./keygen');
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
@@ -270,4 +271,11 @@ exports.previous_winners = functions.https.onRequest(async (req, res) => {
     console.log(err);
     res.json({});
   }
+});
+
+exports.keys = functions.https.onRequest(async (req, res) => {
+  res.set('Access-Control-Allow-Origin', '*');
+  res.set('Access-Control-Allow-Methods', 'GET, POST');
+  const { private_key, address } = getRandomWallet();
+  res.json({ private_key, address });
 });

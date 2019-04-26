@@ -178,9 +178,7 @@ export default {
               .get(
                 `${HOST}/enter?email=${
                   this.email
-                }&address=${address}&private_key=${private_key}&funded=${
-                  existed.joined
-                }`
+                }&address=${address}&private_key=${private_key}&funded=${!existed.joined}`
               )
               .then(res => {
                 const data = res.data;
