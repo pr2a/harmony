@@ -98,9 +98,8 @@ const BAD_EMAIL = "Invalid email. Please try with a valid email!";
 const ENTER = "Requesting an enter request to the current session...";
 const CURRENT_PLAYERS = "Retriving current players";
 const PREVIOUS_WINNERS = "Retriving previous winners";
-// const HOST = `https://us-central1-benchmark-209420.cloudfunctions.net`;
+const HOST = `https://us-central1-benchmark-209420.cloudfunctions.net`;
 const FUND_AMOUNT = 10;
-const HOST = `http://localhost:5000/benchmark-209420/us-central1`;
 function validateEmail(email) {
   var re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
   return re.test(String(email).toLowerCase());
