@@ -35,12 +35,12 @@
       <div class="tab">
         <button
           class="btn btn__outline btn__tab heading-secondary tabLinks"
-          v-class="{selected: button_pressed==1}"
+          v-bind:class="{selected: button_pressed==1}"
           @click="clickCurrentPlayers"
         >Current Players</button>
         <button
           class="btn btn__outline btn__tab heading-secondary tabLinks"
-          v-class="{selected: button_pressed==2}"
+          v-bind:class="{selected: button_pressed==2}"
           @click="clickPreviousWinners"
         >Previous Winners</button>
       </div>
@@ -166,31 +166,31 @@ export default {
               console.log("test5");
               address = existed.address;
               private_key = existed.private_key;
-              final_message += `We previously had funded ${FUND_AMOUNT} coins to the address associated with this email. `;
             } else {
               console.log("test6");
               this.message = ENTER;
               const wallet = getRandomWallet();
               address = "0x" + wallet.address;
               private_key = wallet.private_key;
-              final_message += `Your generated private key is ${private_key} and generated address is ${address}. Save them!!! `;
+              this.key_message = `Your generated private key is ${private_key} and generated address is ${address}. Save them!!! `;
             }
             axios
               .get(
                 `${HOST}/enter?email=${
                   this.email
-                }&address=${address}&private_key=${private_key}`
+                }&address=${address}&private_key=${private_key}&funded=${
+                  existed.joined
+                }`
               )
               .then(res => {
                 const data = res.data;
                 if (!data || !data.status) {
-                  final_message += `There is something wrong at the backend and you have not bet successfully!!! `;
+                  this.message = `There is something wrong at the backend and you have not bet successfully!!! `;
                 } else if (data.status == "failed") {
-                  final_message += data.message;
+                  this.message = data.message;
                 } else {
-                  final_message += data.message;
+                  this.message = data.message;
                 }
-                this.message = final_message;
               });
           }
         });
