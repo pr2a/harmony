@@ -51,6 +51,13 @@ body {
   }
 }
 
+.heading-color {
+  font-family: 'Open Sans', sans-serif;
+  font-weight: 400;
+  color: #6accff;
+  text-transform: uppercase;
+}
+
 html {
   font-size: 62.5%;
 }
@@ -148,6 +155,14 @@ html {
     height: 3rem;
   }
 }
+.header__company {
+  position: absolute;
+  left: 6rem;
+  top: 3rem;
+}
+.header__company-logo {
+  height: 3.5rem;
+}
 
 .section-enterKey {
   height: 30vh;
@@ -197,7 +212,6 @@ html {
 }
 
 .section-players {
-  /* height: 45vh; */
   width: 100vw;
   position: relative;
 }
@@ -211,11 +225,12 @@ html {
 }
 
 .players {
+  margin: 0 auto;
   padding-top: 6rem;
   margin-top: -6rem;
-  background: #f4fbff;
-  margin: 0 auto;
   text-align: center;
+  background: #f4fbff;
+  min-height: 45vh;
 }
 
 .players__list {
@@ -246,19 +261,24 @@ html {
     margin-top: 1.5rem;
   }
 }
+.player__id {
+  float: left;
+  width: 3rem;
+  text-align: center;
+}
 .player__key {
   float: left;
-  width: 55rem;
+  width: 49rem;
+  margin-left: 3rem;
   text-align: left;
 }
 @media only screen and (max-width: 56.25em) {
   .player__key {
-    width: 70vw;
+    width: 60vw;
   }
 }
 @media only screen and (max-width: 37.5em) {
   .player__key {
-    width: 100%;
     text-align: left;
     font-size: 82%;
   }
@@ -267,7 +287,6 @@ html {
   float: right;
   width: 10rem;
   text-align: right;
-  color: #83d500;
 }
 @media only screen and (max-width: 56.25em) {
   .player__balance {
@@ -280,6 +299,7 @@ html {
     text-align: right;
     padding: 0 3rem;
     background-color: rgba(159, 218, 249, 0.15);
+    font-size: 82%;
   }
 }
 .player::after {
