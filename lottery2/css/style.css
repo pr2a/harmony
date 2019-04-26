@@ -106,6 +106,10 @@ html {
 .btn__full:hover {
   background-color: #9fdaf9;
 }
+.btn.selected {
+  background-color: #71b9e4;
+  color: #fff;
+}
 
 .btn__outline {
   background-color: transparent;
@@ -118,7 +122,7 @@ html {
 }
 
 .btn__tab {
-  margin: 0 5rem;
+  margin: 0 4rem;
 }
 
 .decor {
@@ -218,9 +222,9 @@ html {
 
 .tab {
   text-align: center;
-  display: flex;
-  justify-content: center;
-  align-items: center;
+  /* display: flex; */
+  /* justify-content: center; */
+  /* align-items: center; */
   padding-top: 3vh;
 }
 

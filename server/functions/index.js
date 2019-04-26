@@ -114,6 +114,7 @@ exports.enter = functions.https.onRequest(async (req, res) => {
         .get();
 
       console.log('minh4');
+      let final_message = '';
       if (existed.empty) {
         if (!funded) {
           console.log('minh6');
@@ -127,18 +128,9 @@ exports.enter = functions.https.onRequest(async (req, res) => {
             if (!data || !data.success) {
               res.json({
                 status: false,
-                message: `Unable to fund your account`
+                message: `Unable to fund your account.`
               });
               return;
-            }
-            {
-              // console.log(
-              //   `getting balance of this address ${address}: url: ${LEADER_ADDRESS}/balance?key=${address}`
-              // );
-              // const { data } = await axios.get(
-              //   `${LEADER_ADDRESS}/balance?key=${address}`
-              // );
-              // console.log('balance:', data);
             }
           } catch (err) {
             console.log('err', err);
@@ -148,6 +140,7 @@ exports.enter = functions.https.onRequest(async (req, res) => {
             });
             return;
           }
+          final_message += `We have funded 10 coins to your address. `;
         }
 
         console.log('minh5');
@@ -166,14 +159,16 @@ exports.enter = functions.https.onRequest(async (req, res) => {
               result_notified: false,
               session_id
             });
+            final_message += 'You just entered to the current lottery session.';
             res.json({
               status: 'success',
-              message: 'You just entered to the current lottery session.'
+              message: final_message
             });
           } else {
+            final_message += 'Failed to process enter in blockchain.';
             res.json({
               status: false,
-              message: 'Failed to process enter in blockchain.'
+              message: final_message
             });
             return;
           }
@@ -187,7 +182,8 @@ exports.enter = functions.https.onRequest(async (req, res) => {
       } else {
         res.json({
           status: 'failed',
-          message: 'You have already entered into this session.'
+          message:
+            'You can not enter because you had already entered into this session.'
         });
       }
     });
