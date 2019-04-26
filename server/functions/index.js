@@ -8,7 +8,7 @@ admin.initializeApp({
   databaseURL: 'https://benchmark-209420.firebaseio.com'
 });
 
-const LEADER_ADDRESS = `http://52.38.243.154:30000`;
+const LEADER_ADDRESS = `http://34.214.24.214:30000`;
 // const LEADER_ADDRESS = `127.0.0.1:30000`;
 
 const firestore = admin.firestore();
