@@ -35,10 +35,12 @@
       <div class="tab">
         <button
           class="btn btn__outline btn__tab heading-secondary tabLinks"
+          v-class="{selected: button_pressed==1}"
           @click="clickCurrentPlayers"
         >Current Players</button>
         <button
-          class="btn btn__outline heading-secondary tabLinks"
+          class="btn btn__outline btn__tab heading-secondary tabLinks"
+          v-class="{selected: button_pressed==2}"
           @click="clickPreviousWinners"
         >Previous Winners</button>
       </div>
@@ -97,6 +99,7 @@ const ENTER = "Requesting an enter request to the current session...";
 const CURRENT_PLAYERS = "Retriving current players";
 const PREVIOUS_WINNERS = "Retriving previous winners";
 const HOST = `https://us-central1-benchmark-209420.cloudfunctions.net`;
+const FUND_AMOUNT = 10;
 // const HOST = `http://localhost:5000/benchmark-209420/us-central1`;
 function validateEmail(email) {
   var re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
@@ -113,7 +116,8 @@ export default {
       key_message: "",
       previous_winners: [],
       current_players: [],
-      active_tab: 0
+      active_tab: 0,
+      button_pressed: 0
     };
   },
   methods: {
@@ -142,6 +146,8 @@ export default {
           return;
         }
 
+        let final_message = "";
+
         this.message = "Checking if email has been used before.";
         axios.get(`${HOST}/existed?email=${this.email}`).then(res => {
           const existed = res.data;
@@ -160,12 +166,14 @@ export default {
               console.log("test5");
               address = existed.address;
               private_key = existed.private_key;
+              final_message += `We previously had funded ${FUND_AMOUNT} coins to the address associated with this email. `;
             } else {
               console.log("test6");
               this.message = ENTER;
               const wallet = getRandomWallet();
               address = "0x" + wallet.address;
               private_key = wallet.private_key;
+              final_message += `Your generated private key is ${private_key} and generated address is ${address}. Save them!!! `;
             }
             axios
               .get(
@@ -176,13 +184,13 @@ export default {
               .then(res => {
                 const data = res.data;
                 if (!data || !data.status) {
-                  this.message = "There is something wrong. Unable to bet!!!";
+                  final_message += `There is something wrong at the backend and you have not bet successfully!!! `;
                 } else if (data.status == "failed") {
-                  this.message = data.message;
+                  final_message += data.message;
                 } else {
-                  this.message = data.message;
-                  this.key_message = `Your private key is ${private_key} and your address is ${address}. Save them!!!`;
+                  final_message += data.message;
                 }
+                this.message = final_message;
               });
           }
         });
@@ -192,6 +200,7 @@ export default {
       }
     },
     clickCurrentPlayers() {
+      this.button_pressed = 1;
       this.key_message = "";
       this.message = CURRENT_PLAYERS;
       axios.get(`${HOST}/current_players`).then(res => {
@@ -212,6 +221,7 @@ export default {
       });
     },
     clickPreviousWinners() {
+      this.button_pressed = 2;
       this.key_message = "";
       this.message = PREVIOUS_WINNERS;
       axios.get(`${HOST}/previous_winners`).then(res => {
