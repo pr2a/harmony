@@ -42,23 +42,45 @@
           @click="clickPreviousWinners"
         >Previous Winners</button>
       </div>
-      <div class="players" v-if="current_players && current_players.length > 0">
+
+      <div
+        id="previousWinners"
+        class="players"
+        v-if="current_players && current_players.length > 0"
+      >
         <ul class="players__list">
-          <li class="player" v-for="player in current_players" :key="player.address">
-            <p class="player__key">{{player.address}}</p>
+          <li class="player">
+            <p class="player__id heading-color">ID</p>
+            <p class="player__key player__winner heading-color">Address</p>
+            <p class="player__balance heading-color">Email</p>
+          </li>
+          <li class="player" v-for="(player, id) in current_players" :key="player.address">
+            <p class="player__id">{{id}}</p>
+            <p class="player__key player__winner">{{player.address}}</p>
             <p class="player__balance">{{player.email}}</p>
           </li>
         </ul>
       </div>
-      <div class="players" v-if="previous_winners && previous_winners.length > 0">
+
+      <div
+        id="previousWinners"
+        class="players"
+        v-if="previous_winners && previous_winners.length > 0"
+      >
         <ul class="players__list">
+          <li class="player">
+            <p class="player__id heading-color">ID</p>
+            <p class="player__key player__winner heading-color">Address</p>
+            <p class="player__balance heading-color">Amount</p>
+          </li>
           <li class="player" v-for="winner in previous_winners" :key="winner.session_id">
-            <!-- <p class="player__session_id">{{winner.session_id}}</p> -->
-            <p class="player__key">{{winner.address}}</p>
+            <p class="player__id">{{winner.session_id}}</p>
+            <p class="player__key player__winner">{{winner.address}}</p>
             <p class="player__balance">{{winner.amount / 1000000000}}</p>
           </li>
         </ul>
       </div>
+
       <img class="decor decor__left" src="./assets/decor-left.svg" alt="decor">
       <img class="decor decor__right" src="./assets/decor-right.svg" alt="decor">
     </section>
