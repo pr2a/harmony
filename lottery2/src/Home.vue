@@ -98,9 +98,9 @@ const BAD_EMAIL = "Invalid email. Please try with a valid email!";
 const ENTER = "Requesting an enter request to the current session...";
 const CURRENT_PLAYERS = "Retriving current players";
 const PREVIOUS_WINNERS = "Retriving previous winners";
-const HOST = `https://us-central1-benchmark-209420.cloudfunctions.net`;
+// const HOST = `https://us-central1-benchmark-209420.cloudfunctions.net`;
 const FUND_AMOUNT = 10;
-// const HOST = `http://localhost:5000/benchmark-209420/us-central1`;
+const HOST = `http://localhost:5000/benchmark-209420/us-central1`;
 function validateEmail(email) {
   var re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
   return re.test(String(email).toLowerCase());
@@ -151,7 +151,7 @@ export default {
         this.message = "Checking if email has been used before.";
         axios.get(`${HOST}/existed?email=${this.email}`).then(res => {
           const existed = res.data;
-          console.log("test1");
+          console.log("test1", existed);
           if (!existed) {
             console.log("test2");
             this.message = "Something wrong with backend";
@@ -178,10 +178,13 @@ export default {
               .get(
                 `${HOST}/enter?email=${
                   this.email
-                }&address=${address}&private_key=${private_key}&funded=${!existed.joined}`
+                }&address=${address}&private_key=${private_key}&funded=${
+                  existed.joined
+                }`
               )
               .then(res => {
                 const data = res.data;
+                console.log("enter", data);
                 if (!data || !data.status) {
                   this.message = `There is something wrong at the backend and you have not bet successfully!!! `;
                 } else if (data.status == "failed") {

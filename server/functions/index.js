@@ -8,7 +8,6 @@ admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
   databaseURL: 'https://benchmark-209420.firebaseio.com'
 });
-
 const LEADER_ADDRESS = `http://34.217.119.203:30000`;
 // const LEADER_ADDRESS = `127.0.0.1:30000`;
 
@@ -31,6 +30,7 @@ exports.existed = functions.https.onRequest(async (req, res) => {
   res.set('Access-Control-Allow-Methods', 'GET, POST');
 
   const email = req.query.email;
+  console.log(email);
   try {
     if (!validateEmail(email)) {
       res.json({ status: 'failed', message: 'invalid email' });
@@ -53,6 +53,7 @@ exports.existed = functions.https.onRequest(async (req, res) => {
         .get();
 
       if (existed.empty) {
+        console.log('minh3');
         res.json({
           status: 'success',
           joined: false,
@@ -92,7 +93,7 @@ exports.enter = functions.https.onRequest(async (req, res) => {
   const private_key = req.query.private_key;
   const address = req.query.address;
   const funded = req.query.funded;
-  console.log('minh1');
+  console.log('minh1', { email, private_key, address, funded });
   try {
     if (!validateEmail(email)) {
       res.json({ status: 'failed', message: 'invalid email' });
@@ -117,7 +118,7 @@ exports.enter = functions.https.onRequest(async (req, res) => {
       console.log('minh4');
       let final_message = '';
       if (existed.empty) {
-        if (!funded) {
+        if (funded == 'false') {
           console.log('minh6');
           try {
             console.log(`trying to fund this address ${address}`);
