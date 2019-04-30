@@ -1,13 +1,37 @@
+<style scoped lang="less">
+.score-container {
+  margin-bottom: 1em;
+}
+
+.flex-horizontal {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+.flex-grow {
+  flex: 1;
+}
+
+footer {
+  margin-top: 1em;
+  .btn-primary {
+    font-size: 0.8em;
+  }
+}
+</style>
+
 <template>
   <div id="app" style="visibility:hidden">
     <div class="main-container appearing" :style="mainContainerStyle">
       <div class="score-container" :style="scoreContainerStyle">
-        <div
+        <!-- <div
           ref="gameAim"
           class="game-aim"
           v-bind:class="{'game-aim-reached':gameAimReached}"
           :style="gameAimStyle"
-        >{{ gameAim }}</div>
+        >{{ gameAim }}</div>-->
+        <div class="logo"></div>
         <div class="scores" :style="scoreStyle">
           <div class="score">
             <div class="label">Score</div>
@@ -27,23 +51,6 @@
             <div>{{ bestScore[size] }}</div>
           </div>
         </div>
-      </div>
-      <div class="game-controls" :style="gameControlsStyle">
-        <div class="size-control" v-if="!gameStarted">
-          Size:
-          <div class="size-control-item" v-for="s in sizes" :key="s">
-            <input type="radio" :id="'size-radio'+s" :value="s" v-model.number="size">
-            <label :for="'size-radio'+s">{{ s }}</label>
-          </div>&nbsp;
-        </div>
-        <button
-          v-if="!gameStarted"
-          @click="startGame()"
-          class="button"
-          :style="buttonStyle"
-          key="start"
-        >New Game</button>
-        <button v-else @click="gameStarted=false" class="button" :style="buttonStyle" key="end">End</button>
       </div>
       <div class="game-container" :style="gameContainerStyle">
         <div v-if="gameEnded">
@@ -66,6 +73,10 @@
           @aim-changed="onGameAimChanged"
           @aim-reached="onGameAimReached"
         ></Game>
+        <footer class="flex-horizontal">
+          <span class="flex-grow">levels: {{ level }} / 100</span>
+          <button class="btn-primary pull-right" @click="reset">Reset</button>
+        </footer>
       </div>
     </div>
   </div>
@@ -81,17 +92,14 @@ var defBoardSizePx = 420;
 var defSize = 3;
 
 export default {
-  name: "Puzzle",
+  name: "PuzzlePage",
   components: {
     Game,
     Chip
   },
-  data: function() {
+  data() {
     var sizeAimMap = [];
     sizeAimMap[3] = 256;
-    // sizeAimMap[4] = 2048;
-    // sizeAimMap[5] = 4096;
-    // sizeAimMap[6] = 8192;
 
     var awards = {};
     var bestScore = {};
@@ -105,6 +113,7 @@ export default {
     }
 
     return {
+      level: 1,
       boardSizePx: defBoardSizePx,
       size: defSize,
       sizes: sizes,
@@ -119,11 +128,12 @@ export default {
       awards: awards
     };
   },
-  created: function() {
+  created() {
     this.loadState();
   },
-  mounted: function() {
+  mounted() {
     var self = this;
+    this.startGame();
     requestAnimationFrame(function() {
       self.fitBoardSizePx();
       requestAnimationFrame(function() {
@@ -132,82 +142,77 @@ export default {
     });
   },
   computed: {
-    gameOverStyle: function() {
+    gameOverStyle() {
       return { fontSize: this.boardSizePx / 6 + "px" };
     },
-    gameContainerStyle: function() {
+    gameContainerStyle() {
       return {
         width: this.boardSizePx + "px",
         height: this.boardSizePx + "px"
       };
     },
-    mainContainerStyle: function() {
+    mainContainerStyle() {
       return {
         width: this.boardSizePx + "px"
       };
     },
-    gameControlsStyle: function() {
+    gameControlsStyle() {
       return {
         height: this.boardSizePx * 0.2 + "px"
       };
     },
-    scoreContainerStyle: function() {
+    scoreContainerStyle() {
       return {
         height: this.boardSizePx * 0.2 + "px"
       };
     },
-    gameAimStyle: function() {
+    gameAimStyle() {
       var bsh = this.boardSizePx / 50 + "px ";
       return {
         boxShadow: "0 " + bsh + bsh + "black",
         fontSize: this.boardSizePx / 110 + "em"
       };
     },
-    buttonStyle: function() {
-      return {
-        fontSize: this.boardSizePx / 450 + "em"
-      };
-    },
-    scoreStyle: function() {
+    scoreStyle() {
       return {
         fontSize: this.boardSizePx / 280 + "em"
       };
     },
-    gameAwardsContainerStyle: function() {
+    gameAwardsContainerStyle() {
       return {
         height: this.boardSizePx * 0.08 + "px"
       };
     },
-    gameAwardStyle: function() {
+    gameAwardStyle() {
       return {
         width: this.boardSizePx / 5 + "px",
         fontSize: this.boardSizePx / 350 + "em"
       };
     },
-    gameAwardLikeStyle: function() {
+    gameAwardLikeStyle() {
       return {
         height: this.boardSizePx / 21 + "px"
       };
     },
-    allAwardsObtained: function() {
+    allAwardsObtained() {
       for (var i in this.awards) if (!this.awards[i].obtained) return false;
       return true;
     }
   },
   watch: {
-    size: function() {
+    size() {
       this.gameEnded = false;
     }
   },
   methods: {
-    fitBoardSizePx: function() {
+    fitBoardSizePx() {
       if (window.innerWidth < defBoardSizePx * 1.04) {
         this.boardSizePx = window.innerWidth * 0.96;
       } else {
         this.boardSizePx = defBoardSizePx;
       }
     },
-    loadState: function() {
+    loadState() {
       try {
         var s = document.cookie;
         if (s) {
@@ -219,7 +224,7 @@ export default {
         }
       } catch (e) {}
     },
-    persistState: function() {
+    persistState() {
       try {
         var state = {
           bestScore: this.bestScore,
@@ -228,27 +233,30 @@ export default {
         document.cookie = JSON.stringify(state);
       } catch (e) {}
     },
-    startGame: function() {
+    startGame() {
       this.gameStarted = true;
       this.score = 0;
     },
-    onGameStarted: function() {
+    reset() {
+      throw "not implemented";
+    },
+    onGameStarted() {
       this.gameStarted = true;
       this.gameEnded = false;
     },
-    onGameEnded: function() {
+    onGameEnded() {
       this.gameStarted = false;
       this.gameEnded = true;
       this.gameAimReached = false;
       this.persistState();
     },
-    onGameScore: function(args) {
+    onGameScore(args) {
       var s = { score: this.score };
       var self = this;
       TweenLite.to(s, 0.3, {
         score: args.score,
         ease: Power0.easeNone,
-        onUpdate: function() {
+        onUpdate() {
           self.score = Math.floor(s.score);
         }
       });
@@ -258,7 +266,7 @@ export default {
         TweenLite.to(bs, 0.3, {
           score: args.score,
           ease: Power0.easeNone,
-          onUpdate: function() {
+          onUpdate() {
             Vue.set(self.bestScore, self.size, Math.floor(bs.score));
           }
         });
@@ -269,10 +277,10 @@ export default {
         self.scoreInc = "";
       });
     },
-    onGameAimChanged: function(aim) {
+    onGameAimChanged(aim) {
       this.gameAim = aim;
     },
-    onGameAimReached: function() {
+    onGameAimReached() {
       this.gameAimReached = true;
       this.awards[this.gameAim].obtained = true;
       this.persistState();

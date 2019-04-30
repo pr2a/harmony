@@ -1,11 +1,14 @@
-<style>
+<style lang="less">
+* {
+  box-sizing: border-box;
+}
 body,
 html {
   font-family: "Source Sans Pro", Arial, sans-serif;
   color: #2c3e50;
   font-size: 18px;
   margin: 0;
-  background-color: honeydew;
+  background-color: #fcf7eb;
 }
 
 .half-white {
@@ -87,7 +90,7 @@ html {
   text-align: center;
   color: white;
   background-color: #9aa4af;
-  border-radius: 5%/ 8%;
+  border-radius: 0.25em;
   width: 50%;
   padding-top: 2%;
 }
@@ -311,12 +314,12 @@ html {
   flex-wrap: wrap;
   align-content: flex-start;
   align-items: space-around;
-  background-color: #35495e;
+  background-color: #c9c0bb;
   outline: none;
 }
 
 .board .cell {
-  background-color: #41b883;
+  background-color: #ada49f;
   position: relative;
   border-radius: 7%;
 }
@@ -559,6 +562,26 @@ html {
     -webkit-transform: translateY(20px);
     opacity: 0;
   }
+}
+
+.btn-primary {
+  background-color: #f96829;
+  padding: 0.5em 1.5em;
+  border-radius: 0.3em;
+  border: 0;
+  font-size: 1.2em;
+  color: #fff;
+  outline: none;
+}
+
+.logo {
+  margin: 1em auto;
+  color: red;
+  height: 4em;
+  width: 5em;
+  background-image: url(./assets/logo.svg);
+  background-size: contain;
+  background-repeat: no-repeat;
 }
 </style>
 

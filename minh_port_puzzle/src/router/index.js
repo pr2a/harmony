@@ -1,4 +1,4 @@
-import Puzzle from '@/components/Puzzle';
+import HostingPage from '@/components/HostingPage';
 import Vue from 'vue';
 import Router from 'vue-router';
 
@@ -8,8 +8,8 @@ export default new Router({
   routes: [
     {
       path: '/',
-      name: 'Puzzle',
-      component: Puzzle
+      name: 'HostingPage',
+      component: HostingPage
     }
   ]
 });
