@@ -31,10 +31,10 @@
       <div class="game-controls" :style="gameControlsStyle">
         <div class="size-control" v-if="!gameStarted">
           Size:
-          <template v-for="s in sizes">
+          <div class="size-control-item" v-for="s in sizes" :key="s">
             <input type="radio" :id="'size-radio'+s" :value="s" v-model.number="size">
             <label :for="'size-radio'+s">{{ s }}</label>
-          </template>&nbsp;
+          </div>&nbsp;
         </div>
         <button
           v-if="!gameStarted"
@@ -74,6 +74,8 @@
 <script>
 import Game from "./Game";
 import Chip from "./Chip";
+import { TweenLite } from "gsap/TweenMax";
+import Vue from "vue";
 
 var defBoardSizePx = 420;
 var defSize = 3;
@@ -126,7 +128,6 @@ export default {
       self.fitBoardSizePx();
       requestAnimationFrame(function() {
         self.$el.style.visibility = "visible";
-        self.showCollectAllAwards();
       });
     });
   },
@@ -230,7 +231,6 @@ export default {
     startGame: function() {
       this.gameStarted = true;
       this.score = 0;
-      this.showCollectAllAwards();
     },
     onGameStarted: function() {
       this.gameStarted = true;
@@ -294,20 +294,6 @@ export default {
       requestAnimationFrame(function() {
         s["-webkit-transition"] = s.transition = "all 2s";
         s["-webkit-transform"] = s.transform = "";
-      });
-    },
-    getAwardEl: function(aim) {
-      for (var i in this.$refs.awards) {
-        var c = this.$refs.awards[i];
-        if (c.award.aim == aim) return c.$el;
-      }
-      return null;
-    },
-    showCollectAllAwards: function() {
-      var s = this.$refs.collectAllAwards.style;
-      s["-webkit-animation"] = s.animation = "";
-      requestAnimationFrame(function() {
-        s["-webkit-animation"] = s.animation = "collect-all-awards 10s";
       });
     }
   }
