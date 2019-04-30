@@ -264,3 +264,13 @@ func (fdb *Fdb) GetPlayers(key, op string, value interface{}) []*Player {
 	}
 	return players
 }
+
+// FindAccount find the account and leader info from the db
+func FindAccount(email string) (string, string) {
+	return "", ""
+}
+
+// RegisterAccount register user account into db
+func RegisterAccount(email, account, leader string) error {
+	return nil
+}
