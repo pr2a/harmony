@@ -2,7 +2,7 @@
   {
     "type": "instruction",
     "title": "How to play",
-    "text": "Parity is a numbers puzzle game.\nThe aim of the game is to get each number on a 3x3 board of numbers to be exactly the same.",
+    "text": "Harmony Puzzle is a numbers puzzle game.\nThe aim of the game is to get each number on a 3x3 board of numbers to be exactly the same.",
     "button": "okay..."
   },
   {
@@ -874,7 +874,7 @@
   {
     "type": "instruction",
     "title": "The End!",
-    "text": "You've successfully completed all of the levels Parity currently has to offer. If you enjoyed the challenge, please make sure to like Parity on Facebook!",
+    "text": "You've successfully completed all of the levels Harmony Puzzle currently has to offer.",
     "button": "%fb%"
   }
 ]
