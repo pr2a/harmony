@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Harmony Puzzle</title>
+    <script src="scripts/production.min.js"></script>
+    <link
+      href="http://fonts.googleapis.com/css?family=Poiret+One|Open+Sans"
+      rel="stylesheet"
+      type="text/css"
+    />
+    <link href="styles/style.css" rel="stylesheet" type="text/css" />
+    <link
+      href="styles/mobile.css"
+      rel="stylesheet"
+      type="text/css"
+      media="screen and (max-device-width:800px)"
+    />
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon" />
+    <link rel="icon" href="/favicon.ico" type="image/x-icon" />
+    <meta name="viewport" content="initial-scale=1.0" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+  </head>
+  <body>
+    <!-- Begin Clay -->
+    <script>
+      (function(C, l, a, y, _, i, o) {
+        (C[_] =
+          C[_] ||
+          function() {
+            (C[_].q = C[_].q || []).push(arguments);
+          }),
+          (C[_].l = 1 * new Date());
+        (i = l.createElement(a)), (o = l.getElementsByTagName(a)[0]);
+        i.async = 1;
+        i.src = y;
+        o.parentNode.insertBefore(i, o);
+      })(window, document, 'script', '//cdn.wtf/sdk/v1/clay_sdk.js', 'Clay');
+
+      Clay('init', { gameId: '8304' });
+    </script>
+
+    <div id="container">
+      <p id="title" class="light poiret center">Harmony Puzzle </p>
+      </p>
+      <div id="box">
+        <div id="overlay">
+          <h1></h1>
+          <div id="content"></div>
+          <!-- this button is in a holder so that I can center it and control its height properly -->
+          <div id="holder">
+            <button></button>
+          </div>
+        </div>
+        <div id="swipeArea"></div>
+        <div class="dSelected" id="selector"></div>
+        <!-- The arrow that guides the user for the very first level -->
+        <div id="introtutorial"></div>
+        <table id="board">
+          <tbody id="board_body">
+            <tr>
+              <td class="cell center" data-x="0" data-y="0">4</td>
+              <td class="cell center" data-x="1" data-y="0">4</td>
+              <td class="cell center" data-x="2" data-y="0">4</td>
+            </tr>
+            <tr>
+              <td class="cell center" data-x="0" data-y="1">4</td>
+              <td class="cell center" data-x="1" data-y="1">4</td>
+              <td class="cell center" data-x="2" data-y="1">4</td>
+            </tr>
+            <tr>
+              <td class="cell center" data-x="0" data-y="2">4</td>
+              <td class="cell center selected" data-x="1" data-y="2">4</td>
+              <td class="cell center" data-x="2" data-y="2">4</td>
+            </tr>
+            <tr>
+              <td colspan="2">
+                <a id="level" href="#" class="light poiret left">level #</a>
+              </td>
+              <td colspan="2" class="right">
+                <a id="reset" href="#" class="poiret"
+                  ><img src="images/reset.png" style="width:7vh;"
+                /></a>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </body>
+</html>
