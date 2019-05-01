@@ -3,14 +3,20 @@
   margin-bottom: 1em;
 }
 
-.flex-horizontal {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-}
-
-.flex-grow {
-  flex: 1;
+.info-item {
+  background-color: #fff;
+  border-radius: 0.5em;
+  border: 0.15em solid #979797;
+  padding: 1em;
+  border-radius: 0.25em;
+  padding: 0.5em;
+  width: 6em;
+  margin-left: 1em;
+  text-align: center;
+  .label {
+    font-size: 0.5em;
+    margin-bottom: 0.5em;
+  }
 }
 
 footer {
@@ -76,9 +82,15 @@ footer {
     <div class="main-container appearing" :style="mainContainerStyle">
       <div class="score-container">
         <div class="logo"></div>
-        <div>
-          <div class="count-down">Time Left: {{ secondsLeft }}</div>
-          <div class="reward">Reward: {{ reward }}</div>
+        <div class="flex-horizontal">
+          <div class="count-down info-item">
+            <div class="label">Time Left</div>
+            <div class="content">{{ secondsLeft }}</div>
+          </div>
+          <div class="reward info-item">
+            <div class="label">Reward</div>
+            <div class="content">{{ reward }}</div>
+          </div>
         </div>
       </div>
       <div class="game-container" :style="gameContainerStyle">
@@ -88,7 +100,7 @@ footer {
             <div class="content">
               <p :style="gameOverStyle">Game over!</p>
               <div>
-                <button class="btn-primary">Restart</button>
+                <button class="btn-primary" @click="startGame">Restart</button>
               </div>
             </div>
           </div>
@@ -99,12 +111,12 @@ footer {
             <Game
               :ref="'game' + i"
               class="game"
-              :listen-own-key-events-only="false"
+              :listen-own-key-events-only="true"
               :tab-index="1"
               :board-size-px="boardSizePx"
-              :started="gameStarted"
               :game="level"
-              @ended="onGameEnded"
+              :gameEnded="gameEnded"
+              @completeLevel="onLevelComplete"
               v-if="i === levelIndex"
             ></Game>
           </transition>
@@ -112,7 +124,11 @@ footer {
 
         <footer class="flex-horizontal">
           <span class="flex-grow">levels: {{ levelIndex + 1 }} / {{ levels.length }}</span>
-          <button class="btn-primary pull-right" @click="reset">Reset</button>
+          <button
+            class="btn-primary pull-right"
+            @click="resetLevel"
+            :style="{ visibility: gameEnded ? 'hidden':'visible' }"
+          >Reset Level</button>
         </footer>
       </div>
     </div>
@@ -130,6 +146,7 @@ import { setInterval, clearInterval } from "timers";
 var defBoardSizePx = 420;
 var defSize = 3;
 
+const IntialSeconds = 30;
 export default {
   name: "PuzzlePage",
   components: {
@@ -139,14 +156,11 @@ export default {
   data() {
     return {
       levelIndex: 0,
-      levels: levels(),
+      levels: [],
       boardSizePx: defBoardSizePx,
       size: defSize,
-      gameStarted: false,
       gameEnded: false,
-      score: 0,
-      scoreInc: "",
-      secondsLeft: 30,
+      secondsLeft: IntialSeconds,
       reward: 0,
       timer: null
     };
@@ -220,8 +234,10 @@ export default {
       } catch (e) {}
     },
     startGame() {
-      this.gameStarted = true;
-      this.score = 0;
+      this.gameEnded = false;
+      this.levelIndex = 0;
+      this.levels = levels();
+      this.secondsLeft = IntialSeconds;
       this.timer = setInterval(() => {
         this.secondsLeft--;
         if (this.secondsLeft <= 0) {
@@ -229,11 +245,10 @@ export default {
         }
       }, 1000);
     },
-    reset() {
+    resetLevel() {
       this.$refs[`game${this.levelIndex}`][0].reset();
     },
-    onGameEnded() {
-      this.gameStarted = false;
+    onLevelComplete() {
       if (this.levelIndex === this.levels.length - 1) {
         this.endGame();
         return;

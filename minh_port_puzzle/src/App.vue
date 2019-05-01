@@ -539,6 +539,16 @@ html {
   background-size: contain;
   background-repeat: no-repeat;
 }
+
+.flex-horizontal {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+.flex-grow {
+  flex: 1;
+}
 </style>
 
 <template>

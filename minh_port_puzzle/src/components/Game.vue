@@ -83,7 +83,8 @@ export default {
     listenOwnKeyEventsOnly: { type: Boolean, default: false },
     tabIndex: { type: Number, default: 1 },
     boardSizePx: { type: Number, default: 0 },
-    animationTimeMs: { type: Number, default: 150 }
+    animationTimeMs: { type: Number, default: 150 },
+    gameEnded: Boolean
   },
   data() {
     return {
@@ -132,12 +133,17 @@ export default {
       );
     }
   },
+  watch: {
+    gameEnded(val) {
+      if (val) {
+        this.$emit("ended");
+      }
+    }
+  },
   methods: {
     startGame() {
-      this.$emit("started", this);
       this.runKeyboardControl(this.move);
     },
-
     runKeyboardControl(move) {
       var listenKeysOn = this.listenOwnKeyEventsOnly ? this.$el : document;
       var h = function(e) {
@@ -147,7 +153,8 @@ export default {
         move(m);
       };
       listenKeysOn.addEventListener("keydown", h);
-      this.$once("ended", function() {
+      // TODO: on game end, remove listeners.
+      this.$once("completeLevel", function() {
         listenKeysOn.removeEventListener("keydown", h);
       });
     },
@@ -158,12 +165,12 @@ export default {
       });
       var el = this.$el;
       sw.attach(el);
-      this.$once("ended", function() {
+      this.$once("completeLevel", function() {
         sw.detach(el);
       });
     },
-    endGame() {
-      this.$emit("ended", this);
+    finishLevel() {
+      this.$emit("completeLevel", this);
     },
     move(e) {
       let x = clamp(this.position.x + e.diff.x, 0, 2);
@@ -172,11 +179,11 @@ export default {
       this.position.x = x;
       this.position.y = y;
       this.cells[this.index]++;
-      if (this.isGameEnded()) {
-        this.endGame();
+      if (this.isLevelPassed()) {
+        this.finishLevel();
       }
     },
-    isGameEnded() {
+    isLevelPassed() {
       let v = this.cells[0];
       return this.cells.findIndex(x => x !== v) === -1;
     },
