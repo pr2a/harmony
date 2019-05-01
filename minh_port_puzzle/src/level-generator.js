@@ -36,40 +36,30 @@ var possible = function(data, selected, roll) {
   return true;
 }
 
-var levels =  function(){
+export function levels() {
   var start = 1
   var outputArray = new Array(100)
-  var outputString = "[\n";
+  var difficulty;
   for (var i = 1; i < 101; i++) {
     // Figure out a number to end on
     difficulty = getDifficulty(i)
-    minMoves = difficulty*3
-    maxMoves = difficulty*4
-    var end = i
+    var minMoves = difficulty*3
+    var maxMoves = difficulty*4
+    var parity = i
     var moves = randRange(minMoves, maxMoves);
     var levelDict = {}
     // Create the end of the level
     var data = [];
     var colors = [];
     for (var j = 0; j < 9; j++) {
-      data.push(end);
+      data.push(parity);
     }
-    
-    //generate random colors for 
-      for (var a = 0; a < 9; ++a) {
-        var color = randRange(0,2);
-        colors.push((color < 1) ? "b" : "w");
-    }
-
     var selected = randRange(0,9);
     var solution = [];
 
-    if(colors[selected] == "b")
-      data[selected] += 1;
-    else
-      data[selected] -= 1;
+    data[selected] -= 1;
 
-    // Figure out the number of moves
+    // // Figure out the number of moves
    
 
     for (var j = 0; j < moves; j++) {
@@ -84,9 +74,6 @@ var levels =  function(){
           selected -= 3;
           solution.push("\"d\"");
           if(j+1 != moves) {
-            if(colors[selected] == "b")
-              data[selected] += 1;
-            else
               data[selected] -= 1;
           }
           break;
@@ -94,19 +81,13 @@ var levels =  function(){
           selected += 3;
           solution.push("\"u\"");
           if(j+1 != moves) {
-            if(colors[selected] == "b")
-              data[selected] += 1;
-            else
-              data[selected] -= 1;
+          data[selected] -= 1;
           }
           break;
         case 2: // Left
           selected -= 1;
           solution.push("\"r\"");
           if(j+1 != moves) {
-            if(mode == "b&w" && colors[selected] == "b")
-              data[selected] += 1;
-            else
               data[selected] -= 1;
           }
           break;
@@ -114,9 +95,6 @@ var levels =  function(){
           selected += 1;
           solution.push("\"l\"");
           if(j+1 != moves) {
-            if(colors[selected] == "b")
-              data[selected] += 1;
-            else
               data[selected] -= 1;
           }
           break;
