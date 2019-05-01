@@ -52,7 +52,7 @@
         staking transaction has also gone through. Because
       </div>
     </div>
-    <button class="btn-primary" @click="$emit('join')">Join Now</button>
+    <button class="btn-primary" @click="$emit('join')">Start Game</button>
   </div>
 </template>
 
