@@ -2,12 +2,13 @@
 package restclient
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"math/rand"
 	"net/http"
-	"sync"
+	"time"
 
 	"github.com/harmony-one/demo-apps/backend/p2p"
 )
@@ -31,8 +32,15 @@ type Player struct {
 	Success  bool     `json:success`
 }
 
+// RPCMsg is a structure to exchange info between RPC client
+type RPCMsg struct {
+	Err  error
+	Done bool
+}
+
 var (
-	leaders = make([]p2p.Peer, 0)
+	leaders    = make([]p2p.Peer, 0)
+	rpcTimeout = 5 * time.Second
 )
 
 //SetLeaders set the leader ip and port
@@ -117,35 +125,62 @@ func GetPlayer(ip, port string) (*Player, error) {
 }
 
 // FundMe call /fundme rest call on leader
-func FundMe(leader p2p.Peer, account string, wg sync.WaitGroup) error {
-	defer wg.Done()
+func FundMe(leader p2p.Peer, account string, done chan (RPCMsg)) {
+	var err error
+	var player Player
+	var contents []byte
+	var response *http.Response
+
 	url := fmt.Sprintf("http://%s:%s/fundme?key=0x%s", leader.IP, leader.Port, account)
-	response, err := http.Get(url)
+	fmt.Printf("FundMe: %v\n", url)
+
+	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
-		return fmt.Errorf("[FundMe] GET result error: %s", err)
+		err = fmt.Errorf("[FundMe] can't new request")
+		return
+	}
+
+	ctx, cancel := context.WithTimeout(req.Context(), rpcTimeout)
+	defer cancel()
+
+	req = req.WithContext(ctx)
+	client := http.DefaultClient
+
+	response, err = client.Do(req)
+	if err != nil {
+		err = fmt.Errorf("[FundMe] GET result error: %s", err)
+		goto DONE
 	}
 	if response.StatusCode != http.StatusOK {
-		return fmt.Errorf("[FundMe] can't get result data")
+		err = fmt.Errorf("[FundMe] can't get result data")
+		goto DONE
 	}
-	contents, err := ioutil.ReadAll(response.Body)
+	contents, err = ioutil.ReadAll(response.Body)
 	defer response.Body.Close()
 
 	if err != nil {
-		return fmt.Errorf("[FundMe] failed to read response: %v", err)
+		err = fmt.Errorf("[FundMe] failed to read response: %v", err)
+		goto DONE
 	}
 
-	var player Player
 	err = json.Unmarshal(contents, &player)
 
 	if err != nil {
-		return fmt.Errorf("[FundMe] failed to unmarshal result response: %v", err)
+		err = fmt.Errorf("[FundMe] failed to unmarshal result response: %v", err)
+		goto DONE
 	}
 
 	if !player.Success {
-		return fmt.Errorf("[FundMe] Failed on blockchain")
+		err = fmt.Errorf("[FundMe] Failed on blockchain")
+		goto DONE
 	}
 
-	return nil
+DONE:
+	done <- RPCMsg{
+		Err:  err,
+		Done: true,
+	}
+	return
 }
 
 // GetBalance call /balance rest call on leader
