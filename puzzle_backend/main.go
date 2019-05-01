@@ -63,7 +63,6 @@ var (
 
 const (
 	minimalFee = 1
-	gameFee    = 1
 	adminKey   = "e401343197a852f361e38ce6b46c99f1d6d1f80499864c6ae7effee42b46ab6b"
 	dbKeyFile  = "./puzzle_backend/keys/benchmark_account_key.json"
 	dbProject  = "benchmark-209420"
@@ -139,7 +138,7 @@ func regHandler(w http.ResponseWriter, r *http.Request) {
 
 	var account *fdb.PzPlayer
 	// find the existing account from firebase DB
-	accounts := db.FindAccount(id)
+	accounts := db.FindAccount("email", id)
 
 	var wg sync.WaitGroup
 	// register the new account
@@ -172,7 +171,7 @@ func regHandler(w http.ResponseWriter, r *http.Request) {
 		fmt.Printf("found Account: %v for id: %v\n", account, id)
 	}
 
-   //TODO: send email to player
+	//TODO: send email to player
 
 	resp := respReg{
 		Account: account.Address,
@@ -197,70 +196,46 @@ func playHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	q := r.URL.Query()
 
-	emails, ok := q["email"]
+	keys, ok := q["key"]
 	if !ok {
-		http.Error(w, "missing params", http.StatusBadRequest)
+		http.Error(w, "missing key params", http.StatusBadRequest)
 		return
 	}
-	email := emails[0]
+	key := keys[0]
 
-	var account *fdb.PzPlayer
+	stakes, ok := q["stake"]
+	if !ok {
+		http.Error(w, "missing stake params", http.StatusBadRequest)
+		return
+	}
+	stake := stakes[0]
+
 	// find the existing account from firebase DB
-	accounts := db.FindAccount(email)
+	accounts := db.FindAccount("privkey", key)
 
-	var wg sync.WaitGroup
-	// register the new account
+	// can't play if player didn't register before
 	if len(accounts) == 0 {
-		// generate the key
-		address, priv := utils.GenereateKeys()
-		leader := restclient.PickALeader()
-
-		wg.Add(1)
-		go restclient.FundMe(leader, address, wg)
-
-		player := fdb.PzPlayer{
-			Email:   email,
-			CosID:   "133",
-			PrivKey: priv,
-			Address: address,
-			Leader:  leader.IP,
-			Port:    leader.Port,
-		}
-		err := db.RegisterAccount(&player)
-		if err != nil {
-			app_log.Criticalf(ctx, "playHandler registerAccount error: %v", err)
-			http.Error(w, "Register Account, please retry", http.StatusInternalServerError)
-		}
-		account = &player
-		fmt.Printf("register new Account: %v for email: %v\n", account, email)
-	} else {
-		// we should find only one account, if more than one, just get the first one
-		account := accounts[0]
-		fmt.Printf("found Account: %v for email: %v\n", account, email)
-	}
-
-	wg.Wait()
-	balance, err := restclient.GetBalance(account.Address)
-	if err != nil {
-		app_log.Criticalf(ctx, "playHandler GetBalance error: %v", err)
-		http.Error(w, "Can't GetBalance, please retry", http.StatusInternalServerError)
+		http.Error(w, "can't find the registered player", http.StatusBadRequest)
 		return
-	}
-	if balance < minimalFee {
-		http.Error(w, "Not enough balance to play, please get more token", http.StatusBadRequest)
-		return
+
 	}
 
-	level, err := restclient.EnterPuzzle(account.Address, gameFee)
+	// we should find only one account, if more than one, just get the first one
+	account := accounts[0]
+	app_log.Infof(ctx, "player: %v is about to play", account.Address)
+
+	// calling the play smart contract
+	level, err := restclient.EnterPuzzle(account.Address, stake)
 	if err != nil {
-		app_log.Criticalf(ctx, "playHandler EnterPuzzle error: %v", err)
-		http.Error(w, "Can't Enter Game, please retry", http.StatusInternalServerError)
+		app_log.Criticalf(ctx, "playHandler EnterPuzzle failed: %v", err)
+		http.Error(w, "can't play the game, please retry", http.StatusInternalServerError)
+		return
 	}
 
 	resp := respEnter{
 		Address: account.Address,
 		Level:   level,
-		Balance: balance,
+		Balance: 0,
 	}
 
 	bytes, err := json.Marshal(resp)
@@ -346,12 +321,17 @@ func testHandler(w http.ResponseWriter, r *http.Request) {
 
 	switch function[0] {
 	case "FindAccount":
-		emails, ok := q["email"]
+		keys, ok := q["key"]
 		if !ok {
-			http.Error(w, "missing email params", http.StatusBadRequest)
+			http.Error(w, "missing key params", http.StatusBadRequest)
 			break
 		}
-		accounts := db.FindAccount(emails[0])
+		values, ok := q["value"]
+		if !ok {
+			http.Error(w, "missing value params", http.StatusBadRequest)
+			break
+		}
+		accounts := db.FindAccount(keys[0], values[0])
 		app_log.Infof(ctx, "accounts: %v", accounts)
 		res = fmt.Sprintf("accounts: %v\n", accounts)
 	case "RegisterAccount":

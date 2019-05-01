@@ -154,7 +154,7 @@ func GetBalance(account string) (uint64, error) {
 }
 
 // EnterPuzzle calls /enter rest call to enter the game and return the current level
-func EnterPuzzle(account string, amount uint64) (uint, error) {
+func EnterPuzzle(account string, amount string) (uint, error) {
 	return 0, nil
 }
 

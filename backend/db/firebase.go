@@ -284,11 +284,13 @@ func (fdb *Fdb) GetPlayers(key, op string, value interface{}) []*Player {
 }
 
 // FindAccount find the account and leader info from the db
-func (fdb *Fdb) FindAccount(email string) []*PzPlayer {
+// Assuming the search condition is "key == value"
+// Only return the first one account found
+func (fdb *Fdb) FindAccount(key string, value string) []*PzPlayer {
 	var iter *firestore.DocumentIterator
 	var ok bool
 
-	iter = fdb.client.Collection(pzPlayersCollection).Where("email", "==", email).Documents(ctx)
+	iter = fdb.client.Collection(pzPlayersCollection).Where(key, "==", value).Limit(1).Documents(ctx)
 
 	// We should have only one player returned
 	players := make([]*PzPlayer, 0)
