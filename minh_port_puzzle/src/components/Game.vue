@@ -4,7 +4,7 @@
 
   .cell {
     &.selected {
-      box-shadow: 0 0 0 0.4em rgba(255, 255, 255, 0.4);
+      box-shadow: 0 0 0 0.4em rgba(255, 255, 255, 0.8);
     }
   }
 }
@@ -50,7 +50,7 @@ function createSwipeListener(onSwipe) {
     var my = Math.abs(y);
     if (mx < sens && my < sens) return;
 
-    var d = mx > my ? (x > 0 ? "left" : "right") : y > 0 ? "up" : "down";
+    var d = mx > my ? (x > 0 ? "L" : "R") : y > 0 ? "U" : "D";
     onSwipe(d);
   }
 
@@ -66,11 +66,17 @@ function createSwipeListener(onSwipe) {
   };
 }
 
+const actions = {
+  L: { x: 0, y: -1 },
+  U: { x: -1, y: 0 },
+  R: { x: 0, y: 1 },
+  D: { x: 1, y: 0 }
+};
 var keyMap = {};
-keyMap[37] = { dir: "left", diff: { x: 0, y: -1 } };
-keyMap[38] = { dir: "up", diff: { x: -1, y: 0 } };
-keyMap[39] = { dir: "right", diff: { x: 0, y: 1 } };
-keyMap[40] = { dir: "down", diff: { x: 1, y: 0 } };
+keyMap[37] = "L";
+keyMap[38] = "U";
+keyMap[39] = "R";
+keyMap[40] = "D";
 
 export default {
   name: "Game",
@@ -91,7 +97,8 @@ export default {
       cells: this.game.contents.slice(0),
       position: Object.assign({}, this.game.initialSelected),
       boardSizeAutoPx: 0,
-      size: 3
+      size: 3,
+      moves: ""
     };
   },
   mounted() {
@@ -143,6 +150,7 @@ export default {
   methods: {
     startGame() {
       this.runKeyboardControl(this.move);
+      this.runTouchControl(this.move);
     },
     runKeyboardControl(move) {
       var listenKeysOn = this.listenOwnKeyEventsOnly ? this.$el : document;
@@ -159,9 +167,9 @@ export default {
       });
     },
 
-    runTouchControl(doGameMove) {
+    runTouchControl(move) {
       var sw = createSwipeListener(function(m) {
-        doGameMove(m);
+        move(m);
       });
       var el = this.$el;
       sw.attach(el);
@@ -170,11 +178,13 @@ export default {
       });
     },
     finishLevel() {
-      this.$emit("completeLevel", this);
+      this.$emit("completeLevel", this.moves);
     },
-    move(e) {
-      let x = clamp(this.position.x + e.diff.x, 0, 2);
-      let y = clamp(this.position.y + e.diff.y, 0, 2);
+    move(dir) {
+      this.moves += dir;
+      let diff = actions[dir];
+      let x = clamp(this.position.x + diff.x, 0, 2);
+      let y = clamp(this.position.y + diff.y, 0, 2);
       if (x === this.position.x && y === this.position.y) return;
       this.position.x = x;
       this.position.y = y;

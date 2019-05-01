@@ -284,11 +284,13 @@ func (fdb *Fdb) GetPlayers(key, op string, value interface{}) []*Player {
 }
 
 // FindAccount find the account and leader info from the db
-func (fdb *Fdb) FindAccount(email string) []*PzPlayer {
+// Assuming the search condition is "key == value"
+// Only return the first one account found
+func (fdb *Fdb) FindAccount(key string, value string) []*PzPlayer {
 	var iter *firestore.DocumentIterator
 	var ok bool
 
-	iter = fdb.client.Collection(pzPlayersCollection).Where("email", "==", email).Documents(ctx)
+	iter = fdb.client.Collection(pzPlayersCollection).Where(key, "==", value).Limit(1).Documents(ctx)
 
 	// We should have only one player returned
 	players := make([]*PzPlayer, 0)
@@ -353,6 +355,20 @@ func (fdb *Fdb) FindAccount(email string) []*PzPlayer {
 }
 
 // RegisterAccount register user account into db
-func (fdb *Fdb) RegisterAccount(email, account, leader string) error {
-	return nil
+func (fdb *Fdb) RegisterAccount(p *PzPlayer) error {
+	_, _, err := fdb.client.Collection(pzPlayersCollection).Add(ctx, map[string]interface{}{
+		"email":   p.Email,
+		"cosid":   p.CosID,
+		"privkey": p.PrivKey,
+		"address": p.Address,
+		"highest": 0,
+		"rewards": 0,
+		"leader":  p.Leader,
+		"port":    p.Port,
+	})
+
+	if err != nil {
+		log.Fatalf("Failed adding new account")
+	}
+	return err
 }

@@ -5,7 +5,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"math/rand"
 	"net/http"
+	"sync"
 
 	"github.com/harmony-one/demo-apps/backend/p2p"
 )
@@ -43,6 +45,11 @@ func SetLeaders(l []p2p.Peer) {
 //GetLeaders return the list of existing leaders
 func GetLeaders() []p2p.Peer {
 	return leaders
+}
+
+// PickALeader return a random leader from the leader list
+func PickALeader() p2p.Peer {
+	return leaders[rand.Intn(len(leaders))]
 }
 
 //GetWinner return the result of a rest api call
@@ -110,7 +117,34 @@ func GetPlayer(ip, port string) (*Player, error) {
 }
 
 // FundMe call /fundme rest call on leader
-func FundMe(account string) error {
+func FundMe(leader p2p.Peer, account string, wg sync.WaitGroup) error {
+	defer wg.Done()
+	url := fmt.Sprintf("http://%s:%s/fundme?key=0x%s", leader.IP, leader.Port, account)
+	response, err := http.Get(url)
+	if err != nil {
+		return fmt.Errorf("[FundMe] GET result error: %s", err)
+	}
+	if response.StatusCode != http.StatusOK {
+		return fmt.Errorf("[FundMe] can't get result data")
+	}
+	contents, err := ioutil.ReadAll(response.Body)
+	defer response.Body.Close()
+
+	if err != nil {
+		return fmt.Errorf("[FundMe] failed to read response: %v", err)
+	}
+
+	var player Player
+	err = json.Unmarshal(contents, &player)
+
+	if err != nil {
+		return fmt.Errorf("[FundMe] failed to unmarshal result response: %v", err)
+	}
+
+	if !player.Success {
+		return fmt.Errorf("[FundMe] Failed on blockchain")
+	}
+
 	return nil
 }
 
@@ -120,7 +154,7 @@ func GetBalance(account string) (uint64, error) {
 }
 
 // EnterPuzzle calls /enter rest call to enter the game and return the current level
-func EnterPuzzle(account string, amount uint64) (uint, error) {
+func EnterPuzzle(account string, amount string) (uint, error) {
 	return 0, nil
 }
 

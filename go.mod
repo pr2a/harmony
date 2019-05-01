@@ -4,6 +4,7 @@ go 1.12
 
 require (
 	cloud.google.com/go v0.37.4
+	github.com/btcsuite/btcd v0.0.0-20190213025234-306aecffea32 // indirect
 	github.com/ethereum/go-ethereum v1.8.27
 	github.com/go-openapi/errors v0.19.0
 	github.com/go-openapi/loads v0.19.0
