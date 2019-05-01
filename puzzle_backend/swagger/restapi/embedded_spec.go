@@ -181,6 +181,12 @@ func init() {
                   "type": "string"
                 }
               }
+            },
+            "headers": {
+              "Access-Control-Allow-Origin": {
+                "type": "string",
+                "description": "CORS origin bypass. TODO ek – remove this."
+              }
             }
           },
           "401": {
@@ -363,6 +369,12 @@ func init() {
                 "email": {
                   "type": "string"
                 }
+              }
+            },
+            "headers": {
+              "Access-Control-Allow-Origin": {
+                "type": "string",
+                "description": "CORS origin bypass. TODO ek – remove this."
               }
             }
           },

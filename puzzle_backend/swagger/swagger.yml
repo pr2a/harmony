@@ -26,6 +26,10 @@ paths:
       responses:
         "201":
           description: A new user.  FE should instruct the user to check email.
+          headers:
+            "Access-Control-Allow-Origin":
+              type: string
+              description: CORS origin bypass. TODO ek – remove this.
           schema:
             type: object
             properties:

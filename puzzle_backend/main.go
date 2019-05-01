@@ -141,7 +141,9 @@ func main() {
 }
 
 func handlePostReg(params operations.PostRegParams) middleware.Responder {
-	return operations.NewPostRegCreated().WithPayload(
+	return operations.NewPostRegCreated().WithAccessControlAllowOrigin(
+		"*", // TODO ek – tighten this up!
+	).WithPayload(
 		&operations.PostRegCreatedBody{
 			Account: "0x0000000000000000000000000000000000000000",
 			Email:   "ek@harmony.one",

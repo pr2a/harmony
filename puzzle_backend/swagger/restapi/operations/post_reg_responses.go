@@ -63,6 +63,10 @@ const PostRegCreatedCode int = 201
 swagger:response postRegCreated
 */
 type PostRegCreated struct {
+	/*CORS origin bypass. TODO ek – remove this.
+
+	 */
+	AccessControlAllowOrigin string `json:"Access-Control-Allow-Origin"`
 
 	/*
 	  In: Body
@@ -74,6 +78,17 @@ type PostRegCreated struct {
 func NewPostRegCreated() *PostRegCreated {
 
 	return &PostRegCreated{}
+}
+
+// WithAccessControlAllowOrigin adds the accessControlAllowOrigin to the post reg created response
+func (o *PostRegCreated) WithAccessControlAllowOrigin(accessControlAllowOrigin string) *PostRegCreated {
+	o.AccessControlAllowOrigin = accessControlAllowOrigin
+	return o
+}
+
+// SetAccessControlAllowOrigin sets the accessControlAllowOrigin to the post reg created response
+func (o *PostRegCreated) SetAccessControlAllowOrigin(accessControlAllowOrigin string) {
+	o.AccessControlAllowOrigin = accessControlAllowOrigin
 }
 
 // WithPayload adds the payload to the post reg created response
@@ -89,6 +104,13 @@ func (o *PostRegCreated) SetPayload(payload *PostRegCreatedBody) {
 
 // WriteResponse to the client
 func (o *PostRegCreated) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
+
+	// response header Access-Control-Allow-Origin
+
+	accessControlAllowOrigin := o.AccessControlAllowOrigin
+	if accessControlAllowOrigin != "" {
+		rw.Header().Set("Access-Control-Allow-Origin", accessControlAllowOrigin)
+	}
 
 	rw.WriteHeader(201)
 	if o.Payload != nil {
