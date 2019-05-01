@@ -352,7 +352,7 @@ export default {
         this.endGame();
         return;
       }
-      service.completeLevel(this.levelIndex, moves).then(() => {
+      service.completeLevel(this.levelIndex, this.level, moves).then(() => {
         this.levelIndex++;
         let timeChange = 15;
         this.secondsLeft += timeChange;

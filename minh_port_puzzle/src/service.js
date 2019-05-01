@@ -33,12 +33,13 @@ export default {
             store.addTx({ action: "Stake", timestamp: new Date(), tokenChange: -value });
         });
     },
-    completeLevel(level, moves) {
+    completeLevel(levelIndex, board, moves) {
         console.log(moves);
         return sendPost(
             "/finish",
             {
-                level: level,
+                level: levelIndex,
+                board: board,
                 moves: moves,
                 txId: store.getStakeTxId()
             }
