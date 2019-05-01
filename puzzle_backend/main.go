@@ -20,14 +20,14 @@ import (
 )
 
 type respEnter struct {
-	Address string `json:address`
-	Level   uint   `json:level`
-	Balance uint64 `json:balance`
+	Address string `json:"address"`
+	Level   uint   `json:"level"`
+	Balance uint64 `json:"balance"`
 }
 
 type respFinish struct {
-	Level   int    `json:level`
-	Rewards uint64 `json:rewards`
+	Level   int    `json:"level"`
+	Rewards uint64 `json:"rewards"`
 }
 
 var (
@@ -181,12 +181,12 @@ func enterHandler(w http.ResponseWriter, r *http.Request) {
 
 	bytes, err := json.Marshal(resp)
 	if err != nil {
-		fmt.Printf("can't marshal enter resp: %s\n", resp)
+		fmt.Printf("can't marshal enter resp: %v\n", resp)
 		http.Error(w, "Can't marshal enter response", http.StatusInternalServerError)
 		return
 	}
 	res := string(bytes)
-	io.WriteString(w, res)
+	_, _ = io.WriteString(w, res)
 }
 
 func finishHandler(w http.ResponseWriter, r *http.Request) {
@@ -235,12 +235,12 @@ func finishHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	bytes, err := json.Marshal(resp)
 	if err != nil {
-		fmt.Printf("can't marshal finish resp: %s\n", resp)
+		fmt.Printf("can't marshal finish resp: %v\n", resp)
 		http.Error(w, "Can't marshal finish response", http.StatusInternalServerError)
 		return
 	}
 	res := string(bytes)
-	io.WriteString(w, res)
+	_, _ = io.WriteString(w, res)
 }
 
 func testHandler(w http.ResponseWriter, r *http.Request) {
