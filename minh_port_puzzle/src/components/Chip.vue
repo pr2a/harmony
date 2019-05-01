@@ -7,10 +7,10 @@
 <script>
 var fontSizeCoefs = [1, 1, 0.8, 0.65, 0.5, 0.4, 0.35, 0.32];
 var backColors = [];
-backColors[2] = "#87E293";
-backColors[4] = "#87E273";
-backColors[8] = "#eecf40";
-backColors[16] = "#ffaa4f";
+backColors[2] = "#EFE5D7";
+backColors[4] = "#5EB2D4";
+backColors[8] = "#E1EFF8";
+backColors[16] = "#3776C0";
 backColors[64] = "#9ebbee";
 backColors[32] = "#6bcae2";
 backColors[128] = "white";
@@ -37,8 +37,7 @@ export default {
       return {
         fontSize: this.fontSizePx + "px",
         backgroundColor: this.backColor,
-        color: this.color,
-        boxShadow: this.boxShadow
+        color: this.color
       };
     },
     fontSizePx() {
@@ -51,18 +50,6 @@ export default {
     },
     color: function() {
       return colors[this.chip.value] || colors[128];
-    },
-    boxShadow: function() {
-      if (this.chip.value < 256) {
-        var s = this.sizePx * 0.1 + "px ";
-        return "0 " + s + s + "0 black";
-      } else {
-        return (
-          "0 0 20px " +
-          (2 + Math.min(10, Math.log(this.chip.value) / Math.log(2) - 7)) +
-          "px white"
-        );
-      }
     }
   },
   watch: {

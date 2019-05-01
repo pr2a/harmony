@@ -2,7 +2,7 @@
 
 - `/enter?email=xxxx`
   - It responds `{balance, address, level}`
-- `/finish?new_level=xxx`
+- `/finish?new_level=xxx&account=xxx&key=xxx`
   - It responds `{msg, level}`
 
 # App Engine with golang

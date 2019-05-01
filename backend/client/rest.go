@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+
+	"github.com/harmony-one/demo-apps/backend/p2p"
 )
 
 const (
@@ -25,6 +27,22 @@ type Player struct {
 	Players  []string `json:players`
 	Balances []string `json:balances`
 	Success  bool     `json:success`
+}
+
+var (
+	leaders = make([]p2p.Peer, 0)
+)
+
+//SetLeaders set the leader ip and port
+func SetLeaders(l []p2p.Peer) {
+	for _, p := range l {
+		leaders = append(leaders, p)
+	}
+}
+
+//GetLeaders return the list of existing leaders
+func GetLeaders() []p2p.Peer {
+	return leaders
 }
 
 //GetWinner return the result of a rest api call
@@ -89,4 +107,24 @@ func GetPlayer(ip, port string) (*Player, error) {
 	}
 
 	return &player, nil
+}
+
+// FundMe call /fundme rest call on leader
+func FundMe(account string) error {
+	return nil
+}
+
+// GetBalance call /balance rest call on leader
+func GetBalance(account string) (uint64, error) {
+	return 0, nil
+}
+
+// EnterPuzzle calls /enter rest call to enter the game and return the current level
+func EnterPuzzle(account string, amount uint64) (uint, error) {
+	return 0, nil
+}
+
+// GetRewards call /finish rest call to get rewards
+func GetRewards(account string, level int) (uint64, error) {
+	return 0, nil
 }
