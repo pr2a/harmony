@@ -12,9 +12,7 @@ import (
 	"strconv"
 
 	"github.com/go-openapi/loads"
-	_ "github.com/go-openapi/loads"
 	"github.com/go-openapi/runtime/middleware"
-	_ "github.com/go-openapi/runtime/middleware"
 	_ "github.com/go-openapi/swag"
 	"google.golang.org/appengine"
 	app_log "google.golang.org/appengine/log"
