@@ -36,7 +36,7 @@ var possible = function(data, selected, roll) {
   return true;
 }
 
-export function() levels() {
+var levels =  function(){
   var start = 1
   var outputArray = new Array(100)
   var outputString = "[\n";
