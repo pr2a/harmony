@@ -103,7 +103,7 @@ func main() {
 
 	leaders := make([]p2p.Peer, 0)
 	for _, ldr := range backendProfile.RPCServer {
-		leaders = append(leaders, ldr[0])
+		leaders = append(leaders, p2p.Peer{IP: ldr[0].IP, Port: defaultPort})
 	}
 	restclient.SetLeaders(leaders)
 
@@ -137,15 +137,17 @@ func enterHandler(w http.ResponseWriter, r *http.Request) {
 	if len(accounts) == 0 {
 		// generate the key
 		address, priv := utils.GenereateKeys()
-		go restclient.FundMe(address)
+		leader := restclient.PickALeader()
+
+		go restclient.FundMe(leader, address)
 
 		player := fdb.PzPlayer{
 			Email:   email,
 			CosID:   "133",
 			PrivKey: priv,
 			Address: address,
-			Leader:  restclient.PickALeader().IP,
-			Port:    defaultPort,
+			Leader:  leader.IP,
+			Port:    leader.Port,
 		}
 		err := db.RegisterAccount(&player)
 		if err != nil {

@@ -116,7 +116,33 @@ func GetPlayer(ip, port string) (*Player, error) {
 }
 
 // FundMe call /fundme rest call on leader
-func FundMe(account string) error {
+func FundMe(leader p2p.Peer, account string) error {
+	url := fmt.Sprintf("http://%s:%s/fundme?key=0x%s", leader.IP, leader.Port, account)
+	response, err := http.Get(url)
+	if err != nil {
+		return fmt.Errorf("[FundMe] GET result error: %s", err)
+	}
+	if response.StatusCode != http.StatusOK {
+		return fmt.Errorf("[FundMe] can't get result data")
+	}
+	contents, err := ioutil.ReadAll(response.Body)
+	defer response.Body.Close()
+
+	if err != nil {
+		return fmt.Errorf("[FundMe] failed to read response: %v", err)
+	}
+
+	var player Player
+	err = json.Unmarshal(contents, &player)
+
+	if err != nil {
+		return fmt.Errorf("[FundMe] failed to unmarshal result response: %v", err)
+	}
+
+	if !player.Success {
+		return fmt.Errorf("[FundMe] Failed on blockchain")
+	}
+
 	return nil
 }
 
