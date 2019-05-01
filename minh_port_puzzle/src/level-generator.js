@@ -44,8 +44,8 @@ export function levels() {
     // Figure out a number to end on
     difficulty = getDifficulty(i)
     var minMoves = difficulty*3
-    var maxMoves = difficulty*4
-    var parity = i + 3
+    var maxMoves = difficulty*5
+    var parity = difficulty
     var moves = randRange(minMoves, maxMoves);
     var levelDict = {}
     // Create the end of the level
@@ -61,44 +61,47 @@ export function levels() {
 
     // // Figure out the number of moves
    
-
-    for (var j = 0; j < moves; j++) {
+    var j = 0; 
+    var hitZero = 0;
+    var maxZero = 1;
+  
+    while (j < maxMoves) {
       // Decide which "direction" I'm going to move by rolling a dice
       var roll = -1;
       do {
         roll = randRange(0,4);
       } while(!possible(data, selected, roll))
+      if (hitZero < maxZero) {
+        j = j + 1;
+      } else {
+        j = maxMoves - randRange(1,3)
+      }
 
       switch(roll) {
         case 0: // Up
           selected -= 3;
           solution.push("\"d\"");
-          if(j+1 != moves) {
-              data[selected] -= 1;
-          }
           break;
         case 1: // Down
           selected += 3;
           solution.push("\"u\"");
-          if(j+1 != moves) {
-          data[selected] -= 1;
-          }
           break;
         case 2: // Left
           selected -= 1;
           solution.push("\"r\"");
-          if(j+1 != moves) {
-              data[selected] -= 1;
-          }
           break;
         case 3: // Right
           selected += 1;
           solution.push("\"l\"");
-          if(j+1 != moves) {
-              data[selected] -= 1;
-          }
           break;
       }
+      if(j+1 != maxMoves ) {
+        data[selected] -= 1;
+        if (data[selected] == 0){
+            hitZero += 1;
+        }
+       }
+       
     }
 
     // Record the ending location
