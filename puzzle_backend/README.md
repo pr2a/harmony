@@ -21,3 +21,9 @@ dev_appserver.py app.yaml
 ```
 
 App engine project id: benchmark-209420
+
+# App Engine Deployment
+
+- gcloud auth login
+- gcloud set project harmony-puzzle-backend
+- gcloud app deploy
