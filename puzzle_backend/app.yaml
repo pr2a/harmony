@@ -1,6 +1,12 @@
-runtime: go111
-api_version: go1
-
-handlers:
-  - url: /.*
-    script: _go_app
+runtime: go112
+env: flex
+endpoints_api_service:
+  name: harmony-puzzle-ek.appspot.com
+  # From https://cloud.google.com/endpoints/docs/openapi/get-started-app-engine:
+  #
+  # “The rollout_strategy: managed option configures ESP to use the latest
+  # deployed service configuration. When you specify this option, within a
+  # minute after you deploy a new service configuration, ESP detects the
+  # change and automatically begins using it. We recommend that you specify
+  # this option instead of a specific configuration ID for ESP to use.”
+  rollout_strategy: managed
