@@ -11,6 +11,7 @@
   width: 100%;
   overflow: auto;
   -webkit-appearance: none;
+  font-size: initial;
 }
 
 ::-webkit-input-placeholder {
