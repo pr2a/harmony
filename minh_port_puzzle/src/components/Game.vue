@@ -4,7 +4,7 @@
 
   .cell {
     &.selected {
-      box-shadow: 0 0 0 0.4em rgba(255, 255, 255, 0.4);
+      box-shadow: 0 0 0 0.4em rgba(255, 255, 255, 0.8);
     }
   }
 }

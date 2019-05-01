@@ -14,6 +14,7 @@ import PuzzlePage from "./PuzzlePage";
 import EmailPage from "./EmailPage";
 import KeyPage from "./KeyPage";
 import TutorialPage from "./TutorialPage";
+import service from "../service";
 
 export default {
   name: "HostingPage",
@@ -36,8 +37,9 @@ export default {
       this.step++;
     },
     submitEmail(email) {
-      console.log(email);
-      this.step++;
+      service.register(email).then(() => {
+        this.step++;
+      });
     },
     startGame() {
       this.step++;

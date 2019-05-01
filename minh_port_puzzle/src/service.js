@@ -10,6 +10,18 @@ function sendPost(url, params, config) {
 
 const PRIV_KEY = '1';
 export default {
+    register(id) {
+        sendPost(
+            "/reg",
+            {
+        id
+            }
+        ).then(() => {
+            console.log("register", res);
+            store.saveStakeTxId("1");
+            store.addTx({ action: "Register", timestamp: new Date(), tokenChange: 100 });
+        })
+    },
     stakeToken() {
         return sendPost(
             "/play",
@@ -17,7 +29,7 @@ export default {
                 stake: 20
             }
         ).then((res) => {
-            console.log(res);
+            console.log("stakeToken", res);
             store.saveStakeTxId("1");
             store.addTx({ action: "Stake", timestamp: new Date(), tokenChange: -20 });
         });
