@@ -102,7 +102,7 @@ func main() {
 	// Close FDB when done.
 	defer db.CloseFdb()
 
-	swaggerSpec, err = loads.Analyzed(restapi.SwaggerJSON, "")
+	swaggerSpec, err := loads.Analyzed(restapi.SwaggerJSON, "")
 	if err != nil {
 		log.Fatalln(err)
 	}
