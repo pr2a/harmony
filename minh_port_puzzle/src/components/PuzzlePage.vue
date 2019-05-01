@@ -282,7 +282,7 @@ export default {
         this.endGame();
         return;
       }
-      service.completeLevel().then(() => {
+      service.completeLevel(this.levelIndex).then(() => {
         this.levelIndex++;
         this.secondsLeft += 15;
         this.reward += 5;
