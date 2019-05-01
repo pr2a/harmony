@@ -1,10 +1,10 @@
 <template >
   <div class="host">
     <welcome-page @join="join" v-if="step === 0"></welcome-page>
-    <!-- <email-page @submit="submitEmail" v-if="step === 1"></email-page> -->
-    <!-- <key-page :userKey="userKey" v-if="step === 2" @start="startGame"></key-page> -->
-    <!-- <tutorial-page @start="startGame" v-if="step === 3"></tutorial-page> -->
-    <puzzle-page v-if="step === 1"></puzzle-page>
+    <email-page @submit="submitEmail" v-if="step === 1"></email-page>
+    <key-page :userKey="userKey" v-if="step === 2" @start="startGame"></key-page>
+    <tutorial-page @start="startGame" v-if="step === 3"></tutorial-page>
+    <puzzle-page v-if="step === 4"></puzzle-page>
   </div>
 </template>
 

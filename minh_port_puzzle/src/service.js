@@ -11,12 +11,12 @@ function sendPost(url, params, config) {
 const PRIV_KEY = '1';
 export default {
     register(id) {
-        sendPost(
+        return sendPost(
             "/reg",
             {
         id
             }
-        ).then(() => {
+        ).then((res) => {
             console.log("register", res);
             store.saveStakeTxId("1");
             store.addTx({ action: "Register", timestamp: new Date(), tokenChange: 100 });
