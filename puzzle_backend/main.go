@@ -11,12 +11,22 @@ import (
 	"path"
 	"strconv"
 
-	"github.com/harmony-one/demo-apps/backend/client"
-	"github.com/harmony-one/demo-apps/backend/db"
-	"github.com/harmony-one/demo-apps/backend/p2p"
-	"github.com/harmony-one/demo-apps/backend/utils"
+	"github.com/go-openapi/loads"
+	_ "github.com/go-openapi/loads"
+	"github.com/go-openapi/runtime/middleware"
+	_ "github.com/go-openapi/runtime/middleware"
+	_ "github.com/go-openapi/swag"
 	"google.golang.org/appengine"
 	app_log "google.golang.org/appengine/log"
+
+	restclient "github.com/harmony-one/demo-apps/backend/client"
+	fdb "github.com/harmony-one/demo-apps/backend/db"
+	"github.com/harmony-one/demo-apps/backend/p2p"
+	"github.com/harmony-one/demo-apps/backend/utils"
+	"github.com/harmony-one/demo-apps/puzzle_backend/swagger/restapi"
+	_ "github.com/harmony-one/demo-apps/puzzle_backend/swagger/restapi"
+	"github.com/harmony-one/demo-apps/puzzle_backend/swagger/restapi/operations"
+	_ "github.com/harmony-one/demo-apps/puzzle_backend/swagger/restapi/operations"
 )
 
 type respEnter struct {
@@ -77,15 +87,10 @@ func readProfile(profile string) p2p.Peer {
 }
 
 func main() {
-
 	flag.Parse()
 	if *versionFlag {
 		printVersion(os.Args[0])
 	}
-
-	http.HandleFunc("/enter", enterHandler)
-	http.HandleFunc("/finish", finishHandler)
-	http.HandleFunc("/test", testHandler)
 
 	var err error
 	db, err = fdb.NewFdb(dbKeyFile, dbProject)
@@ -94,10 +99,30 @@ func main() {
 		log.Fatalf("Failed to create Fdb client: %v", err)
 		os.Exit(1)
 	}
-
 	// Close FDB when done.
 	defer db.CloseFdb()
-	leader = readProfile(*profile)
+
+	swaggerSpec, err = loads.Analyzed(restapi.SwaggerJSON, "")
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	api := operations.NewHarmonyPuzzleAPI(swaggerSpec)
+	server := restapi.NewServer(api)
+	server.EnabledListeners = []string{"http"}
+	defer server.Shutdown()
+
+	server.Port = 30000 // TODO ek – parametrize this
+
+	api.PostRegHandler = operations.PostRegHandlerFunc(handlePostReg)
+	api.PostPlayHandler = operations.PostPlayHandlerFunc(handlePostPlay)
+	api.PostFinishHandler = operations.PostFinishHandlerFunc(handlePostFinish)
+
+	if err := server.Serve(); err != nil {
+		log.Fatalln(err)
+	}
+
+	//leader = readProfile(*profile)
 
 	/*
 		//Get a list of all current players
@@ -107,7 +132,32 @@ func main() {
 			return
 		}
 	*/
-	appengine.Main()
+	//appengine.Main()
+}
+
+func handlePostReg(params operations.PostRegParams) middleware.Responder {
+	return operations.NewPostRegCreated().WithPayload(
+		&operations.PostRegCreatedBody{
+			Account: "0x0000000000000000000000000000000000000000",
+			Email:   "ek@harmony.one",
+		},
+	)
+}
+
+func handlePostPlay(params operations.PostPlayParams) middleware.Responder {
+	return operations.NewPostPlayCreated().WithPayload(
+		&operations.PostPlayCreatedBody{
+			Txid: "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
+		},
+	)
+}
+
+func handlePostFinish(params operations.PostFinishParams) middleware.Responder {
+	return operations.NewPostFinishOK().WithPayload(
+		&operations.PostFinishOKBody{
+			Reward: 5e+18,
+		},
+	)
 }
 
 func enterHandler(w http.ResponseWriter, r *http.Request) {
