@@ -75,16 +75,23 @@ footer {
 .action-row + .action-row {
   margin-top: 1em;
 }
-.count-down .content {
-  &.game-over,
-  &.hurry-up {
-    color: #f6371d;
+.info-item {
+  .content {
+    position: relative;
   }
-  &.hurry-up {
-    animation-name: headShake;
-    animation-duration: 1s;
-    animation-timing-function: ease-int-out;
-    animation-iteration-count: infinite;
+}
+.count-down {
+  .seconds-left {
+    &.game-over,
+    &.hurry-up {
+      color: #f6371d;
+    }
+    &.hurry-up {
+      animation-name: headShake;
+      animation-duration: 1s;
+      animation-timing-function: ease-int-out;
+      animation-iteration-count: infinite;
+    }
   }
 }
 
@@ -113,6 +120,26 @@ footer {
     transform: translateX(0);
   }
 }
+
+.number-increase {
+  display: block;
+  position: absolute;
+  left: 0;
+  top: 0;
+  color: #2c3e50;
+  width: 100%;
+  animation: up-disappear 1.5s;
+}
+@keyframes up-disappear {
+  0% {
+    opacity: 0.7;
+  }
+
+  100% {
+    opacity: 0;
+    transform: translateY(-40px);
+  }
+}
 </style>
 
 <template>
@@ -124,14 +151,32 @@ footer {
         <div class="flex-horizontal">
           <div class="count-down info-item">
             <div class="label">Time Left</div>
-            <div
-              class="content"
-              :class="{ 'hurry-up': secondsLeft && secondsLeft <= 12, 'game-over': !secondsLeft }"
-            >{{ secondsLeft }}</div>
+            <div class="content">
+              <span
+                class="seconds-left"
+                :class="{ 'hurry-up': secondsLeft && secondsLeft <= 12, 'game-over': !secondsLeft }"
+              >{{ secondsLeft }}</span>
+              <transition>
+                <span v-if="timeIncrease!=''" class="number-increase">
+                  {{
+                  timeIncrease
+                  }}
+                </span>
+              </transition>
+            </div>
           </div>
           <div class="balance info-item">
             <div class="label">Balance</div>
-            <div class="content">{{ globalData.balance }}</div>
+            <div class="content">
+              {{ globalData.balance }}
+              <transition>
+                <span v-if="balanceIncrease!=''" class="number-increase">
+                  {{
+                  balanceIncrease
+                  }}
+                </span>
+              </transition>
+            </div>
           </div>
         </div>
       </div>
@@ -214,6 +259,8 @@ export default {
       gameEnded: false,
       secondsLeft: IntialSeconds,
       timer: null,
+      timeIncrease: "",
+      balanceIncrease: "",
       isTxPanelOpen: false
     };
   },
@@ -307,8 +354,16 @@ export default {
       }
       service.completeLevel(this.levelIndex, moves).then(() => {
         this.levelIndex++;
-        this.secondsLeft += 15;
-        this.balance += 5;
+        let timeChange = 15;
+        this.secondsLeft += timeChange;
+        this.timeIncrease = `+${timeChange}`;
+        let balanceChange = 5;
+        this.globalData.balance += balanceChange;
+        this.balanceIncrease = `+${balanceChange}`;
+        Vue.nextTick(() => {
+          this.timeIncrease = "";
+          this.balanceIncrease = "";
+        });
         this.persistState();
       });
     },
