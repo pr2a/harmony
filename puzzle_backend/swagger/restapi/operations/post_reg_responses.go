@@ -98,3 +98,47 @@ func (o *PostRegCreated) WriteResponse(rw http.ResponseWriter, producer runtime.
 		}
 	}
 }
+
+// PostRegUnauthorizedCode is the HTTP code returned for type PostRegUnauthorized
+const PostRegUnauthorizedCode int = 401
+
+/*PostRegUnauthorized The given token is invalid.
+
+swagger:response postRegUnauthorized
+*/
+type PostRegUnauthorized struct {
+
+	/*
+	  In: Body
+	*/
+	Payload *PostRegUnauthorizedBody `json:"body,omitempty"`
+}
+
+// NewPostRegUnauthorized creates PostRegUnauthorized with default headers values
+func NewPostRegUnauthorized() *PostRegUnauthorized {
+
+	return &PostRegUnauthorized{}
+}
+
+// WithPayload adds the payload to the post reg unauthorized response
+func (o *PostRegUnauthorized) WithPayload(payload *PostRegUnauthorizedBody) *PostRegUnauthorized {
+	o.Payload = payload
+	return o
+}
+
+// SetPayload sets the payload to the post reg unauthorized response
+func (o *PostRegUnauthorized) SetPayload(payload *PostRegUnauthorizedBody) {
+	o.Payload = payload
+}
+
+// WriteResponse to the client
+func (o *PostRegUnauthorized) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
+
+	rw.WriteHeader(401)
+	if o.Payload != nil {
+		payload := o.Payload
+		if err := producer.Produce(rw, payload); err != nil {
+			panic(err) // let the recovery middleware deal with this
+		}
+	}
+}

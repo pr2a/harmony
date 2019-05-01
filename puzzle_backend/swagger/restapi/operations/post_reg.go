@@ -126,3 +126,34 @@ func (o *PostRegOKBody) UnmarshalBinary(b []byte) error {
 	*o = res
 	return nil
 }
+
+// PostRegUnauthorizedBody post reg unauthorized body
+// swagger:model PostRegUnauthorizedBody
+type PostRegUnauthorizedBody struct {
+
+	// The error message.
+	Msg string `json:"msg,omitempty"`
+}
+
+// Validate validates this post reg unauthorized body
+func (o *PostRegUnauthorizedBody) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (o *PostRegUnauthorizedBody) MarshalBinary() ([]byte, error) {
+	if o == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(o)
+}
+
+// UnmarshalBinary interface implementation
+func (o *PostRegUnauthorizedBody) UnmarshalBinary(b []byte) error {
+	var res PostRegUnauthorizedBody
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*o = res
+	return nil
+}

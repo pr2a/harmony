@@ -182,6 +182,18 @@ func init() {
                 }
               }
             }
+          },
+          "401": {
+            "description": "The given token is invalid.",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "msg": {
+                  "description": "The error message.",
+                  "type": "string"
+                }
+              }
+            }
           }
         }
       }
@@ -349,6 +361,18 @@ func init() {
                   "type": "string"
                 },
                 "email": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "The given token is invalid.",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "msg": {
+                  "description": "The error message.",
                   "type": "string"
                 }
               }
