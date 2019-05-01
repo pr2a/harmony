@@ -353,6 +353,20 @@ func (fdb *Fdb) FindAccount(email string) []*PzPlayer {
 }
 
 // RegisterAccount register user account into db
-func (fdb *Fdb) RegisterAccount(email, account, leader string) error {
-	return nil
+func (fdb *Fdb) RegisterAccount(p *PzPlayer) error {
+	_, _, err := fdb.client.Collection(pzPlayersCollection).Add(ctx, map[string]interface{}{
+		"email":   p.Email,
+		"cosid":   p.CosID,
+		"privkey": p.PrivKey,
+		"address": p.Address,
+		"highest": 0,
+		"rewards": 0,
+		"leader":  p.Leader,
+		"port":    p.Port,
+	})
+
+	if err != nil {
+		log.Fatalf("Failed adding new account")
+	}
+	return err
 }

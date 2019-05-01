@@ -137,16 +137,19 @@ func enterHandler(w http.ResponseWriter, r *http.Request) {
 	// register the new account
 	if len(accounts) == 0 {
 		// generate the key
-		account, _ := utils.GenereateAccount(email)
-		err := restclient.FundMe(account)
-		if err != nil {
-			app_log.Criticalf(ctx, "enterHandler FundMe error: %v", err)
-			http.Error(w, "FundMe Error, please retry", http.StatusInternalServerError)
-			// TODO: retry
-			return
-		}
+		account, priv := utils.GenereateKeys()
+		go restclient.FundMe(account)
+
 		leaders := restclient.GetLeaders()
-		err = db.RegisterAccount(email, account, leaders[0].IP)
+		player := fdb.PzPlayer{
+			Email:   email,
+			CosID:   "133",
+			PrivKey: priv,
+			Address: account,
+			Leader:  leaders[0].IP,
+			Port:    defaultPort,
+		}
+		err := db.RegisterAccount(&player)
 		if err != nil {
 			app_log.Criticalf(ctx, "enterHandler registerAccount error: %v", err)
 			http.Error(w, "Register Account, please retry", http.StatusInternalServerError)
@@ -270,6 +273,28 @@ func testHandler(w http.ResponseWriter, r *http.Request) {
 		accounts := db.FindAccount(emails[0])
 		app_log.Infof(ctx, "accounts: %v", accounts)
 		res = fmt.Sprintf("accounts: %v\n", accounts)
+	case "RegisterAccount":
+		account, priv := utils.GenereateKeys()
+		emails, ok := q["email"]
+		if !ok {
+			http.Error(w, "missing email params", http.StatusBadRequest)
+			break
+		}
+		app_log.Infof(ctx, "accounts: %v/%v", account, priv)
+		player := fdb.PzPlayer{
+			Email:   emails[0],
+			CosID:   "133",
+			PrivKey: priv,
+			Address: account,
+			Leader:  "192.168.192.1",
+			Port:    defaultPort,
+		}
+		err := db.RegisterAccount(&player)
+		if err != nil {
+			app_log.Criticalf(ctx, "enterHandler registerAccount error: %v", err)
+			http.Error(w, "Register Account, please retry", http.StatusInternalServerError)
+		}
+		res = fmt.Sprintf("accounts: %v\n", account)
 	}
 	io.WriteString(w, res)
 }
