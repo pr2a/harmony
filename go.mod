@@ -13,6 +13,7 @@ require (
 	github.com/go-openapi/strfmt v0.19.0
 	github.com/go-openapi/swag v0.19.0
 	github.com/go-openapi/validate v0.18.0
+	github.com/go-swagger/go-swagger v0.19.0 // indirect
 	github.com/golang/protobuf v1.3.0
 	github.com/hashicorp/golang-lru v0.5.1 // indirect
 	github.com/jessevdk/go-flags v1.4.0
