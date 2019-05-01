@@ -2,13 +2,15 @@
 let store = {
     data: {
         txs: [],
-        stakeTxId: ''
+        stakeTxId: '',
+        balance: 100
     },
     addTx(tx) {
         this.data.txs.push(tx);
     },
-    saveStakeTxId(txId) {
+    stake(value, txId) {
         this.data.stakeTxId = txId;
+        this.data.balance -= value;
     },
     getStakeTxId() {
         return this.data.stakeTxId;

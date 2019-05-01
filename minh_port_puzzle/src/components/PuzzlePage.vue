@@ -3,22 +3,6 @@
   margin-bottom: 1em;
 }
 
-.info-item {
-  background-color: #fff;
-  border-radius: 0.5em;
-  border: 0.15em solid #979797;
-  padding: 1em;
-  border-radius: 0.25em;
-  padding: 0.5em;
-  width: 6em;
-  margin-left: 1em;
-  text-align: center;
-  .label {
-    font-size: 0.5em;
-    margin-bottom: 0.5em;
-  }
-}
-
 footer {
   margin-top: 1em;
   .btn-primary {
@@ -104,9 +88,9 @@ footer {
             <div class="label">Time Left</div>
             <div class="content">{{ secondsLeft }}</div>
           </div>
-          <div class="reward info-item">
-            <div class="label">Reward</div>
-            <div class="content">{{ reward }}</div>
+          <div class="balance info-item">
+            <div class="label">Balance</div>
+            <div class="content">{{ globalData.balance }}</div>
           </div>
         </div>
       </div>
@@ -117,7 +101,7 @@ footer {
             <div class="content">
               <p :style="gameOverStyle">Game over!</p>
               <div>
-                <button class="btn-primary" @click="startGame">Restart</button>
+                <button class="btn-primary" @click="$emit('restart')">Restart</button>
               </div>
             </div>
           </div>
@@ -164,12 +148,12 @@ import Chip from "./Chip";
 import { TweenLite } from "gsap/TweenMax";
 import Vue from "vue";
 import service from "../service";
+import store from "../store";
 import { levels } from "../level-generator";
 import { setInterval, clearInterval } from "timers";
 import TxHistoryPanel from "./TxHistoryPanel";
 
 var defBoardSizePx = 420;
-var defSize = 3;
 
 const IntialSeconds = 30;
 export default {
@@ -181,13 +165,13 @@ export default {
   },
   data() {
     return {
+      globalData: store.data,
       levelIndex: 0,
       levels: [],
       boardSizePx: defBoardSizePx,
-      size: defSize,
+      size: 3,
       gameEnded: false,
       secondsLeft: IntialSeconds,
-      reward: 0,
       timer: null,
       isTxPanelOpen: false
     };
@@ -265,14 +249,12 @@ export default {
       this.levelIndex = 0;
       this.levels = levels();
       this.secondsLeft = IntialSeconds;
-      service.stakeToken().then(() => {
-        this.timer = setInterval(() => {
-          this.secondsLeft--;
-          if (this.secondsLeft <= 0) {
-            this.endGame();
-          }
-        }, 1000);
-      });
+      this.timer = setInterval(() => {
+        this.secondsLeft--;
+        if (this.secondsLeft <= 0) {
+          this.endGame();
+        }
+      }, 1000);
     },
     resetLevel() {
       this.$refs[`game${this.levelIndex}`][0].reset();
@@ -285,7 +267,7 @@ export default {
       service.completeLevel(this.levelIndex, moves).then(() => {
         this.levelIndex++;
         this.secondsLeft += 15;
-        this.reward += 5;
+        this.balance += 5;
         this.persistState();
       });
     },

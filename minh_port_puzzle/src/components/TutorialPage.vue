@@ -1,6 +1,11 @@
 <style scoped lang="less">
 .content {
   margin: 3em;
+
+  label {
+    margin-top: 1em;
+    display: block;
+  }
 }
 .key {
   border-radius: 0.5em;
@@ -49,13 +54,30 @@
           <li>You complete the level once all the chips have the same number</li>
         </ul>
       </div>
+      <label>
+        <input type="checkbox" v-model="hideTutorial"> Don't show tutorial again.
+      </label>
     </div>
-    <button class="btn-primary" @click="$emit('start')">Got it</button>
+
+    <button class="btn-primary" @click="startGame">Start Game</button>
   </div>
 </template>
 
 <script>
 export default {
-  name: "TutorialPage"
+  name: "TutorialPage",
+  data() {
+    return {
+      hideTutorial: false
+    };
+  },
+  methods: {
+    startGame() {
+      if (this.hideTutorial) {
+        localStorage.setItem("hideTutorial", true);
+      }
+      this.$emit("start");
+    }
+  }
 };
 </script>

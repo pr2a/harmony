@@ -18,20 +18,19 @@ export default {
             }
         ).then((res) => {
             console.log("register", res);
-            store.saveStakeTxId("1");
             store.addTx({ action: "Register", timestamp: new Date(), tokenChange: 100 });
         })
     },
-    stakeToken() {
+    stakeToken(value) {
         return sendPost(
             "/play",
             {
-                stake: 20
+                stake: value
             }
         ).then((res) => {
             console.log("stakeToken", res);
-            store.saveStakeTxId("1");
-            store.addTx({ action: "Stake", timestamp: new Date(), tokenChange: -20 });
+            store.stake(value,"1");
+            store.addTx({ action: "Stake", timestamp: new Date(), tokenChange: -value });
         });
     },
     completeLevel(level, moves) {

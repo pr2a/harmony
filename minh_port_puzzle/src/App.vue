@@ -559,6 +559,22 @@ html {
 .text-right {
   text-align: right;
 }
+
+.info-item {
+  background-color: #fff;
+  border-radius: 0.5em;
+  border: 0.15em solid #979797;
+  padding: 1em;
+  border-radius: 0.25em;
+  padding: 0.5em;
+  width: 6em;
+  margin-left: 1em;
+  text-align: center;
+  .label {
+    font-size: 0.5em;
+    margin-bottom: 0.5em;
+  }
+}
 </style>
 
 <template>
