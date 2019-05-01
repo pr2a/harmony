@@ -45,7 +45,7 @@ export function levels() {
     difficulty = getDifficulty(i)
     var minMoves = difficulty*3
     var maxMoves = difficulty*4
-    var parity = i
+    var parity = i + 3
     var moves = randRange(minMoves, maxMoves);
     var levelDict = {}
     // Create the end of the level
