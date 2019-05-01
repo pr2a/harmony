@@ -1,3 +1,6 @@
+install:
+	go install -v
+
 validate:
 	swagger validate ./swagger/swagger.yml
 
@@ -8,4 +11,4 @@ gen: validate
 		--exclude-main \
 		--name=harmony-puzzle
 
-.PHONY: gen validate
+.PHONY: install gen validate
