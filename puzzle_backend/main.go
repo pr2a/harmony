@@ -107,14 +107,6 @@ func main() {
 	}
 	restclient.SetLeaders(leaders)
 
-	/*
-		//Get a list of all current players
-		_, err := restclient.GetPlayer(leader.IP, defaultPort)
-		if err != nil {
-			log.Fatalf("GetPlayer Error: %v", err)
-			return
-		}
-	*/
 	appengine.Main()
 }
 
