@@ -66,6 +66,9 @@ type PostRegCreatedBody struct {
 	// account
 	Account string `json:"account,omitempty"`
 
+	// balance
+	Balance string `json:"balance,omitempty"`
+
 	// email
 	Email string `json:"email,omitempty"`
 }
@@ -130,6 +133,9 @@ type PostRegOKBody struct {
 
 	// account
 	Account string `json:"account,omitempty"`
+
+	// balance
+	Balance string `json:"balance,omitempty"`
 
 	// email
 	Email string `json:"email,omitempty"`
