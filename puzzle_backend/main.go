@@ -137,22 +137,22 @@ func enterHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	email := emails[0]
 
+	var account *fdb.PzPlayer
 	// find the existing account from firebase DB
 	accounts := db.FindAccount(email)
 
 	// register the new account
 	if len(accounts) == 0 {
 		// generate the key
-		account, priv := utils.GenereateKeys()
-		go restclient.FundMe(account)
+		address, priv := utils.GenereateKeys()
+		go restclient.FundMe(address)
 
-		leaders := restclient.GetLeaders()
 		player := fdb.PzPlayer{
 			Email:   email,
 			CosID:   "133",
 			PrivKey: priv,
-			Address: account,
-			Leader:  leaders[0].IP,
+			Address: address,
+			Leader:  restclient.PickALeader().IP,
 			Port:    defaultPort,
 		}
 		err := db.RegisterAccount(&player)
@@ -160,10 +160,13 @@ func enterHandler(w http.ResponseWriter, r *http.Request) {
 			app_log.Criticalf(ctx, "enterHandler registerAccount error: %v", err)
 			http.Error(w, "Register Account, please retry", http.StatusInternalServerError)
 		}
+		account = &player
+		fmt.Printf("register new Account: %v for email: %v\n", account, email)
+	} else {
+		// we should find only one account, if more than one, just get the first one
+		account := accounts[0]
+		fmt.Printf("found Account: %v for email: %v\n", account, email)
 	}
-	fmt.Printf("found Account: %v for email: %v\n", accounts, email)
-	// we should find only one account, if more than one, just get the first one
-	account := accounts[0]
 
 	balance, err := restclient.GetBalance(account.Address)
 	if err != nil {

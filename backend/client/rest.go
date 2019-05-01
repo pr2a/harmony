@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"math/rand"
 	"net/http"
 
 	"github.com/harmony-one/demo-apps/backend/p2p"
@@ -43,6 +44,11 @@ func SetLeaders(l []p2p.Peer) {
 //GetLeaders return the list of existing leaders
 func GetLeaders() []p2p.Peer {
 	return leaders
+}
+
+// PickALeader return a random leader from the leader list
+func PickALeader() p2p.Peer {
+	return leaders[rand.Intn(len(leaders))]
 }
 
 //GetWinner return the result of a rest api call
