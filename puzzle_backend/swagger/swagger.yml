@@ -4,7 +4,7 @@ info:
   description: >
     Harmony Puzzle is a simple yet addictive blockchain-based puzzle game.
   version: "0.0.1"
-host: puzzle-api.harmony.one
+host: "harmony-puzzle-ek.appspot.com"
 basePath: /v1
 schemes:
   - https
