@@ -2,8 +2,10 @@
 .board {
   border-radius: 0.5em;
 
-  .cell.selected {
-    box-shadow: 0 0 0 0.4em rgba(255, 255, 255, 0.4);
+  .cell {
+    &.selected {
+      box-shadow: 0 0 0 0.4em rgba(255, 255, 255, 0.4);
+    }
   }
 }
 </style>
@@ -25,6 +27,7 @@
 
 <script>
 import Chip from "./Chip";
+import Vue from "vue";
 
 function clamp(v, min, max) {
   return Math.max(min, Math.min(max, v));
@@ -84,8 +87,8 @@ export default {
   },
   data() {
     return {
-      cells: this.game.contents,
-      position: this.game.initialSelected,
+      cells: this.game.contents.slice(0),
+      position: Object.assign({}, this.game.initialSelected),
       boardSizeAutoPx: 0,
       size: 3
     };
@@ -179,6 +182,14 @@ export default {
     isGameEnded() {
       let v = this.cells[0];
       return this.cells.findIndex(x => x !== v) === -1;
+    },
+    reset() {
+      this.cells = this.game.contents.slice(0);
+      this.position = Object.assign(
+        {},
+        this.position,
+        this.game.initialSelected
+      );
     }
   }
 };

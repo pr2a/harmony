@@ -53,7 +53,7 @@ footer {
         <div class="game-wrapper" :style="boardStyle">
           <transition name="fade" v-for="(level, i) in levels" :key="i">
             <Game
-              ref="game{{i}}"
+              :ref="'game' + i"
               class="game"
               :listen-own-key-events-only="false"
               :tab-index="1"
@@ -177,7 +177,8 @@ export default {
       this.score = 0;
     },
     reset() {
-      console.log(this.levelIndex, this.$refs[`game${this.levelIndex}`]);
+      console.log(this.$refs[`game${this.levelIndex}`]);
+      this.$refs[`game${this.levelIndex}`][0].reset();
     },
     onGameEnded() {
       this.gameStarted = false;
