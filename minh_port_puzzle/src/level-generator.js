@@ -13,8 +13,30 @@ var getDifficulty  = function(level){
   }
 }
 
-var generateBoard = function() {
+var possible = function(data, selected, roll) {
+  if(roll == -1)
+    return false;
 
+  if(roll == 0) {
+    if(Math.floor(selected / 3) == 0)
+      return false
+  }
+  if(roll == 1) {
+    if(Math.floor(selected / 3) == 2)
+      return false;
+  }
+  if(roll == 2) {
+    if(selected % 3 == 0)
+      return false;
+  }
+  if(roll == 3) {
+    if(selected % 3 == 2)
+      return false;
+  }
+  return true;
+}
+
+export function() levels() {
   var start = 1
   var outputArray = new Array(100)
   var outputString = "[\n";
@@ -33,12 +55,10 @@ var generateBoard = function() {
       data.push(end);
     }
     
-    //generate random colors
-    if(mode == "b&w") {
+    //generate random colors for 
       for (var a = 0; a < 9; ++a) {
         var color = randRange(0,2);
         colors.push((color < 1) ? "b" : "w");
-      }
     }
 
     var selected = randRange(0,9);
@@ -64,7 +84,7 @@ var generateBoard = function() {
           selected -= 3;
           solution.push("\"d\"");
           if(j+1 != moves) {
-            if(mode == "b&w" && colors[selected] == "b")
+            if(colors[selected] == "b")
               data[selected] += 1;
             else
               data[selected] -= 1;
@@ -74,7 +94,7 @@ var generateBoard = function() {
           selected += 3;
           solution.push("\"u\"");
           if(j+1 != moves) {
-            if(mode == "b&w" && colors[selected] == "b")
+            if(colors[selected] == "b")
               data[selected] += 1;
             else
               data[selected] -= 1;
@@ -94,7 +114,7 @@ var generateBoard = function() {
           selected += 1;
           solution.push("\"l\"");
           if(j+1 != moves) {
-            if(mode == "b&w" && colors[selected] == "b")
+            if(colors[selected] == "b")
               data[selected] += 1;
             else
               data[selected] -= 1;
@@ -116,27 +136,4 @@ var generateBoard = function() {
     outputArray[i-1] = levelDict
   }
   return outputArray
-}
-
-var possible = function(data, selected, roll) {
-  if(roll == -1)
-    return false;
-
-  if(roll == 0) {
-    if(Math.floor(selected / 3) == 0)
-      return false
-  }
-  if(roll == 1) {
-    if(Math.floor(selected / 3) == 2)
-      return false;
-  }
-  if(roll == 2) {
-    if(selected % 3 == 0)
-      return false;
-  }
-  if(roll == 3) {
-    if(selected % 3 == 2)
-      return false;
-  }
-  return true;
 }
