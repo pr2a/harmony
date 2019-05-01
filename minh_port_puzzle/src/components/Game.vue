@@ -50,8 +50,7 @@ function createSwipeListener(onSwipe) {
     var my = Math.abs(y);
     if (mx < sens && my < sens) return;
 
-    var d =
-      actions[mx > my ? (x > 0 ? "left" : "right") : y > 0 ? "up" : "down"];
+    var d = mx > my ? (x > 0 ? "L" : "R") : y > 0 ? "U" : "D";
     onSwipe(d);
   }
 
@@ -68,16 +67,16 @@ function createSwipeListener(onSwipe) {
 }
 
 const actions = {
-  left: { x: 0, y: -1 },
-  up: { x: -1, y: 0 },
-  right: { x: 0, y: 1 },
-  down: { x: 1, y: 0 }
+  L: { x: 0, y: -1 },
+  U: { x: -1, y: 0 },
+  R: { x: 0, y: 1 },
+  D: { x: 1, y: 0 }
 };
 var keyMap = {};
-keyMap[37] = actions.left;
-keyMap[38] = actions.up;
-keyMap[39] = actions.right;
-keyMap[40] = actions.down;
+keyMap[37] = "L";
+keyMap[38] = "U";
+keyMap[39] = "R";
+keyMap[40] = "D";
 
 export default {
   name: "Game",
@@ -98,7 +97,8 @@ export default {
       cells: this.game.contents.slice(0),
       position: Object.assign({}, this.game.initialSelected),
       boardSizeAutoPx: 0,
-      size: 3
+      size: 3,
+      moves: ""
     };
   },
   mounted() {
@@ -178,11 +178,13 @@ export default {
       });
     },
     finishLevel() {
-      this.$emit("completeLevel", this);
+      this.$emit("completeLevel", this.moves);
     },
-    move(e) {
-      let x = clamp(this.position.x + e.x, 0, 2);
-      let y = clamp(this.position.y + e.y, 0, 2);
+    move(dir) {
+      this.moves += dir;
+      let diff = actions[dir];
+      let x = clamp(this.position.x + diff.x, 0, 2);
+      let y = clamp(this.position.y + diff.y, 0, 2);
       if (x === this.position.x && y === this.position.y) return;
       this.position.x = x;
       this.position.y = y;

@@ -22,11 +22,13 @@ export default {
             store.addTx({ action: "Stake", timestamp: new Date(), tokenChange: -20 });
         });
     },
-    completeLevel(level) {
+    completeLevel(level, moves) {
+        console.log(moves);
         return sendPost(
             "/finish",
             {
                 level: level,
+                moves: moves,
                 txId: store.getStakeTxId()
             }
         ).then((res) => {

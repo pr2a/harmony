@@ -277,12 +277,12 @@ export default {
     resetLevel() {
       this.$refs[`game${this.levelIndex}`][0].reset();
     },
-    onLevelComplete() {
+    onLevelComplete(moves) {
       if (this.levelIndex === this.levels.length - 1) {
         this.endGame();
         return;
       }
-      service.completeLevel(this.levelIndex).then(() => {
+      service.completeLevel(this.levelIndex, moves).then(() => {
         this.levelIndex++;
         this.secondsLeft += 15;
         this.reward += 5;
