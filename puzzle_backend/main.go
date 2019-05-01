@@ -304,7 +304,7 @@ func finishHandler(w http.ResponseWriter, r *http.Request) {
 
 func testHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := appengine.NewContext(r)
-	if r.URL.Path != "/test" {
+	if r.URL.Path != "/api/v1/test" {
 		http.NotFound(w, r)
 		return
 	}
