@@ -6,7 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"math/rand"
+	_ "math/rand" // use it later
 	"net/http"
 	"time"
 
@@ -57,7 +57,9 @@ func GetLeaders() []p2p.Peer {
 
 // PickALeader return a random leader from the leader list
 func PickALeader() p2p.Peer {
-	return leaders[rand.Intn(len(leaders))]
+	//	return leaders[rand.Intn(len(leaders))]
+	// FIXME: leo testing only
+	return leaders[0]
 }
 
 //GetWinner return the result of a rest api call
