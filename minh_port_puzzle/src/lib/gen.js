@@ -27,12 +27,16 @@ const gen = (difficult, moves = 0) => {
       }
     }
     a[index(i, j)]--;
-    console.log(i, j, a);
     moves--;
   }
   return { board: _.chunk(a, SIZE), difficult, start: { i, j } };
 };
 
 // console.log(gen(3));
+// {
+//   board: [[2, 2, 2], [3, 3, 3], [0, 0, 3]],
+//   difficult: 3,
+//   start: { i: 2, j: 1 },
+// }
 
 // console.log(howManyZeros([0, 3, 4, 5]));
