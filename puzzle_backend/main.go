@@ -10,7 +10,6 @@ import (
 	"os"
 	"path"
 	"strconv"
-	"sync"
 
 	"github.com/go-openapi/loads"
 	"github.com/go-openapi/runtime/middleware"
@@ -67,6 +66,8 @@ var (
 
 	profile     = flag.String("profile", defaultProfile, "name of the profile")
 	versionFlag = flag.Bool("version", false, "Output version info")
+
+	rpcDone chan (restclient.RPCMsg)
 )
 
 const (
@@ -102,6 +103,9 @@ func main() {
 		log.Fatalf("Failed to create Fdb client: %v", err)
 		os.Exit(1)
 	}
+
+	rpcDone = make(chan (restclient.RPCMsg))
+
 	// Close FDB when done.
 	defer db.CloseFdb()
 
@@ -181,15 +185,13 @@ func regHandler(w http.ResponseWriter, r *http.Request) {
 	// find the existing account from firebase DB
 	accounts := db.FindAccount("email", id)
 
-	var wg sync.WaitGroup
 	// register the new account
 	if len(accounts) == 0 { // didn't find the account
 		// generate the key
 		address, priv := utils.GenereateKeys()
 		leader := restclient.PickALeader()
 
-		wg.Add(1)
-		go restclient.FundMe(leader, address, wg)
+		go restclient.FundMe(leader, address, rpcDone)
 
 		player := fdb.PzPlayer{
 			Email:   id,
@@ -208,24 +210,42 @@ func regHandler(w http.ResponseWriter, r *http.Request) {
 		fmt.Printf("register new Account: %v for email: %v\n", account, id)
 	} else {
 		// we should find only one account, if more than one, just get the first one
-		account := accounts[0]
+		account = accounts[0]
 		fmt.Printf("found Account: %v for id: %v\n", account, id)
+		go func() {
+			msg := restclient.RPCMsg{
+				Err:  nil,
+				Done: true,
+			}
+			rpcDone <- msg
+		}()
 	}
 
-	//TODO: send email to player
+	var res string
 
-	resp := respReg{
-		Account: account.Address,
-		Private: account.PrivKey,
+	select {
+	case msg := <-rpcDone:
+		if msg.Err != nil {
+			http.Error(w, "FundMe Error. Please retry", http.StatusInternalServerError)
+			return
+		}
+		resp := respReg{
+			Account: account.Address,
+			Private: account.PrivKey,
+		}
+
+		bytes, err := json.Marshal(resp)
+		if err != nil {
+			fmt.Printf("can't marshal reg resp: %s\n", resp)
+			http.Error(w, "warning: can't marshal response", http.StatusNoContent)
+			return
+		}
+		res = string(bytes)
+		fmt.Printf("res: %v\n", res)
+		break
+		//TODO: send email to player
 	}
 
-	bytes, err := json.Marshal(resp)
-	if err != nil {
-		fmt.Printf("can't marshal enter resp: %s\n", resp)
-		http.Error(w, "Can't marshal enter response", http.StatusInternalServerError)
-		return
-	}
-	res := string(bytes)
 	io.WriteString(w, res)
 }
 
