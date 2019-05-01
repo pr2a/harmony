@@ -6,3 +6,5 @@ node_modules/
 
 # hexie binary
 puzzle_backend/hexie
+
+package-lock.json

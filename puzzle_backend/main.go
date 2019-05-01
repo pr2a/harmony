@@ -49,6 +49,8 @@ var (
 	leader            p2p.Peer
 	backendProfile    *utils.BackendProfile
 
+	db *fdb.Fdb
+
 	profile     = flag.String("profile", defaultProfile, "name of the profile")
 	versionFlag = flag.Bool("version", false, "Output version info")
 )
@@ -57,6 +59,8 @@ const (
 	minimalFee = 1
 	gameFee    = 1
 	adminKey   = "e401343197a852f361e38ce6b46c99f1d6d1f80499864c6ae7effee42b46ab6b"
+	dbKeyFile  = "./keys/benchmark_account_key.json"
+	dbProject  = "benchmark-209420"
 )
 
 // readProfile read the ini file and return the leader's IP
@@ -83,16 +87,28 @@ func main() {
 
 	http.HandleFunc("/enter", enterHandler)
 	http.HandleFunc("/finish", finishHandler)
+	http.HandleFunc("/test", testHandler)
 
-	leader = readProfile(*profile)
+	var err error
+	db, err = fdb.NewFdb(dbKeyFile, dbProject)
 
-	//Get a list of all current players
-	_, err := restclient.GetPlayer(leader.IP, defaultPort)
-	if err != nil {
-		log.Fatalf("GetPlayer Error: %v", err)
-		return
+	if err != nil || db == nil {
+		log.Fatalf("Failed to create Fdb client: %v", err)
+		os.Exit(1)
 	}
 
+	// Close FDB when done.
+	defer db.CloseFdb()
+	leader = readProfile(*profile)
+
+	/*
+		//Get a list of all current players
+		_, err := restclient.GetPlayer(leader.IP, defaultPort)
+		if err != nil {
+			log.Fatalf("GetPlayer Error: %v", err)
+			return
+		}
+	*/
 	appengine.Main()
 }
 
@@ -116,13 +132,12 @@ func enterHandler(w http.ResponseWriter, r *http.Request) {
 	email := emails[0]
 
 	// find the existing account from firebase DB
-	account, leader := fdb.FindAccount(email)
-	_ = leader
+	accounts := db.FindAccount(email)
 
 	// register the new account
-	if account == "" {
+	if len(accounts) == 0 {
 		// generate the key
-		account, _ = utils.GenereateAccount(email)
+		account, _ := utils.GenereateAccount(email)
 		err := restclient.FundMe(account)
 		if err != nil {
 			app_log.Criticalf(ctx, "enterHandler FundMe error: %v", err)
@@ -131,15 +146,17 @@ func enterHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		leaders := restclient.GetLeaders()
-		err = fdb.RegisterAccount(email, account, leaders[0].IP)
+		err = db.RegisterAccount(email, account, leaders[0].IP)
 		if err != nil {
 			app_log.Criticalf(ctx, "enterHandler registerAccount error: %v", err)
 			http.Error(w, "Register Account, please retry", http.StatusInternalServerError)
 		}
 	}
-	fmt.Printf("found Account: %v for email: %v\n", account, email)
+	fmt.Printf("found Account: %v for email: %v\n", accounts, email)
+	// we should find only one account, if more than one, just get the first one
+	account := accounts[0]
 
-	balance, err := restclient.GetBalance(account)
+	balance, err := restclient.GetBalance(account.Address)
 	if err != nil {
 		app_log.Criticalf(ctx, "enterHandler GetBalance error: %v", err)
 		http.Error(w, "Can't GetBalance, please retry", http.StatusInternalServerError)
@@ -150,14 +167,14 @@ func enterHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	level, err := restclient.EnterPuzzle(account, gameFee)
+	level, err := restclient.EnterPuzzle(account.Address, gameFee)
 	if err != nil {
 		app_log.Criticalf(ctx, "enterHandler EnterPuzzle error: %v", err)
 		http.Error(w, "Can't Enter Game, please retry", http.StatusInternalServerError)
 	}
 
 	resp := respEnter{
-		Address: account,
+		Address: account.Address,
 		Level:   level,
 		Balance: balance,
 	}
@@ -223,5 +240,36 @@ func finishHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	res := string(bytes)
+	io.WriteString(w, res)
+}
+
+func testHandler(w http.ResponseWriter, r *http.Request) {
+	ctx := appengine.NewContext(r)
+	if r.URL.Path != "/test" {
+		http.NotFound(w, r)
+		return
+	}
+	q := r.URL.Query()
+
+	var ok bool
+	var res string
+
+	function, ok := q["function"]
+	if !ok {
+		http.Error(w, "missing params", http.StatusBadRequest)
+		return
+	}
+
+	switch function[0] {
+	case "FindAccount":
+		emails, ok := q["email"]
+		if !ok {
+			http.Error(w, "missing email params", http.StatusBadRequest)
+			break
+		}
+		accounts := db.FindAccount(emails[0])
+		app_log.Infof(ctx, "accounts: %v", accounts)
+		res = fmt.Sprintf("accounts: %v\n", accounts)
+	}
 	io.WriteString(w, res)
 }
