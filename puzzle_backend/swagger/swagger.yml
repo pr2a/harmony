@@ -42,6 +42,14 @@ paths:
                 type: string
               account:
                 type: string
+        "401":
+          description: The given token is invalid.
+          schema:
+            type: object
+            properties:
+              msg:
+                description: The error message.
+                type: string
   "/play":
     post:
       operationId: "postPlay"

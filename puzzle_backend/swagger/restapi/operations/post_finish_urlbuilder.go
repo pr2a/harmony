@@ -15,12 +15,12 @@ import (
 
 // PostFinishURL generates an URL for the post finish operation
 type PostFinishURL struct {
-	Height   *int64
-	Key      *string
-	LastPos  *int64
-	Level    *int64
-	Sequence *string
-	Txid     *string
+	AccountKey string
+	Height     *int64
+	LastPos    int64
+	Level      int64
+	Sequence   string
+	Txid       string
 
 	_basePath string
 	// avoid unkeyed usage
@@ -56,6 +56,11 @@ func (o *PostFinishURL) Build() (*url.URL, error) {
 
 	qs := make(url.Values)
 
+	accountKey := o.AccountKey
+	if accountKey != "" {
+		qs.Set("accountKey", accountKey)
+	}
+
 	var height string
 	if o.Height != nil {
 		height = swag.FormatInt64(*o.Height)
@@ -64,42 +69,22 @@ func (o *PostFinishURL) Build() (*url.URL, error) {
 		qs.Set("height", height)
 	}
 
-	var key string
-	if o.Key != nil {
-		key = *o.Key
-	}
-	if key != "" {
-		qs.Set("key", key)
-	}
-
-	var lastPos string
-	if o.LastPos != nil {
-		lastPos = swag.FormatInt64(*o.LastPos)
-	}
+	lastPos := swag.FormatInt64(o.LastPos)
 	if lastPos != "" {
 		qs.Set("last_pos", lastPos)
 	}
 
-	var level string
-	if o.Level != nil {
-		level = swag.FormatInt64(*o.Level)
-	}
+	level := swag.FormatInt64(o.Level)
 	if level != "" {
 		qs.Set("level", level)
 	}
 
-	var sequence string
-	if o.Sequence != nil {
-		sequence = *o.Sequence
-	}
+	sequence := o.Sequence
 	if sequence != "" {
 		qs.Set("sequence", sequence)
 	}
 
-	var txid string
-	if o.Txid != nil {
-		txid = *o.Txid
-	}
+	txid := o.Txid
 	if txid != "" {
 		qs.Set("txid", txid)
 	}

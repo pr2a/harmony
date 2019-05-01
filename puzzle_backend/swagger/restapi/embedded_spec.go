@@ -23,10 +23,11 @@ func init() {
   ],
   "swagger": "2.0",
   "info": {
-    "title": "harmony-puzzle",
+    "description": "Harmony Puzzle is a simple yet addictive blockchain-based puzzle game.\n",
+    "title": "Harmony Puzzle",
     "version": "0.0.1"
   },
-  "host": "puzzle-api.harmony.one",
+  "host": "harmony-puzzle-ek.appspot.com",
   "basePath": "/v1",
   "paths": {
     "/finish": {
@@ -35,24 +36,28 @@ func init() {
           "application/json"
         ],
         "summary": "FE calls this to post a level",
+        "operationId": "postFinish",
         "parameters": [
           {
             "type": "string",
             "description": "user's account private key, hex-encoded",
-            "name": "key",
-            "in": "query"
+            "name": "accountKey",
+            "in": "query",
+            "required": true
           },
           {
             "type": "string",
             "description": "the game ID (staking transaction ID) returned by POST /play",
             "name": "txid",
-            "in": "query"
+            "in": "query",
+            "required": true
           },
           {
             "type": "integer",
             "description": "level number (1-based)",
             "name": "level",
-            "in": "query"
+            "in": "query",
+            "required": true
           },
           {
             "type": "integer",
@@ -64,13 +69,15 @@ func init() {
             "type": "string",
             "description": "user's moves from first to last; [udlr]* in regex",
             "name": "sequence",
-            "in": "query"
+            "in": "query",
+            "required": true
           },
           {
             "type": "integer",
             "description": "where the cursor was after completing the last move in sequence, in telephone keypad notation (1-9)",
             "name": "last_pos",
-            "in": "query"
+            "in": "query",
+            "required": true
           }
         ],
         "responses": {
@@ -95,18 +102,21 @@ func init() {
           "application/json"
         ],
         "summary": "FE calls this to start a new game.",
+        "operationId": "postPlay",
         "parameters": [
           {
             "type": "string",
             "description": "user's account private key, hex-encoded",
-            "name": "key",
-            "in": "query"
+            "name": "accountKey",
+            "in": "query",
+            "required": true
           },
           {
             "type": "number",
             "description": "user's bet, in wei (divide by 10^18 to get HRX)",
             "name": "stake",
-            "in": "query"
+            "in": "query",
+            "required": true
           }
         ],
         "responses": {
@@ -134,12 +144,14 @@ func init() {
           "application/json"
         ],
         "summary": "FE \u0026 ContentOS calls this API when the Harmony game is loaded.",
+        "operationId": "postReg",
         "parameters": [
           {
             "type": "string",
             "description": "user's email",
             "name": "email",
-            "in": "query"
+            "in": "query",
+            "required": true
           }
         ],
         "responses": {
@@ -166,6 +178,18 @@ func init() {
                   "type": "string"
                 },
                 "email": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "The given token is invalid.",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "msg": {
+                  "description": "The error message.",
                   "type": "string"
                 }
               }
@@ -182,10 +206,11 @@ func init() {
   ],
   "swagger": "2.0",
   "info": {
-    "title": "harmony-puzzle",
+    "description": "Harmony Puzzle is a simple yet addictive blockchain-based puzzle game.\n",
+    "title": "Harmony Puzzle",
     "version": "0.0.1"
   },
-  "host": "puzzle-api.harmony.one",
+  "host": "harmony-puzzle-ek.appspot.com",
   "basePath": "/v1",
   "paths": {
     "/finish": {
@@ -194,24 +219,28 @@ func init() {
           "application/json"
         ],
         "summary": "FE calls this to post a level",
+        "operationId": "postFinish",
         "parameters": [
           {
             "type": "string",
             "description": "user's account private key, hex-encoded",
-            "name": "key",
-            "in": "query"
+            "name": "accountKey",
+            "in": "query",
+            "required": true
           },
           {
             "type": "string",
             "description": "the game ID (staking transaction ID) returned by POST /play",
             "name": "txid",
-            "in": "query"
+            "in": "query",
+            "required": true
           },
           {
             "type": "integer",
             "description": "level number (1-based)",
             "name": "level",
-            "in": "query"
+            "in": "query",
+            "required": true
           },
           {
             "type": "integer",
@@ -223,13 +252,15 @@ func init() {
             "type": "string",
             "description": "user's moves from first to last; [udlr]* in regex",
             "name": "sequence",
-            "in": "query"
+            "in": "query",
+            "required": true
           },
           {
             "type": "integer",
             "description": "where the cursor was after completing the last move in sequence, in telephone keypad notation (1-9)",
             "name": "last_pos",
-            "in": "query"
+            "in": "query",
+            "required": true
           }
         ],
         "responses": {
@@ -254,18 +285,21 @@ func init() {
           "application/json"
         ],
         "summary": "FE calls this to start a new game.",
+        "operationId": "postPlay",
         "parameters": [
           {
             "type": "string",
             "description": "user's account private key, hex-encoded",
-            "name": "key",
-            "in": "query"
+            "name": "accountKey",
+            "in": "query",
+            "required": true
           },
           {
             "type": "number",
             "description": "user's bet, in wei (divide by 10^18 to get HRX)",
             "name": "stake",
-            "in": "query"
+            "in": "query",
+            "required": true
           }
         ],
         "responses": {
@@ -293,12 +327,14 @@ func init() {
           "application/json"
         ],
         "summary": "FE \u0026 ContentOS calls this API when the Harmony game is loaded.",
+        "operationId": "postReg",
         "parameters": [
           {
             "type": "string",
             "description": "user's email",
             "name": "email",
-            "in": "query"
+            "in": "query",
+            "required": true
           }
         ],
         "responses": {
@@ -325,6 +361,18 @@ func init() {
                   "type": "string"
                 },
                 "email": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "The given token is invalid.",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "msg": {
+                  "description": "The error message.",
                   "type": "string"
                 }
               }

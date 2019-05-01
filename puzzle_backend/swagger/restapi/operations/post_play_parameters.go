@@ -12,6 +12,7 @@ import (
 	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/go-openapi/swag"
+	"github.com/go-openapi/validate"
 
 	strfmt "github.com/go-openapi/strfmt"
 )
@@ -26,20 +27,22 @@ func NewPostPlayParams() PostPlayParams {
 // PostPlayParams contains all the bound params for the post play operation
 // typically these are obtained from a http.Request
 //
-// swagger:parameters PostPlay
+// swagger:parameters postPlay
 type PostPlayParams struct {
 
 	// HTTP Request Object
 	HTTPRequest *http.Request `json:"-"`
 
 	/*user's account private key, hex-encoded
+	  Required: true
 	  In: query
 	*/
-	Key *string
+	AccountKey string
 	/*user's bet, in wei (divide by 10^18 to get HRX)
+	  Required: true
 	  In: query
 	*/
-	Stake *float64
+	Stake float64
 }
 
 // BindRequest both binds and validates a request, it assumes that complex things implement a Validatable(strfmt.Registry) error interface
@@ -53,8 +56,8 @@ func (o *PostPlayParams) BindRequest(r *http.Request, route *middleware.MatchedR
 
 	qs := runtime.Values(r.URL.Query())
 
-	qKey, qhkKey, _ := qs.GetOK("key")
-	if err := o.bindKey(qKey, qhkKey, route.Formats); err != nil {
+	qAccountKey, qhkAccountKey, _ := qs.GetOK("accountKey")
+	if err := o.bindAccountKey(qAccountKey, qhkAccountKey, route.Formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -69,42 +72,48 @@ func (o *PostPlayParams) BindRequest(r *http.Request, route *middleware.MatchedR
 	return nil
 }
 
-// bindKey binds and validates parameter Key from query.
-func (o *PostPlayParams) bindKey(rawData []string, hasKey bool, formats strfmt.Registry) error {
+// bindAccountKey binds and validates parameter AccountKey from query.
+func (o *PostPlayParams) bindAccountKey(rawData []string, hasKey bool, formats strfmt.Registry) error {
+	if !hasKey {
+		return errors.Required("accountKey", "query")
+	}
 	var raw string
 	if len(rawData) > 0 {
 		raw = rawData[len(rawData)-1]
 	}
 
-	// Required: false
+	// Required: true
 	// AllowEmptyValue: false
-	if raw == "" { // empty values pass all other validations
-		return nil
+	if err := validate.RequiredString("accountKey", "query", raw); err != nil {
+		return err
 	}
 
-	o.Key = &raw
+	o.AccountKey = raw
 
 	return nil
 }
 
 // bindStake binds and validates parameter Stake from query.
 func (o *PostPlayParams) bindStake(rawData []string, hasKey bool, formats strfmt.Registry) error {
+	if !hasKey {
+		return errors.Required("stake", "query")
+	}
 	var raw string
 	if len(rawData) > 0 {
 		raw = rawData[len(rawData)-1]
 	}
 
-	// Required: false
+	// Required: true
 	// AllowEmptyValue: false
-	if raw == "" { // empty values pass all other validations
-		return nil
+	if err := validate.RequiredString("stake", "query", raw); err != nil {
+		return err
 	}
 
 	value, err := swag.ConvertFloat64(raw)
 	if err != nil {
 		return errors.InvalidType("stake", "query", "float64", raw)
 	}
-	o.Stake = &value
+	o.Stake = value
 
 	return nil
 }

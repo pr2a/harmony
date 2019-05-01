@@ -49,7 +49,8 @@ func NewHarmonyPuzzleAPI(spec *loads.Document) *HarmonyPuzzleAPI {
 	}
 }
 
-/*HarmonyPuzzleAPI the harmony puzzle API */
+/*HarmonyPuzzleAPI Harmony Puzzle is a simple yet addictive blockchain-based puzzle game.
+ */
 type HarmonyPuzzleAPI struct {
 	spec            *loads.Document
 	context         *middleware.Context
