@@ -152,11 +152,7 @@ func handlePostReg(params operations.PostRegParams) middleware.Responder {
 }
 
 func handlePostPlay(params operations.PostPlayParams) middleware.Responder {
-	return operations.NewPostPlayCreated().WithPayload(
-		&operations.PostPlayCreatedBody{
-			Txid: "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
-		},
-	)
+	return operations.NewPostPlayCreated()
 }
 
 func handlePostFinish(params operations.PostFinishParams) middleware.Responder {
