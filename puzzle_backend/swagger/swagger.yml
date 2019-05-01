@@ -1,0 +1,102 @@
+swagger: "2.0"
+info:
+  title: "harmony-puzzle"
+  version: "0.0.1"
+host: puzzle-api.harmony.one
+basePath: /v1
+schemes:
+  - https
+paths:
+  /reg:
+    post:
+      summary: FE & ContentOS calls this API when the Harmony game is loaded.
+      consumes:
+        - application/json
+      parameters:
+        - in: query
+          name: email
+          type: string
+          description: user's email
+      produces:
+        - application/json
+      responses:
+        "201":
+          description: A new user.  FE should instruct the user to check email.
+          schema:
+            type: object
+            properties:
+              email:
+                type: string
+              account:
+                type: string
+        "200":
+          description: An existing user.
+          schema:
+            type: object
+            properties:
+              email:
+                type: string
+              account:
+                type: string
+  /play:
+    post:
+      summary: FE calls this to start a new game.
+      consumes:
+        - application/json
+      parameters:
+        - in: query
+          name: key
+          type: string
+          description: user's account private key, hex-encoded
+        - in: query
+          name: stake
+          type: number
+          description: user's bet, in wei (divide by 10^18 to get HRX)
+      responses:
+        "201":
+          description: A new game has been started.
+          schema:
+            type: object
+            properties:
+              txid:
+                type: string
+                description: staking txid
+  /finish:
+    post:
+      summary: FE calls this to post a level
+      consumes:
+        - application/json
+      parameters:
+        - in: query
+          name: key
+          type: string
+          description: user's account private key, hex-encoded
+        - in: query
+          name: txid
+          type: string
+          description: the game ID (staking transaction ID) returned by POST /play
+        - in: query
+          name: level
+          type: integer
+          description: level number (1-based)
+        - in: query
+          name: height
+          type: integer
+          description: the solution's height (the same number found in all squares)
+        - in: query
+          name: sequence
+          type: string
+          description: user's moves from first to last; [udlr]* in regex
+        - in: query
+          name: last_pos
+          type: integer
+          description: where the cursor was after completing the last move in sequence, in telephone keypad notation (1-9)
+      responses:
+        "200":
+          description: The level has been accepted.
+          schema:
+            type: object
+            properties:
+              reward:
+                type: number
+                description: reward amount, in wei (divide by 10^18 to get HRX)
