@@ -25,7 +25,7 @@ footer {
   opacity: 0;
 }
 
-.game-over {
+.game-over-message {
   font-weight: bold;
   text-align: center;
 }
@@ -75,6 +75,44 @@ footer {
 .action-row + .action-row {
   margin-top: 1em;
 }
+.count-down .content {
+  &.game-over,
+  &.hurry-up {
+    color: #f6371d;
+  }
+  &.hurry-up {
+    animation-name: headShake;
+    animation-duration: 1s;
+    animation-timing-function: ease-int-out;
+    animation-iteration-count: infinite;
+  }
+}
+
+@keyframes headShake {
+  0% {
+    transform: translateX(0);
+  }
+
+  6.5% {
+    transform: translateX(-6px) rotateY(-9deg);
+  }
+
+  18.5% {
+    transform: translateX(5px) rotateY(7deg);
+  }
+
+  31.5% {
+    transform: translateX(-3px) rotateY(-5deg);
+  }
+
+  43.5% {
+    transform: translateX(2px) rotateY(3deg);
+  }
+
+  50% {
+    transform: translateX(0);
+  }
+}
 </style>
 
 <template>
@@ -86,7 +124,10 @@ footer {
         <div class="flex-horizontal">
           <div class="count-down info-item">
             <div class="label">Time Left</div>
-            <div class="content">{{ secondsLeft }}</div>
+            <div
+              class="content"
+              :class="{ 'hurry-up': secondsLeft && secondsLeft <= 12, 'game-over': !secondsLeft }"
+            >{{ secondsLeft }}</div>
           </div>
           <div class="balance info-item">
             <div class="label">Balance</div>
@@ -97,7 +138,7 @@ footer {
       <div class="game-container" :style="gameContainerStyle">
         <div v-if="gameEnded">
           <div class="overlay half-white appearing07"></div>
-          <div class="overlay game-over appearing">
+          <div class="overlay game-over-message appearing">
             <div class="content">
               <p :style="gameOverStyle">Game over!</p>
               <div>
