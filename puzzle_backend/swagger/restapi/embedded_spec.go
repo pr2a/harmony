@@ -143,16 +143,7 @@ func init() {
         ],
         "responses": {
           "201": {
-            "description": "A new game has been started.",
-            "schema": {
-              "type": "object",
-              "properties": {
-                "txid": {
-                  "description": "staking txid",
-                  "type": "string"
-                }
-              }
-            }
+            "description": "A new game has been started."
           },
           "503": {
             "description": "Firebase DB error.",
@@ -390,16 +381,7 @@ func init() {
         ],
         "responses": {
           "201": {
-            "description": "A new game has been started.",
-            "schema": {
-              "type": "object",
-              "properties": {
-                "txid": {
-                  "description": "staking txid",
-                  "type": "string"
-                }
-              }
-            }
+            "description": "A new game has been started."
           },
           "503": {
             "description": "Firebase DB error.",

@@ -83,12 +83,6 @@ paths:
       responses:
         "201":
           description: A new game has been started.
-          schema:
-            type: object
-            properties:
-              txid:
-                type: string
-                description: staking txid
         "504":
           description: Blockchain RPC call failed.
           schema:
