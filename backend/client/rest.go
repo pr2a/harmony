@@ -186,7 +186,7 @@ DONE:
 }
 
 // GetBalance call /balance rest call on leader
-func GetBalance(account string) (uint64, error) {
+func GetBalance(leader p2p.Peer, account string, done chan (RPCMsg)) (uint64, error) {
 	return 0, nil
 }
 

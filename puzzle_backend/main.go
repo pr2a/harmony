@@ -141,43 +141,8 @@ func main() {
 }
 
 func handlePostReg(params operations.PostRegParams) middleware.Responder {
-	return operations.NewPostRegCreated().WithAccessControlAllowOrigin(
-		"*", // TODO ek – tighten this up!
-	).WithPayload(
-		&operations.PostRegCreatedBody{
-			Account: "0x0000000000000000000000000000000000000000",
-			Email:   "ek@harmony.one",
-		},
-	)
-}
-
-func handlePostPlay(params operations.PostPlayParams) middleware.Responder {
-	return operations.NewPostPlayCreated()
-}
-
-func handlePostFinish(params operations.PostFinishParams) middleware.Responder {
-	return operations.NewPostFinishOK().WithPayload(
-		&operations.PostFinishOKBody{
-			Reward: 5e+18,
-		},
-	)
-}
-
-func regHandler(w http.ResponseWriter, r *http.Request) {
-	ctx := appengine.NewContext(r)
-	if r.URL.Path != "/api/v1/reg" {
-		http.NotFound(w, r)
-		return
-	}
-	q := r.URL.Query()
-
-	ids, ok := q["id"]
-	if !ok {
-		http.Error(w, "missing params", http.StatusBadRequest)
-		return
-	}
-
-	id := ids[0]
+	ctx := appengine.NewContext(params.HTTPRequest)
+	id := params.Email
 
 	var account *fdb.PzPlayer
 	// find the existing account from firebase DB
@@ -201,50 +166,76 @@ func regHandler(w http.ResponseWriter, r *http.Request) {
 		}
 		err := db.RegisterAccount(&player)
 		if err != nil {
-			app_log.Criticalf(ctx, "regHandler registerAccount error: %v", err)
-			http.Error(w, "Register Account, please retry", http.StatusInternalServerError)
+			app_log.Criticalf(ctx, "handlePostReg registerAccount error: %v", err)
+			return operations.NewPostRegServiceUnavailable().WithPayload(
+				&operations.PostRegServiceUnavailableBody{
+					Msg: "register account failure",
+				},
+			)
 		}
 		account = &player
 		fmt.Printf("register new Account: %v for email: %v\n", account, id)
+		select {
+		case msg := <-rpcDone:
+			if msg.Err != nil {
+				return operations.NewPostRegGatewayTimeout().WithPayload(
+					&operations.PostRegGatewayTimeoutBody{
+						Msg: "fund me failure",
+					},
+				)
+			}
+			//TODO: send email to player
+			go func() {
+				fmt.Println("Sending email ..")
+			}()
+
+			return operations.NewPostRegCreated().WithAccessControlAllowOrigin("*",).WithPayload(
+				&operations.PostRegCreatedBody{
+					Account: account.Address,
+					Email:   id,
+					Balance: "10000000000000000000", // TOOD: placeholder
+				},
+			)
+		}
+
 	} else {
 		// we should find only one account, if more than one, just get the first one
 		account = accounts[0]
-		fmt.Printf("found Account: %v for id: %v\n", account, id)
-		go func() {
-			msg := restclient.RPCMsg{
-				Err:  nil,
-				Done: true,
+		// TODO: leo
+		//		go restclient.GetBalance(account.Leader, account.Address, rpcDone)
+		//		fmt.Printf("found existing Account: %v for id: %v\n", account, id)
+
+		select {
+		case msg := <-rpcDone:
+			if msg.Err != nil {
+				return operations.NewPostRegGatewayTimeout().WithPayload(
+					&operations.PostRegGatewayTimeoutBody{
+						Msg: "get balance failure",
+					},
+				)
 			}
-			rpcDone <- msg
-		}()
+			return operations.NewPostRegOK().WithPayload(
+				&operations.PostRegOKBody{
+					Account: account.Address,
+					Email:   id,
+					Balance: "900000000000000000", // TOOD: placeholder
+				},
+			)
+		}
+
 	}
+}
 
-	var res string
+func handlePostPlay(params operations.PostPlayParams) middleware.Responder {
+	return operations.NewPostPlayCreated()
+}
 
-	select {
-	case msg := <-rpcDone:
-		if msg.Err != nil {
-			http.Error(w, "FundMe Error. Please retry", http.StatusInternalServerError)
-			return
-		}
-		resp := respReg{
-			Account: account.Address,
-			Private: account.PrivKey,
-		}
-
-		bytes, err := json.Marshal(resp)
-		if err != nil {
-			fmt.Printf("can't marshal reg resp: %s\n", resp)
-			http.Error(w, "warning: can't marshal response", http.StatusNoContent)
-			return
-		}
-		res = string(bytes)
-		fmt.Printf("res: %v\n", res)
-		break
-		//TODO: send email to player
-	}
-
-	io.WriteString(w, res)
+func handlePostFinish(params operations.PostFinishParams) middleware.Responder {
+	return operations.NewPostFinishOK().WithPayload(
+		&operations.PostFinishOKBody{
+			Reward: 5e+18,
+		},
+	)
 }
 
 func playHandler(w http.ResponseWriter, r *http.Request) {
