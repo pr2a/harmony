@@ -19,38 +19,28 @@ footer {
     font-size: 0.8em;
   }
 }
+
+.game-wrapper {
+  position: relative;
+  .game {
+    position: absolute;
+  }
+}
+
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.5s;
+}
+.fade-enter, .fade-leave-to /* .fade-leave-active below version 2.1.8 */ {
+  opacity: 0;
+}
 </style>
 
 <template>
   <div id="app" style="visibility:hidden">
     <div class="main-container appearing" :style="mainContainerStyle">
-      <div class="score-container" :style="scoreContainerStyle">
-        <!-- <div
-          ref="gameAim"
-          class="game-aim"
-          v-bind:class="{'game-aim-reached':gameAimReached}"
-          :style="gameAimStyle"
-        >{{ gameAim }}</div>-->
+      <div class="score-container">
         <div class="logo"></div>
-        <div class="scores" :style="scoreStyle">
-          <div class="score">
-            <div class="label">Score</div>
-            <div>
-              {{ score }}
-              <transition>
-                <span v-if="scoreInc!=''" class="score-inc">
-                  {{
-                  scoreInc
-                  }}
-                </span>
-              </transition>
-            </div>
-          </div>&nbsp;
-          <div class="score">
-            <div class="label">Best</div>
-            <div>{{ bestScore[size] }}</div>
-          </div>
-        </div>
       </div>
       <div class="game-container" :style="gameContainerStyle">
         <div v-if="gameEnded">
@@ -59,22 +49,26 @@ footer {
             <p>Game over!</p>
           </div>
         </div>
-        <Game
-          ref="game"
-          :size="size"
-          :size-aim-map="sizeAimMap"
-          :listen-own-key-events-only="false"
-          :tab-index="1"
-          :board-size-px="boardSizePx"
-          :started="gameStarted"
-          @started="onGameStarted"
-          @ended="onGameEnded"
-          @score="onGameScore"
-          @aim-changed="onGameAimChanged"
-          @aim-reached="onGameAimReached"
-        ></Game>
+
+        <div class="game-wrapper" :style="boardStyle">
+          <transition name="fade" v-for="(level, i) in levels" :key="i">
+            <Game
+              ref="game{{i}}"
+              class="game"
+              :listen-own-key-events-only="false"
+              :tab-index="1"
+              :board-size-px="boardSizePx"
+              :started="gameStarted"
+              :game="level"
+              @ended="onGameEnded"
+              @score="onGameScore"
+              v-if="i === levelIndex"
+            ></Game>
+          </transition>
+        </div>
+
         <footer class="flex-horizontal">
-          <span class="flex-grow">levels: {{ level }} / 100</span>
+          <span class="flex-grow">levels: {{ levelIndex + 1 }} / {{ levels.length }}</span>
           <button class="btn-primary pull-right" @click="reset">Reset</button>
         </footer>
       </div>
@@ -87,6 +81,7 @@ import Game from "./Game";
 import Chip from "./Chip";
 import { TweenLite } from "gsap/TweenMax";
 import Vue from "vue";
+import { levels } from "../level-generator";
 
 var defBoardSizePx = 420;
 var defSize = 3;
@@ -98,34 +93,15 @@ export default {
     Chip
   },
   data() {
-    var sizeAimMap = [];
-    sizeAimMap[3] = 256;
-
-    var awards = {};
-    var bestScore = {};
-    var sizes = [];
-    var i = 0;
-    for (var s in sizeAimMap) {
-      var a = sizeAimMap[s];
-      bestScore[s] = 0;
-      awards[a] = { aim: a, obtained: false };
-      sizes[i++] = s;
-    }
-
     return {
-      level: 1,
+      levelIndex: 0,
+      levels: levels(),
       boardSizePx: defBoardSizePx,
       size: defSize,
-      sizes: sizes,
-      sizeAimMap: sizeAimMap,
       gameStarted: false,
       gameEnded: false,
-      gameAim: sizeAimMap[defSize],
-      gameAimReached: false,
       score: 0,
-      scoreInc: "",
-      bestScore: bestScore,
-      awards: awards
+      scoreInc: ""
     };
   },
   created() {
@@ -142,6 +118,13 @@ export default {
     });
   },
   computed: {
+    boardStyle() {
+      return {
+        width: this.boardSizePx > 0 ? this.boardSizePx + "px" : "100%",
+        height: this.boardSizePx > 0 ? this.boardSizePx + "px" : "100%",
+        borderRadius: 7 / this.size + "%"
+      };
+    },
     gameOverStyle() {
       return { fontSize: this.boardSizePx / 6 + "px" };
     },
@@ -156,52 +139,8 @@ export default {
         width: this.boardSizePx + "px"
       };
     },
-    gameControlsStyle() {
-      return {
-        height: this.boardSizePx * 0.2 + "px"
-      };
-    },
-    scoreContainerStyle() {
-      return {
-        height: this.boardSizePx * 0.2 + "px"
-      };
-    },
-    gameAimStyle() {
-      var bsh = this.boardSizePx / 50 + "px ";
-      return {
-        boxShadow: "0 " + bsh + bsh + "black",
-        fontSize: this.boardSizePx / 110 + "em"
-      };
-    },
-    scoreStyle() {
-      return {
-        fontSize: this.boardSizePx / 280 + "em"
-      };
-    },
-    gameAwardsContainerStyle() {
-      return {
-        height: this.boardSizePx * 0.08 + "px"
-      };
-    },
-    gameAwardStyle() {
-      return {
-        width: this.boardSizePx / 5 + "px",
-        fontSize: this.boardSizePx / 350 + "em"
-      };
-    },
-    gameAwardLikeStyle() {
-      return {
-        height: this.boardSizePx / 21 + "px"
-      };
-    },
-    allAwardsObtained() {
-      for (var i in this.awards) if (!this.awards[i].obtained) return false;
-      return true;
-    }
-  },
-  watch: {
-    size() {
-      this.gameEnded = false;
+    level() {
+      return this.levels[this.levelIndex];
     }
   },
   methods: {
@@ -238,16 +177,15 @@ export default {
       this.score = 0;
     },
     reset() {
-      throw "not implemented";
-    },
-    onGameStarted() {
-      this.gameStarted = true;
-      this.gameEnded = false;
+      console.log(this.levelIndex, this.$refs[`game${this.levelIndex}`]);
     },
     onGameEnded() {
       this.gameStarted = false;
-      this.gameEnded = true;
-      this.gameAimReached = false;
+      if (this.levelIndex === this.levels.length - 1) {
+        this.gameEnded = true;
+        return;
+      }
+      this.levelIndex++;
       this.persistState();
     },
     onGameScore(args) {
@@ -275,33 +213,6 @@ export default {
       this.scoreInc = args.scoreInc + "+";
       Vue.nextTick(function() {
         self.scoreInc = "";
-      });
-    },
-    onGameAimChanged(aim) {
-      this.gameAim = aim;
-    },
-    onGameAimReached() {
-      this.gameAimReached = true;
-      this.awards[this.gameAim].obtained = true;
-      this.persistState();
-
-      var awardEl = this.getAwardEl(this.gameAim);
-      var gameAimEl = this.$refs.gameAim;
-      var p1 = gameAimEl.getBoundingClientRect();
-      var p2 = awardEl.getBoundingClientRect();
-      var ws = p1.width / p2.width;
-      var hs = p1.height / p2.height;
-      var x = p1.left - p2.left + p1.width / 4;
-      var y = p1.top - p2.top + p1.height / 2;
-
-      var s = awardEl.style;
-      s["-webkit-transform"] = s.transform =
-        "translate(" + x + "px," + y + "px) scale(" + ws + "," + hs + ")";
-      s["-webkit-transition"] = s.transition = "";
-      s.zIndex = 100;
-      requestAnimationFrame(function() {
-        s["-webkit-transition"] = s.transition = "all 2s";
-        s["-webkit-transform"] = s.transform = "";
       });
     }
   }
