@@ -10,6 +10,7 @@ import (
 	"os"
 	"path"
 	"strconv"
+	"sync"
 
 	"github.com/harmony-one/demo-apps/backend/client"
 	"github.com/harmony-one/demo-apps/backend/db"
@@ -28,6 +29,11 @@ type respEnter struct {
 type respFinish struct {
 	Level   int    `json:level`
 	Rewards uint64 `json:rewards`
+}
+
+type respReg struct {
+	Account string `json:account`
+	Private string `json:private`
 }
 
 var (
@@ -85,6 +91,7 @@ func main() {
 
 	http.HandleFunc("/", indexHandler)
 
+	http.HandleFunc("/reg", regHandler)
 	http.HandleFunc("/enter", enterHandler)
 	http.HandleFunc("/finish", finishHandler)
 	http.HandleFunc("/test", testHandler)
@@ -114,9 +121,75 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintln(w, "Hello, world!")
 }
 
+func regHandler(w http.ResponseWriter, r *http.Request) {
+	ctx := appengine.NewContext(r)
+	if r.URL.Path != "/api/v1/reg" {
+		http.NotFound(w, r)
+		return
+	}
+	q := r.URL.Query()
+
+	ids, ok := q["id"]
+	if !ok {
+		http.Error(w, "missing params", http.StatusBadRequest)
+		return
+	}
+
+	id := ids[0]
+
+	var account *fdb.PzPlayer
+	// find the existing account from firebase DB
+	accounts := db.FindAccount(id)
+
+	var wg sync.WaitGroup
+	// register the new account
+	if len(accounts) == 0 {
+		// generate the key
+		address, priv := utils.GenereateKeys()
+		leader := restclient.PickALeader()
+
+		wg.Add(1)
+		go restclient.FundMe(leader, address, wg)
+
+		player := fdb.PzPlayer{
+			Email:   id,
+			CosID:   "133",
+			PrivKey: priv,
+			Address: address,
+			Leader:  leader.IP,
+			Port:    leader.Port,
+		}
+		err := db.RegisterAccount(&player)
+		if err != nil {
+			app_log.Criticalf(ctx, "enterHandler registerAccount error: %v", err)
+			http.Error(w, "Register Account, please retry", http.StatusInternalServerError)
+		}
+		account = &player
+		fmt.Printf("register new Account: %v for email: %v\n", account, id)
+	} else {
+		// we should find only one account, if more than one, just get the first one
+		account := accounts[0]
+		fmt.Printf("found Account: %v for id: %v\n", account, id)
+	}
+
+	resp := respReg{
+		Account: account.Address,
+		Private: account.PrivKey,
+	}
+
+	bytes, err := json.Marshal(resp)
+	if err != nil {
+		fmt.Printf("can't marshal enter resp: %s\n", resp)
+		http.Error(w, "Can't marshal enter response", http.StatusInternalServerError)
+		return
+	}
+	res := string(bytes)
+	io.WriteString(w, res)
+}
+
 func enterHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := appengine.NewContext(r)
-	if r.URL.Path != "/enter" {
+	if r.URL.Path != "/api/v1/enter" {
 		http.NotFound(w, r)
 		return
 	}
@@ -133,13 +206,15 @@ func enterHandler(w http.ResponseWriter, r *http.Request) {
 	// find the existing account from firebase DB
 	accounts := db.FindAccount(email)
 
+	var wg sync.WaitGroup
 	// register the new account
 	if len(accounts) == 0 {
 		// generate the key
 		address, priv := utils.GenereateKeys()
 		leader := restclient.PickALeader()
 
-		go restclient.FundMe(leader, address)
+		wg.Add(1)
+		go restclient.FundMe(leader, address, wg)
 
 		player := fdb.PzPlayer{
 			Email:   email,
@@ -162,6 +237,7 @@ func enterHandler(w http.ResponseWriter, r *http.Request) {
 		fmt.Printf("found Account: %v for email: %v\n", account, email)
 	}
 
+	wg.Wait()
 	balance, err := restclient.GetBalance(account.Address)
 	if err != nil {
 		app_log.Criticalf(ctx, "enterHandler GetBalance error: %v", err)

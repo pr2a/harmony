@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"math/rand"
 	"net/http"
+	"sync"
 
 	"github.com/harmony-one/demo-apps/backend/p2p"
 )
@@ -116,7 +117,8 @@ func GetPlayer(ip, port string) (*Player, error) {
 }
 
 // FundMe call /fundme rest call on leader
-func FundMe(leader p2p.Peer, account string) error {
+func FundMe(leader p2p.Peer, account string, wg sync.WaitGroup) error {
+	defer wg.Done()
 	url := fmt.Sprintf("http://%s:%s/fundme?key=0x%s", leader.IP, leader.Port, account)
 	response, err := http.Get(url)
 	if err != nil {
