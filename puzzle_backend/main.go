@@ -43,7 +43,7 @@ func printVersion(me string) {
 }
 
 var (
-	defaultConfigFile = ".hmy/backend.ini"
+	defaultConfigFile = "./puzzle_backend/.hmy/backend.ini"
 	defaultProfile    = "default"
 	defaultPort       = "30000"
 	leader            p2p.Peer
@@ -59,7 +59,7 @@ const (
 	minimalFee = 1
 	gameFee    = 1
 	adminKey   = "e401343197a852f361e38ce6b46c99f1d6d1f80499864c6ae7effee42b46ab6b"
-	dbKeyFile  = "./keys/benchmark_account_key.json"
+	dbKeyFile  = "./puzzle_backend/keys/benchmark_account_key.json"
 	dbProject  = "benchmark-209420"
 )
 
