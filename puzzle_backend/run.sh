@@ -1,6 +1,7 @@
 #!/bin/bash
 
 export GO111MODULE=on
+ACTION=${1:-build}
 
 function build_only
 {
@@ -12,15 +13,15 @@ function build_only
    go build -ldflags="-X main.version=v${VERSION} -X main.commit=${COMMIT} -X main.builtAt=${BUILTAT} -X main.builtBy=${BUILTBY}" -o hexie main.go
 }
 
-build_only
-./hexie -version
-
-dev_appserver.py app.yaml &
-
-sleep 5
-
-curl http://localhost:8080/enter
-curl http://localhost:8080/finish
+case "$ACTION" in
+   "build")
+      build_only
+      ./hexie -version
+      ;;
+   "test")
+      dev_appserver.py app.yaml
+      ;;
+esac
 
 sleep 1
 echo killing dev_appserver.py

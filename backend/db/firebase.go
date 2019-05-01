@@ -23,6 +23,8 @@ const (
 	playersCollection = "players"
 	winnersCollection = "winners"
 	sessionCollection = "session"
+
+	pzPlayersCollection = "pzPlayers"
 )
 
 // Player represents the struct of player in players db
@@ -39,6 +41,22 @@ type Player struct {
 
 func (p *Player) String() string {
 	return fmt.Sprintf("player:%s/%s, session:%v", p.Address, p.Email, p.Session)
+}
+
+// PzPlayer represents the struct of puzzle player in the players db
+type PzPlayer struct {
+	Email   string
+	CosID   string
+	PrivKey string
+	Address string
+	Highest int64
+	Rewards int64
+	Leader  string
+	Port    string
+}
+
+func (p *PzPlayer) String() string {
+	return fmt.Sprintf("pzPlayer: %s/%s, key: %s/%s, leader: %v", p.Email, p.CosID, p.Address, p.PrivKey, p.Leader)
 }
 
 // Winner of the lottery
@@ -266,11 +284,75 @@ func (fdb *Fdb) GetPlayers(key, op string, value interface{}) []*Player {
 }
 
 // FindAccount find the account and leader info from the db
-func FindAccount(email string) (string, string) {
-	return "", ""
+func (fdb *Fdb) FindAccount(email string) []*PzPlayer {
+	var iter *firestore.DocumentIterator
+	var ok bool
+
+	iter = fdb.client.Collection(pzPlayersCollection).Where("email", "==", email).Documents(ctx)
+
+	// We should have only one player returned
+	players := make([]*PzPlayer, 0)
+
+	for {
+		doc, err := iter.Next()
+		if err == iterator.Done {
+			break
+		}
+		if err != nil {
+			fmt.Printf("Failed to iterate: %v", err)
+			continue
+		}
+		data := doc.Data()
+		one := new(PzPlayer)
+
+		one.Email, ok = data["email"].(string)
+		if !ok {
+			fmt.Printf("Failed to convert \"email\": %v\n")
+			continue
+		}
+		one.CosID, ok = data["cosid"].(string)
+		if !ok {
+			fmt.Printf("Failed to convert \"cosid\": %v\n")
+			continue
+		}
+		one.PrivKey, ok = data["privkey"].(string)
+		if !ok {
+			fmt.Printf("Failed to convert \"privkey\": %v\n")
+			continue
+		}
+		one.Address, ok = data["address"].(string)
+		if !ok {
+			fmt.Printf("Failed to convert \"address\": %v\n")
+			continue
+		}
+		one.Highest, ok = data["highest"].(int64)
+		if !ok {
+			fmt.Printf("Failed to convert \"highest\": %v\n")
+			continue
+		}
+		one.Rewards, ok = data["rewards"].(int64)
+		if !ok {
+			fmt.Printf("Failed to convert \"rewards\": %v\n")
+			continue
+		}
+		one.Leader, ok = data["leader"].(string)
+		if !ok {
+			fmt.Printf("Failed to convert \"leader\": %v\n")
+			continue
+		}
+		one.Port, ok = data["port"].(string)
+		if !ok {
+			fmt.Printf("Failed to convert \"port\": %v\n")
+			continue
+		}
+
+		players = append(players, one)
+	}
+
+	return players
 }
 
 // RegisterAccount register user account into db
-func RegisterAccount(email, account, leader string) error {
+func (fdb *Fdb) RegisterAccount(email, account, leader string) error {
 	return nil
 }
