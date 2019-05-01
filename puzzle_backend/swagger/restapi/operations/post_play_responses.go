@@ -54,3 +54,91 @@ func (o *PostPlayCreated) WriteResponse(rw http.ResponseWriter, producer runtime
 		}
 	}
 }
+
+// PostPlayServiceUnavailableCode is the HTTP code returned for type PostPlayServiceUnavailable
+const PostPlayServiceUnavailableCode int = 503
+
+/*PostPlayServiceUnavailable Firebase DB error.
+
+swagger:response postPlayServiceUnavailable
+*/
+type PostPlayServiceUnavailable struct {
+
+	/*
+	  In: Body
+	*/
+	Payload *PostPlayServiceUnavailableBody `json:"body,omitempty"`
+}
+
+// NewPostPlayServiceUnavailable creates PostPlayServiceUnavailable with default headers values
+func NewPostPlayServiceUnavailable() *PostPlayServiceUnavailable {
+
+	return &PostPlayServiceUnavailable{}
+}
+
+// WithPayload adds the payload to the post play service unavailable response
+func (o *PostPlayServiceUnavailable) WithPayload(payload *PostPlayServiceUnavailableBody) *PostPlayServiceUnavailable {
+	o.Payload = payload
+	return o
+}
+
+// SetPayload sets the payload to the post play service unavailable response
+func (o *PostPlayServiceUnavailable) SetPayload(payload *PostPlayServiceUnavailableBody) {
+	o.Payload = payload
+}
+
+// WriteResponse to the client
+func (o *PostPlayServiceUnavailable) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
+
+	rw.WriteHeader(503)
+	if o.Payload != nil {
+		payload := o.Payload
+		if err := producer.Produce(rw, payload); err != nil {
+			panic(err) // let the recovery middleware deal with this
+		}
+	}
+}
+
+// PostPlayGatewayTimeoutCode is the HTTP code returned for type PostPlayGatewayTimeout
+const PostPlayGatewayTimeoutCode int = 504
+
+/*PostPlayGatewayTimeout Blockchain RPC call failed.
+
+swagger:response postPlayGatewayTimeout
+*/
+type PostPlayGatewayTimeout struct {
+
+	/*
+	  In: Body
+	*/
+	Payload *PostPlayGatewayTimeoutBody `json:"body,omitempty"`
+}
+
+// NewPostPlayGatewayTimeout creates PostPlayGatewayTimeout with default headers values
+func NewPostPlayGatewayTimeout() *PostPlayGatewayTimeout {
+
+	return &PostPlayGatewayTimeout{}
+}
+
+// WithPayload adds the payload to the post play gateway timeout response
+func (o *PostPlayGatewayTimeout) WithPayload(payload *PostPlayGatewayTimeoutBody) *PostPlayGatewayTimeout {
+	o.Payload = payload
+	return o
+}
+
+// SetPayload sets the payload to the post play gateway timeout response
+func (o *PostPlayGatewayTimeout) SetPayload(payload *PostPlayGatewayTimeoutBody) {
+	o.Payload = payload
+}
+
+// WriteResponse to the client
+func (o *PostPlayGatewayTimeout) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
+
+	rw.WriteHeader(504)
+	if o.Payload != nil {
+		payload := o.Payload
+		if err := producer.Produce(rw, payload); err != nil {
+			panic(err) // let the recovery middleware deal with this
+		}
+	}
+}

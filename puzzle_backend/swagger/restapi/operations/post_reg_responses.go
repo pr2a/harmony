@@ -107,11 +107,6 @@ const PostRegUnauthorizedCode int = 401
 swagger:response postRegUnauthorized
 */
 type PostRegUnauthorized struct {
-
-	/*
-	  In: Body
-	*/
-	Payload *PostRegUnauthorizedBody `json:"body,omitempty"`
 }
 
 // NewPostRegUnauthorized creates PostRegUnauthorized with default headers values
@@ -120,21 +115,94 @@ func NewPostRegUnauthorized() *PostRegUnauthorized {
 	return &PostRegUnauthorized{}
 }
 
-// WithPayload adds the payload to the post reg unauthorized response
-func (o *PostRegUnauthorized) WithPayload(payload *PostRegUnauthorizedBody) *PostRegUnauthorized {
+// WriteResponse to the client
+func (o *PostRegUnauthorized) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
+
+	rw.Header().Del(runtime.HeaderContentType) //Remove Content-Type on empty responses
+
+	rw.WriteHeader(401)
+}
+
+// PostRegServiceUnavailableCode is the HTTP code returned for type PostRegServiceUnavailable
+const PostRegServiceUnavailableCode int = 503
+
+/*PostRegServiceUnavailable Firebase DB error.
+
+swagger:response postRegServiceUnavailable
+*/
+type PostRegServiceUnavailable struct {
+
+	/*
+	  In: Body
+	*/
+	Payload *PostRegServiceUnavailableBody `json:"body,omitempty"`
+}
+
+// NewPostRegServiceUnavailable creates PostRegServiceUnavailable with default headers values
+func NewPostRegServiceUnavailable() *PostRegServiceUnavailable {
+
+	return &PostRegServiceUnavailable{}
+}
+
+// WithPayload adds the payload to the post reg service unavailable response
+func (o *PostRegServiceUnavailable) WithPayload(payload *PostRegServiceUnavailableBody) *PostRegServiceUnavailable {
 	o.Payload = payload
 	return o
 }
 
-// SetPayload sets the payload to the post reg unauthorized response
-func (o *PostRegUnauthorized) SetPayload(payload *PostRegUnauthorizedBody) {
+// SetPayload sets the payload to the post reg service unavailable response
+func (o *PostRegServiceUnavailable) SetPayload(payload *PostRegServiceUnavailableBody) {
 	o.Payload = payload
 }
 
 // WriteResponse to the client
-func (o *PostRegUnauthorized) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
+func (o *PostRegServiceUnavailable) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 
-	rw.WriteHeader(401)
+	rw.WriteHeader(503)
+	if o.Payload != nil {
+		payload := o.Payload
+		if err := producer.Produce(rw, payload); err != nil {
+			panic(err) // let the recovery middleware deal with this
+		}
+	}
+}
+
+// PostRegGatewayTimeoutCode is the HTTP code returned for type PostRegGatewayTimeout
+const PostRegGatewayTimeoutCode int = 504
+
+/*PostRegGatewayTimeout Blockchain RPC call failed.
+
+swagger:response postRegGatewayTimeout
+*/
+type PostRegGatewayTimeout struct {
+
+	/*
+	  In: Body
+	*/
+	Payload *PostRegGatewayTimeoutBody `json:"body,omitempty"`
+}
+
+// NewPostRegGatewayTimeout creates PostRegGatewayTimeout with default headers values
+func NewPostRegGatewayTimeout() *PostRegGatewayTimeout {
+
+	return &PostRegGatewayTimeout{}
+}
+
+// WithPayload adds the payload to the post reg gateway timeout response
+func (o *PostRegGatewayTimeout) WithPayload(payload *PostRegGatewayTimeoutBody) *PostRegGatewayTimeout {
+	o.Payload = payload
+	return o
+}
+
+// SetPayload sets the payload to the post reg gateway timeout response
+func (o *PostRegGatewayTimeout) SetPayload(payload *PostRegGatewayTimeoutBody) {
+	o.Payload = payload
+}
+
+// WriteResponse to the client
+func (o *PostRegGatewayTimeout) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
+
+	rw.WriteHeader(504)
 	if o.Payload != nil {
 		payload := o.Payload
 		if err := producer.Produce(rw, payload); err != nil {

@@ -54,3 +54,91 @@ func (o *PostFinishOK) WriteResponse(rw http.ResponseWriter, producer runtime.Pr
 		}
 	}
 }
+
+// PostFinishServiceUnavailableCode is the HTTP code returned for type PostFinishServiceUnavailable
+const PostFinishServiceUnavailableCode int = 503
+
+/*PostFinishServiceUnavailable Firebase DB error.
+
+swagger:response postFinishServiceUnavailable
+*/
+type PostFinishServiceUnavailable struct {
+
+	/*
+	  In: Body
+	*/
+	Payload *PostFinishServiceUnavailableBody `json:"body,omitempty"`
+}
+
+// NewPostFinishServiceUnavailable creates PostFinishServiceUnavailable with default headers values
+func NewPostFinishServiceUnavailable() *PostFinishServiceUnavailable {
+
+	return &PostFinishServiceUnavailable{}
+}
+
+// WithPayload adds the payload to the post finish service unavailable response
+func (o *PostFinishServiceUnavailable) WithPayload(payload *PostFinishServiceUnavailableBody) *PostFinishServiceUnavailable {
+	o.Payload = payload
+	return o
+}
+
+// SetPayload sets the payload to the post finish service unavailable response
+func (o *PostFinishServiceUnavailable) SetPayload(payload *PostFinishServiceUnavailableBody) {
+	o.Payload = payload
+}
+
+// WriteResponse to the client
+func (o *PostFinishServiceUnavailable) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
+
+	rw.WriteHeader(503)
+	if o.Payload != nil {
+		payload := o.Payload
+		if err := producer.Produce(rw, payload); err != nil {
+			panic(err) // let the recovery middleware deal with this
+		}
+	}
+}
+
+// PostFinishGatewayTimeoutCode is the HTTP code returned for type PostFinishGatewayTimeout
+const PostFinishGatewayTimeoutCode int = 504
+
+/*PostFinishGatewayTimeout Blockchain RPC call failed.
+
+swagger:response postFinishGatewayTimeout
+*/
+type PostFinishGatewayTimeout struct {
+
+	/*
+	  In: Body
+	*/
+	Payload *PostFinishGatewayTimeoutBody `json:"body,omitempty"`
+}
+
+// NewPostFinishGatewayTimeout creates PostFinishGatewayTimeout with default headers values
+func NewPostFinishGatewayTimeout() *PostFinishGatewayTimeout {
+
+	return &PostFinishGatewayTimeout{}
+}
+
+// WithPayload adds the payload to the post finish gateway timeout response
+func (o *PostFinishGatewayTimeout) WithPayload(payload *PostFinishGatewayTimeoutBody) *PostFinishGatewayTimeout {
+	o.Payload = payload
+	return o
+}
+
+// SetPayload sets the payload to the post finish gateway timeout response
+func (o *PostFinishGatewayTimeout) SetPayload(payload *PostFinishGatewayTimeoutBody) {
+	o.Payload = payload
+}
+
+// WriteResponse to the client
+func (o *PostFinishGatewayTimeout) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
+
+	rw.WriteHeader(504)
+	if o.Payload != nil {
+		payload := o.Payload
+		if err := producer.Produce(rw, payload); err != nil {
+			panic(err) // let the recovery middleware deal with this
+		}
+	}
+}

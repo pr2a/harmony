@@ -92,6 +92,28 @@ func init() {
                 }
               }
             }
+          },
+          "503": {
+            "description": "Firebase DB error.",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "msg": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "504": {
+            "description": "Blockchain RPC call failed.",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "msg": {
+                  "type": "string"
+                }
+              }
+            }
           }
         }
       }
@@ -127,6 +149,28 @@ func init() {
               "properties": {
                 "txid": {
                   "description": "staking txid",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Firebase DB error.",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "msg": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "504": {
+            "description": "Blockchain RPC call failed.",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "msg": {
                   "type": "string"
                 }
               }
@@ -184,12 +228,26 @@ func init() {
             }
           },
           "401": {
-            "description": "The given token is invalid.",
+            "description": "The given token is invalid."
+          },
+          "503": {
+            "description": "Firebase DB error.",
             "schema": {
               "type": "object",
               "properties": {
                 "msg": {
                   "description": "The error message.",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "504": {
+            "description": "Blockchain RPC call failed.",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "msg": {
                   "type": "string"
                 }
               }
@@ -275,6 +333,28 @@ func init() {
                 }
               }
             }
+          },
+          "503": {
+            "description": "Firebase DB error.",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "msg": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "504": {
+            "description": "Blockchain RPC call failed.",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "msg": {
+                  "type": "string"
+                }
+              }
+            }
           }
         }
       }
@@ -310,6 +390,28 @@ func init() {
               "properties": {
                 "txid": {
                   "description": "staking txid",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Firebase DB error.",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "msg": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "504": {
+            "description": "Blockchain RPC call failed.",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "msg": {
                   "type": "string"
                 }
               }
@@ -367,12 +469,26 @@ func init() {
             }
           },
           "401": {
-            "description": "The given token is invalid.",
+            "description": "The given token is invalid."
+          },
+          "503": {
+            "description": "Firebase DB error.",
             "schema": {
               "type": "object",
               "properties": {
                 "msg": {
                   "description": "The error message.",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "504": {
+            "description": "Blockchain RPC call failed.",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "msg": {
                   "type": "string"
                 }
               }
