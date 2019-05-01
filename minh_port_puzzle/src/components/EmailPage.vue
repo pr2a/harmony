@@ -45,7 +45,11 @@
       <div class="logo"></div>
       <input class="email-input" type="text" v-model="email" placeholder="Email Address">
     </div>
-    <button class="btn-primary" @click="$emit('submit', email)">Submit</button>
+    <button
+      class="btn-primary"
+      @click="$emit('submit', email.trim())"
+      :disabled="!email.trim()"
+    >Submit</button>
   </div>
 </template>
 
