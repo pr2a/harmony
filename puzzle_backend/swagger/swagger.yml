@@ -17,6 +17,7 @@ paths:
           name: email
           type: string
           description: user's email
+          required: true
       produces:
         - application/json
       responses:
@@ -48,10 +49,12 @@ paths:
           name: key
           type: string
           description: user's account private key, hex-encoded
+          required: true
         - in: query
           name: stake
           type: number
           description: user's bet, in wei (divide by 10^18 to get HRX)
+          required: true
       responses:
         "201":
           description: A new game has been started.
@@ -71,14 +74,17 @@ paths:
           name: key
           type: string
           description: user's account private key, hex-encoded
+          required: true
         - in: query
           name: txid
           type: string
           description: the game ID (staking transaction ID) returned by POST /play
+          required: true
         - in: query
           name: level
           type: integer
           description: level number (1-based)
+          required: true
         - in: query
           name: height
           type: integer
@@ -87,10 +93,12 @@ paths:
           name: sequence
           type: string
           description: user's moves from first to last; [udlr]* in regex
+          required: true
         - in: query
           name: last_pos
           type: integer
           description: where the cursor was after completing the last move in sequence, in telephone keypad notation (1-9)
+          required: true
       responses:
         "200":
           description: The level has been accepted.
