@@ -91,10 +91,10 @@ func main() {
 
 	http.HandleFunc("/", indexHandler)
 
-	http.HandleFunc("/reg", regHandler)
-	http.HandleFunc("/enter", enterHandler)
-	http.HandleFunc("/finish", finishHandler)
-	http.HandleFunc("/test", testHandler)
+	http.HandleFunc("/api/v1/reg", regHandler)
+	http.HandleFunc("/api/v1/play", playHandler)
+	http.HandleFunc("/api/v1/finish", finishHandler)
+	http.HandleFunc("/api/v1/test", testHandler)
 
 	var err error
 	db, err = fdb.NewFdb(dbKeyFile, dbProject)
@@ -143,7 +143,7 @@ func regHandler(w http.ResponseWriter, r *http.Request) {
 
 	var wg sync.WaitGroup
 	// register the new account
-	if len(accounts) == 0 {
+	if len(accounts) == 0 { // didn't find the account
 		// generate the key
 		address, priv := utils.GenereateKeys()
 		leader := restclient.PickALeader()
@@ -153,7 +153,7 @@ func regHandler(w http.ResponseWriter, r *http.Request) {
 
 		player := fdb.PzPlayer{
 			Email:   id,
-			CosID:   "133",
+			CosID:   "133", //FIXME: this has to be an id
 			PrivKey: priv,
 			Address: address,
 			Leader:  leader.IP,
@@ -161,7 +161,7 @@ func regHandler(w http.ResponseWriter, r *http.Request) {
 		}
 		err := db.RegisterAccount(&player)
 		if err != nil {
-			app_log.Criticalf(ctx, "enterHandler registerAccount error: %v", err)
+			app_log.Criticalf(ctx, "regHandler registerAccount error: %v", err)
 			http.Error(w, "Register Account, please retry", http.StatusInternalServerError)
 		}
 		account = &player
@@ -171,6 +171,8 @@ func regHandler(w http.ResponseWriter, r *http.Request) {
 		account := accounts[0]
 		fmt.Printf("found Account: %v for id: %v\n", account, id)
 	}
+
+   //TODO: send email to player
 
 	resp := respReg{
 		Account: account.Address,
@@ -187,9 +189,9 @@ func regHandler(w http.ResponseWriter, r *http.Request) {
 	io.WriteString(w, res)
 }
 
-func enterHandler(w http.ResponseWriter, r *http.Request) {
+func playHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := appengine.NewContext(r)
-	if r.URL.Path != "/api/v1/enter" {
+	if r.URL.Path != "/api/v1/play" {
 		http.NotFound(w, r)
 		return
 	}
@@ -226,7 +228,7 @@ func enterHandler(w http.ResponseWriter, r *http.Request) {
 		}
 		err := db.RegisterAccount(&player)
 		if err != nil {
-			app_log.Criticalf(ctx, "enterHandler registerAccount error: %v", err)
+			app_log.Criticalf(ctx, "playHandler registerAccount error: %v", err)
 			http.Error(w, "Register Account, please retry", http.StatusInternalServerError)
 		}
 		account = &player
@@ -240,7 +242,7 @@ func enterHandler(w http.ResponseWriter, r *http.Request) {
 	wg.Wait()
 	balance, err := restclient.GetBalance(account.Address)
 	if err != nil {
-		app_log.Criticalf(ctx, "enterHandler GetBalance error: %v", err)
+		app_log.Criticalf(ctx, "playHandler GetBalance error: %v", err)
 		http.Error(w, "Can't GetBalance, please retry", http.StatusInternalServerError)
 		return
 	}
@@ -251,7 +253,7 @@ func enterHandler(w http.ResponseWriter, r *http.Request) {
 
 	level, err := restclient.EnterPuzzle(account.Address, gameFee)
 	if err != nil {
-		app_log.Criticalf(ctx, "enterHandler EnterPuzzle error: %v", err)
+		app_log.Criticalf(ctx, "playHandler EnterPuzzle error: %v", err)
 		http.Error(w, "Can't Enter Game, please retry", http.StatusInternalServerError)
 	}
 
@@ -370,7 +372,7 @@ func testHandler(w http.ResponseWriter, r *http.Request) {
 		}
 		err := db.RegisterAccount(&player)
 		if err != nil {
-			app_log.Criticalf(ctx, "enterHandler registerAccount error: %v", err)
+			app_log.Criticalf(ctx, "playHandler registerAccount error: %v", err)
 			http.Error(w, "Register Account, please retry", http.StatusInternalServerError)
 		}
 		res = fmt.Sprintf("accounts: %v\n", account)
