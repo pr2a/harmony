@@ -49,7 +49,7 @@ type replaceInEmail struct {
 
 const (
 	rpcRetry             = 3
-	defaultConfigFile    = ".hmy/backend.ini"
+	defaultConfigFile    = "./backend/.hmy/backend.ini"
 	defaultProfile       = "default"
 	port                 = "30000"
 	winningEmailBody     = "Great work! You did it\nYou slayed dragons and conquered new land and you are the winner of the current Harmony lottery session.\nTo claim your Harmony tokens, join in our [discord, telegram, twitter]\nBut can you win again at http://lottery.harmony.one?"
@@ -71,7 +71,7 @@ func printVersion(me string) {
 var (
 	profile    = flag.String("profile", defaultProfile, "name of the profile")
 	collection = flag.String("collection", "players", "name of collection")
-	key        = flag.String("key", "./keys/benchmark_account_key.json", "key filename")
+	key        = flag.String("key", "./backend/keys/benchmark_account_key.json", "key filename")
 	project    = flag.String("project", "benchmark-209420", "project ID of firebase")
 	action     = flag.String("action", "player", "action of the program. Valid (player, reg, winner, notify, players, balances)")
 	verbose    = flag.Bool("verbose", true, "verbose log print at every step")
