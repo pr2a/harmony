@@ -1,3 +1,10 @@
+<style scoped lang="less">
+.host {
+  max-width: 800px;
+  margin: 0 auto;
+}
+</style>
+
 <template >
   <div class="host">
     <welcome-page @join="join" v-if="step === 0"></welcome-page>

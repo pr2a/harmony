@@ -10,6 +10,7 @@
   display: block;
   width: 100%;
   overflow: auto;
+  -webkit-appearance: none;
 }
 
 ::-webkit-input-placeholder {
