@@ -83,8 +83,6 @@ func main() {
 		printVersion(os.Args[0])
 	}
 
-	http.HandleFunc("/", indexHandler)
-
 	http.HandleFunc("/enter", enterHandler)
 	http.HandleFunc("/finish", finishHandler)
 	http.HandleFunc("/test", testHandler)
@@ -110,10 +108,6 @@ func main() {
 		}
 	*/
 	appengine.Main()
-}
-
-func indexHandler(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintln(w, "Hello, world!")
 }
 
 func enterHandler(w http.ResponseWriter, r *http.Request) {
