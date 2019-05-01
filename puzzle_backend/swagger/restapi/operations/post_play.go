@@ -89,3 +89,65 @@ func (o *PostPlayCreatedBody) UnmarshalBinary(b []byte) error {
 	*o = res
 	return nil
 }
+
+// PostPlayGatewayTimeoutBody post play gateway timeout body
+// swagger:model PostPlayGatewayTimeoutBody
+type PostPlayGatewayTimeoutBody struct {
+
+	// msg
+	Msg string `json:"msg,omitempty"`
+}
+
+// Validate validates this post play gateway timeout body
+func (o *PostPlayGatewayTimeoutBody) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (o *PostPlayGatewayTimeoutBody) MarshalBinary() ([]byte, error) {
+	if o == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(o)
+}
+
+// UnmarshalBinary interface implementation
+func (o *PostPlayGatewayTimeoutBody) UnmarshalBinary(b []byte) error {
+	var res PostPlayGatewayTimeoutBody
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*o = res
+	return nil
+}
+
+// PostPlayServiceUnavailableBody post play service unavailable body
+// swagger:model PostPlayServiceUnavailableBody
+type PostPlayServiceUnavailableBody struct {
+
+	// msg
+	Msg string `json:"msg,omitempty"`
+}
+
+// Validate validates this post play service unavailable body
+func (o *PostPlayServiceUnavailableBody) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (o *PostPlayServiceUnavailableBody) MarshalBinary() ([]byte, error) {
+	if o == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(o)
+}
+
+// UnmarshalBinary interface implementation
+func (o *PostPlayServiceUnavailableBody) UnmarshalBinary(b []byte) error {
+	var res PostPlayServiceUnavailableBody
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*o = res
+	return nil
+}

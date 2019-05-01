@@ -12,6 +12,7 @@
   overflow: auto;
   -webkit-appearance: none;
   font-size: initial;
+  outline: none;
 }
 
 ::-webkit-input-placeholder {

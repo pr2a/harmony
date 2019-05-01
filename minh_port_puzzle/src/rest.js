@@ -1,7 +1,5 @@
-const axios = require("axios");
-
-// 1+3 = 4 leaders
-const API_URL = ["http://127.0.0.1:30000"];
+//const axios = require("axios");
+const API_URL = "http://127.0.0.1:30000/v1";
 
 function validateEmail(email) {
   var re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
@@ -16,58 +14,65 @@ function validateStake(stake) {
 function validatePrivateKey(key) {
   return true;
 }
-async function register(email) {
-  var res;
-  if (validateEmail(email)) {
-    res = await axios.post(`${API_URL}/v1/reg`, {
-      id: email
-    });
-  }
-  return res;
+
+function sendReq(url, data) {
+  return axios.post(API_URL + url, data, {
+    headers: { "Access-Control-Allow-Origin": "*" }
+  });
 }
 
-async function play(key, stake) {
-  var res;
+function register(email) {
+  if (validateEmail(email)) {
+    sendReq("/reg", {
+      id: email
+    })
+      .then(res => {
+        if (res && res.data) {
+          console.log(res.data);
+        }
+      })
+      .catch(err => {
+        console.log(err);
+      });
+  }
+}
+
+function play(key, stake) {
   if (validateStake(stake) && validatePrivateKey(key)) {
-    res = await axios.post(`${API_URL}/v1/play`, {
+    sendReq("/play", {
       key: key,
       stake: stake
-    });
+    })
+      .then(res => {
+        if (res && res.data) {
+          console.log(res.data);
+        }
+      })
+      .catch(err => {
+        console.log(err);
+      });
   }
-  return res;
 }
 
-async function finish(key, txid, level, seq) {
-  var res;
+function finish(key, txid, level, seq) {
   if (validatePrivateKey(key)) {
-    res = await axios.post(`${API_URL}/v1/finish`, {
+    sendReq("/finish", {
       key: key,
       txid: txid,
       level: level,
       seq: seq
-    });
+    })
+      .then(res => {
+        if (res && res.data) {
+          console.log(res.data);
+        }
+      })
+      .catch(err => {
+        console.log(err);
+      });
   }
-  return res;
 }
 
-register("chao@harmony.one")
-  .then(res => {
-    if (res && res.data) {
-      console.log(res.data);
-    }
-  })
-  .catch(err => console.log(err.response));
-play("0xabc", 23)
-  .then(res => {
-    if (res && res.data) {
-      console.log(res.data);
-    }
-  })
-  .catch(err => console.log(err.response));
-finish("0xabc", "0x2341", 22, "ULDRU")
-  .then(res => {
-    if (res && res.data) {
-      console.log(res.data);
-    }
-  })
-  .catch(err => console.log(err.response));
+register("chao@harmony.one");
+play("0xabc", 23);
+finish("0xabc", "0x2341", 22, "ULDRU");

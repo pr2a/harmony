@@ -93,6 +93,37 @@ func (o *PostRegCreatedBody) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
+// PostRegGatewayTimeoutBody post reg gateway timeout body
+// swagger:model PostRegGatewayTimeoutBody
+type PostRegGatewayTimeoutBody struct {
+
+	// msg
+	Msg string `json:"msg,omitempty"`
+}
+
+// Validate validates this post reg gateway timeout body
+func (o *PostRegGatewayTimeoutBody) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (o *PostRegGatewayTimeoutBody) MarshalBinary() ([]byte, error) {
+	if o == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(o)
+}
+
+// UnmarshalBinary interface implementation
+func (o *PostRegGatewayTimeoutBody) UnmarshalBinary(b []byte) error {
+	var res PostRegGatewayTimeoutBody
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*o = res
+	return nil
+}
+
 // PostRegOKBody post reg o k body
 // swagger:model PostRegOKBody
 type PostRegOKBody struct {
@@ -127,21 +158,21 @@ func (o *PostRegOKBody) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// PostRegUnauthorizedBody post reg unauthorized body
-// swagger:model PostRegUnauthorizedBody
-type PostRegUnauthorizedBody struct {
+// PostRegServiceUnavailableBody post reg service unavailable body
+// swagger:model PostRegServiceUnavailableBody
+type PostRegServiceUnavailableBody struct {
 
 	// The error message.
 	Msg string `json:"msg,omitempty"`
 }
 
-// Validate validates this post reg unauthorized body
-func (o *PostRegUnauthorizedBody) Validate(formats strfmt.Registry) error {
+// Validate validates this post reg service unavailable body
+func (o *PostRegServiceUnavailableBody) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (o *PostRegUnauthorizedBody) MarshalBinary() ([]byte, error) {
+func (o *PostRegServiceUnavailableBody) MarshalBinary() ([]byte, error) {
 	if o == nil {
 		return nil, nil
 	}
@@ -149,8 +180,8 @@ func (o *PostRegUnauthorizedBody) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (o *PostRegUnauthorizedBody) UnmarshalBinary(b []byte) error {
-	var res PostRegUnauthorizedBody
+func (o *PostRegServiceUnavailableBody) UnmarshalBinary(b []byte) error {
+	var res PostRegServiceUnavailableBody
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

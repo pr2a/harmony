@@ -59,6 +59,37 @@ func (o *PostFinish) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 
 }
 
+// PostFinishGatewayTimeoutBody post finish gateway timeout body
+// swagger:model PostFinishGatewayTimeoutBody
+type PostFinishGatewayTimeoutBody struct {
+
+	// msg
+	Msg string `json:"msg,omitempty"`
+}
+
+// Validate validates this post finish gateway timeout body
+func (o *PostFinishGatewayTimeoutBody) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (o *PostFinishGatewayTimeoutBody) MarshalBinary() ([]byte, error) {
+	if o == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(o)
+}
+
+// UnmarshalBinary interface implementation
+func (o *PostFinishGatewayTimeoutBody) UnmarshalBinary(b []byte) error {
+	var res PostFinishGatewayTimeoutBody
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*o = res
+	return nil
+}
+
 // PostFinishOKBody post finish o k body
 // swagger:model PostFinishOKBody
 type PostFinishOKBody struct {
@@ -83,6 +114,37 @@ func (o *PostFinishOKBody) MarshalBinary() ([]byte, error) {
 // UnmarshalBinary interface implementation
 func (o *PostFinishOKBody) UnmarshalBinary(b []byte) error {
 	var res PostFinishOKBody
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*o = res
+	return nil
+}
+
+// PostFinishServiceUnavailableBody post finish service unavailable body
+// swagger:model PostFinishServiceUnavailableBody
+type PostFinishServiceUnavailableBody struct {
+
+	// msg
+	Msg string `json:"msg,omitempty"`
+}
+
+// Validate validates this post finish service unavailable body
+func (o *PostFinishServiceUnavailableBody) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (o *PostFinishServiceUnavailableBody) MarshalBinary() ([]byte, error) {
+	if o == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(o)
+}
+
+// UnmarshalBinary interface implementation
+func (o *PostFinishServiceUnavailableBody) UnmarshalBinary(b []byte) error {
+	var res PostFinishServiceUnavailableBody
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

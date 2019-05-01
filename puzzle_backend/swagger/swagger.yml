@@ -48,6 +48,15 @@ paths:
                 type: string
         "401":
           description: The given token is invalid.
+        "504":
+          description: Blockchain RPC call failed.
+          schema:
+            type: object
+            properties:
+              msg:
+                type: string
+        "503":
+          description: Firebase DB error.
           schema:
             type: object
             properties:
@@ -80,6 +89,21 @@ paths:
               txid:
                 type: string
                 description: staking txid
+        "504":
+          description: Blockchain RPC call failed.
+          schema:
+            type: object
+            properties:
+              msg:
+                type: string
+        "503":
+          description: Firebase DB error.
+          schema:
+            type: object
+            properties:
+              msg:
+                type: string
+
   "/finish":
     post:
       operationId: "postFinish"
@@ -125,3 +149,17 @@ paths:
               reward:
                 type: number
                 description: reward amount, in wei (divide by 10^18 to get HRX)
+        "504":
+          description: Blockchain RPC call failed.
+          schema:
+            type: object
+            properties:
+              msg:
+                type: string
+        "503":
+          description: Firebase DB error.
+          schema:
+            type: object
+            properties:
+              msg:
+                type: string
