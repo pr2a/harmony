@@ -12,6 +12,7 @@ import (
 	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/go-openapi/swag"
+	"github.com/go-openapi/validate"
 
 	strfmt "github.com/go-openapi/strfmt"
 )
@@ -26,36 +27,41 @@ func NewPostFinishParams() PostFinishParams {
 // PostFinishParams contains all the bound params for the post finish operation
 // typically these are obtained from a http.Request
 //
-// swagger:parameters PostFinish
+// swagger:parameters postFinish
 type PostFinishParams struct {
 
 	// HTTP Request Object
 	HTTPRequest *http.Request `json:"-"`
 
+	/*user's account private key, hex-encoded
+	  Required: true
+	  In: query
+	*/
+	AccountKey string
 	/*the solution's height (the same number found in all squares)
 	  In: query
 	*/
 	Height *int64
-	/*user's account private key, hex-encoded
-	  In: query
-	*/
-	Key *string
 	/*where the cursor was after completing the last move in sequence, in telephone keypad notation (1-9)
+	  Required: true
 	  In: query
 	*/
-	LastPos *int64
+	LastPos int64
 	/*level number (1-based)
+	  Required: true
 	  In: query
 	*/
-	Level *int64
+	Level int64
 	/*user's moves from first to last; [udlr]* in regex
+	  Required: true
 	  In: query
 	*/
-	Sequence *string
+	Sequence string
 	/*the game ID (staking transaction ID) returned by POST /play
+	  Required: true
 	  In: query
 	*/
-	Txid *string
+	Txid string
 }
 
 // BindRequest both binds and validates a request, it assumes that complex things implement a Validatable(strfmt.Registry) error interface
@@ -69,13 +75,13 @@ func (o *PostFinishParams) BindRequest(r *http.Request, route *middleware.Matche
 
 	qs := runtime.Values(r.URL.Query())
 
-	qHeight, qhkHeight, _ := qs.GetOK("height")
-	if err := o.bindHeight(qHeight, qhkHeight, route.Formats); err != nil {
+	qAccountKey, qhkAccountKey, _ := qs.GetOK("accountKey")
+	if err := o.bindAccountKey(qAccountKey, qhkAccountKey, route.Formats); err != nil {
 		res = append(res, err)
 	}
 
-	qKey, qhkKey, _ := qs.GetOK("key")
-	if err := o.bindKey(qKey, qhkKey, route.Formats); err != nil {
+	qHeight, qhkHeight, _ := qs.GetOK("height")
+	if err := o.bindHeight(qHeight, qhkHeight, route.Formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -105,6 +111,27 @@ func (o *PostFinishParams) BindRequest(r *http.Request, route *middleware.Matche
 	return nil
 }
 
+// bindAccountKey binds and validates parameter AccountKey from query.
+func (o *PostFinishParams) bindAccountKey(rawData []string, hasKey bool, formats strfmt.Registry) error {
+	if !hasKey {
+		return errors.Required("accountKey", "query")
+	}
+	var raw string
+	if len(rawData) > 0 {
+		raw = rawData[len(rawData)-1]
+	}
+
+	// Required: true
+	// AllowEmptyValue: false
+	if err := validate.RequiredString("accountKey", "query", raw); err != nil {
+		return err
+	}
+
+	o.AccountKey = raw
+
+	return nil
+}
+
 // bindHeight binds and validates parameter Height from query.
 func (o *PostFinishParams) bindHeight(rawData []string, hasKey bool, formats strfmt.Registry) error {
 	var raw string
@@ -127,100 +154,94 @@ func (o *PostFinishParams) bindHeight(rawData []string, hasKey bool, formats str
 	return nil
 }
 
-// bindKey binds and validates parameter Key from query.
-func (o *PostFinishParams) bindKey(rawData []string, hasKey bool, formats strfmt.Registry) error {
-	var raw string
-	if len(rawData) > 0 {
-		raw = rawData[len(rawData)-1]
-	}
-
-	// Required: false
-	// AllowEmptyValue: false
-	if raw == "" { // empty values pass all other validations
-		return nil
-	}
-
-	o.Key = &raw
-
-	return nil
-}
-
 // bindLastPos binds and validates parameter LastPos from query.
 func (o *PostFinishParams) bindLastPos(rawData []string, hasKey bool, formats strfmt.Registry) error {
+	if !hasKey {
+		return errors.Required("last_pos", "query")
+	}
 	var raw string
 	if len(rawData) > 0 {
 		raw = rawData[len(rawData)-1]
 	}
 
-	// Required: false
+	// Required: true
 	// AllowEmptyValue: false
-	if raw == "" { // empty values pass all other validations
-		return nil
+	if err := validate.RequiredString("last_pos", "query", raw); err != nil {
+		return err
 	}
 
 	value, err := swag.ConvertInt64(raw)
 	if err != nil {
 		return errors.InvalidType("last_pos", "query", "int64", raw)
 	}
-	o.LastPos = &value
+	o.LastPos = value
 
 	return nil
 }
 
 // bindLevel binds and validates parameter Level from query.
 func (o *PostFinishParams) bindLevel(rawData []string, hasKey bool, formats strfmt.Registry) error {
+	if !hasKey {
+		return errors.Required("level", "query")
+	}
 	var raw string
 	if len(rawData) > 0 {
 		raw = rawData[len(rawData)-1]
 	}
 
-	// Required: false
+	// Required: true
 	// AllowEmptyValue: false
-	if raw == "" { // empty values pass all other validations
-		return nil
+	if err := validate.RequiredString("level", "query", raw); err != nil {
+		return err
 	}
 
 	value, err := swag.ConvertInt64(raw)
 	if err != nil {
 		return errors.InvalidType("level", "query", "int64", raw)
 	}
-	o.Level = &value
+	o.Level = value
 
 	return nil
 }
 
 // bindSequence binds and validates parameter Sequence from query.
 func (o *PostFinishParams) bindSequence(rawData []string, hasKey bool, formats strfmt.Registry) error {
+	if !hasKey {
+		return errors.Required("sequence", "query")
+	}
 	var raw string
 	if len(rawData) > 0 {
 		raw = rawData[len(rawData)-1]
 	}
 
-	// Required: false
+	// Required: true
 	// AllowEmptyValue: false
-	if raw == "" { // empty values pass all other validations
-		return nil
+	if err := validate.RequiredString("sequence", "query", raw); err != nil {
+		return err
 	}
 
-	o.Sequence = &raw
+	o.Sequence = raw
 
 	return nil
 }
 
 // bindTxid binds and validates parameter Txid from query.
 func (o *PostFinishParams) bindTxid(rawData []string, hasKey bool, formats strfmt.Registry) error {
+	if !hasKey {
+		return errors.Required("txid", "query")
+	}
 	var raw string
 	if len(rawData) > 0 {
 		raw = rawData[len(rawData)-1]
 	}
 
-	// Required: false
+	// Required: true
 	// AllowEmptyValue: false
-	if raw == "" { // empty values pass all other validations
-		return nil
+	if err := validate.RequiredString("txid", "query", raw); err != nil {
+		return err
 	}
 
-	o.Txid = &raw
+	o.Txid = raw
 
 	return nil
 }

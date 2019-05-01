@@ -15,8 +15,8 @@ import (
 
 // PostPlayURL generates an URL for the post play operation
 type PostPlayURL struct {
-	Key   *string
-	Stake *float64
+	AccountKey string
+	Stake      float64
 
 	_basePath string
 	// avoid unkeyed usage
@@ -52,18 +52,12 @@ func (o *PostPlayURL) Build() (*url.URL, error) {
 
 	qs := make(url.Values)
 
-	var key string
-	if o.Key != nil {
-		key = *o.Key
-	}
-	if key != "" {
-		qs.Set("key", key)
+	accountKey := o.AccountKey
+	if accountKey != "" {
+		qs.Set("accountKey", accountKey)
 	}
 
-	var stake string
-	if o.Stake != nil {
-		stake = swag.FormatFloat64(*o.Stake)
-	}
+	stake := swag.FormatFloat64(o.Stake)
 	if stake != "" {
 		qs.Set("stake", stake)
 	}
