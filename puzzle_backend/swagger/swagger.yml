@@ -7,7 +7,7 @@ basePath: /v1
 schemes:
   - https
 paths:
-  /reg:
+  "/reg":
     post:
       summary: FE & ContentOS calls this API when the Harmony game is loaded.
       consumes:
@@ -38,7 +38,7 @@ paths:
                 type: string
               account:
                 type: string
-  /play:
+  "/play":
     post:
       summary: FE calls this to start a new game.
       consumes:
@@ -61,7 +61,7 @@ paths:
               txid:
                 type: string
                 description: staking txid
-  /finish:
+  "/finish":
     post:
       summary: FE calls this to post a level
       consumes:
