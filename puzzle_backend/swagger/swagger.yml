@@ -83,6 +83,25 @@ paths:
       responses:
         "201":
           description: A new game has been started.
+        "404":
+          description: The player account does not exist.
+        "403":
+          description: The request was denied.
+          schema:
+            type: object
+            properties:
+              errorCode:
+                type: string
+                description: >
+                  An error code; one of:
+
+                  - `insufficientFund` – The account had not enough fund to
+                    cover the deposit.
+              displayMessage:
+                type: string
+                description: An error message that can be displayed to the user.
+            required:
+              - errorCode
         "504":
           description: Blockchain RPC call failed.
           schema:

@@ -35,6 +35,74 @@ func (o *PostPlayCreated) WriteResponse(rw http.ResponseWriter, producer runtime
 	rw.WriteHeader(201)
 }
 
+// PostPlayForbiddenCode is the HTTP code returned for type PostPlayForbidden
+const PostPlayForbiddenCode int = 403
+
+/*PostPlayForbidden The request was denied.
+
+swagger:response postPlayForbidden
+*/
+type PostPlayForbidden struct {
+
+	/*
+	  In: Body
+	*/
+	Payload *PostPlayForbiddenBody `json:"body,omitempty"`
+}
+
+// NewPostPlayForbidden creates PostPlayForbidden with default headers values
+func NewPostPlayForbidden() *PostPlayForbidden {
+
+	return &PostPlayForbidden{}
+}
+
+// WithPayload adds the payload to the post play forbidden response
+func (o *PostPlayForbidden) WithPayload(payload *PostPlayForbiddenBody) *PostPlayForbidden {
+	o.Payload = payload
+	return o
+}
+
+// SetPayload sets the payload to the post play forbidden response
+func (o *PostPlayForbidden) SetPayload(payload *PostPlayForbiddenBody) {
+	o.Payload = payload
+}
+
+// WriteResponse to the client
+func (o *PostPlayForbidden) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
+
+	rw.WriteHeader(403)
+	if o.Payload != nil {
+		payload := o.Payload
+		if err := producer.Produce(rw, payload); err != nil {
+			panic(err) // let the recovery middleware deal with this
+		}
+	}
+}
+
+// PostPlayNotFoundCode is the HTTP code returned for type PostPlayNotFound
+const PostPlayNotFoundCode int = 404
+
+/*PostPlayNotFound The player account does not exist.
+
+swagger:response postPlayNotFound
+*/
+type PostPlayNotFound struct {
+}
+
+// NewPostPlayNotFound creates PostPlayNotFound with default headers values
+func NewPostPlayNotFound() *PostPlayNotFound {
+
+	return &PostPlayNotFound{}
+}
+
+// WriteResponse to the client
+func (o *PostPlayNotFound) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
+
+	rw.Header().Del(runtime.HeaderContentType) //Remove Content-Type on empty responses
+
+	rw.WriteHeader(404)
+}
+
 // PostPlayServiceUnavailableCode is the HTTP code returned for type PostPlayServiceUnavailable
 const PostPlayServiceUnavailableCode int = 503
 

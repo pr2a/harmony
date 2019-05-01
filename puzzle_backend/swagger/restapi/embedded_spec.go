@@ -145,6 +145,28 @@ func init() {
           "201": {
             "description": "A new game has been started."
           },
+          "403": {
+            "description": "The request was denied.",
+            "schema": {
+              "type": "object",
+              "required": [
+                "errorCode"
+              ],
+              "properties": {
+                "displayMessage": {
+                  "description": "An error message that can be displayed to the user.",
+                  "type": "string"
+                },
+                "errorCode": {
+                  "description": "An error code; one of:\n- ` + "`" + `insufficientFund` + "`" + ` – The account had not enough fund to\n  cover the deposit.\n",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "The player account does not exist."
+          },
           "503": {
             "description": "Firebase DB error.",
             "schema": {
@@ -382,6 +404,28 @@ func init() {
         "responses": {
           "201": {
             "description": "A new game has been started."
+          },
+          "403": {
+            "description": "The request was denied.",
+            "schema": {
+              "type": "object",
+              "required": [
+                "errorCode"
+              ],
+              "properties": {
+                "displayMessage": {
+                  "description": "An error message that can be displayed to the user.",
+                  "type": "string"
+                },
+                "errorCode": {
+                  "description": "An error code; one of:\n- ` + "`" + `insufficientFund` + "`" + ` – The account had not enough fund to\n  cover the deposit.\n",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "The player account does not exist."
           },
           "503": {
             "description": "Firebase DB error.",
