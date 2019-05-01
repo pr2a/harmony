@@ -94,7 +94,6 @@ export default {
     };
   },
   mounted() {
-    console.log("xxx", this.game);
     this.boardSizeAutoPx =
       this.boardSizePx > 0
         ? this.boardSizePx
@@ -164,11 +163,9 @@ export default {
       });
     },
     endGame() {
-      console.log("eee");
       this.$emit("ended", this);
     },
     move(e) {
-      console.log("xx", this.position);
       let x = clamp(this.position.x + e.diff.x, 0, 2);
       let y = clamp(this.position.y + e.diff.y, 0, 2);
       if (x === this.position.x && y === this.position.y) return;

@@ -34,6 +34,41 @@ footer {
 .fade-enter, .fade-leave-to /* .fade-leave-active below version 2.1.8 */ {
   opacity: 0;
 }
+
+.game-over {
+  font-weight: bold;
+  text-align: center;
+}
+
+.main-container {
+  .game-container {
+    position: relative;
+    .overlay {
+      width: 100%;
+      height: 100%;
+      position: absolute;
+      z-index: 2;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+  }
+}
+
+.appearing {
+  animation: appearing 1s;
+  -webkit-animation: appearing 1s;
+}
+
+@keyframes appearing {
+  0% {
+    opacity: 0;
+  }
+
+  100% {
+    opacity: 1;
+  }
+}
 </style>
 
 <template>
@@ -41,12 +76,21 @@ footer {
     <div class="main-container appearing" :style="mainContainerStyle">
       <div class="score-container">
         <div class="logo"></div>
+        <div>
+          <div class="count-down">Time Left: {{ secondsLeft }}</div>
+          <div class="reward">Reward: {{ reward }}</div>
+        </div>
       </div>
       <div class="game-container" :style="gameContainerStyle">
         <div v-if="gameEnded">
           <div class="overlay half-white appearing07"></div>
-          <div class="overlay game-over appearing" :style="gameOverStyle">
-            <p>Game over!</p>
+          <div class="overlay game-over appearing">
+            <div class="content">
+              <p :style="gameOverStyle">Game over!</p>
+              <div>
+                <button class="btn-primary">Restart</button>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -61,7 +105,6 @@ footer {
               :started="gameStarted"
               :game="level"
               @ended="onGameEnded"
-              @score="onGameScore"
               v-if="i === levelIndex"
             ></Game>
           </transition>
@@ -82,6 +125,7 @@ import Chip from "./Chip";
 import { TweenLite } from "gsap/TweenMax";
 import Vue from "vue";
 import { levels } from "../level-generator";
+import { setInterval, clearInterval } from "timers";
 
 var defBoardSizePx = 420;
 var defSize = 3;
@@ -101,7 +145,10 @@ export default {
       gameStarted: false,
       gameEnded: false,
       score: 0,
-      scoreInc: ""
+      scoreInc: "",
+      secondsLeft: 30,
+      reward: 0,
+      timer: null
     };
   },
   created() {
@@ -175,46 +222,31 @@ export default {
     startGame() {
       this.gameStarted = true;
       this.score = 0;
+      this.timer = setInterval(() => {
+        this.secondsLeft--;
+        if (this.secondsLeft <= 0) {
+          this.endGame();
+        }
+      }, 1000);
     },
     reset() {
-      console.log(this.$refs[`game${this.levelIndex}`]);
       this.$refs[`game${this.levelIndex}`][0].reset();
     },
     onGameEnded() {
       this.gameStarted = false;
       if (this.levelIndex === this.levels.length - 1) {
-        this.gameEnded = true;
+        this.endGame();
         return;
       }
       this.levelIndex++;
+      this.secondsLeft += 15;
+      this.reward += 5;
       this.persistState();
     },
-    onGameScore(args) {
-      var s = { score: this.score };
-      var self = this;
-      TweenLite.to(s, 0.3, {
-        score: args.score,
-        ease: Power0.easeNone,
-        onUpdate() {
-          self.score = Math.floor(s.score);
-        }
-      });
-
-      if (args.score > this.bestScore[this.size]) {
-        var bs = { score: this.bestScore[this.size] };
-        TweenLite.to(bs, 0.3, {
-          score: args.score,
-          ease: Power0.easeNone,
-          onUpdate() {
-            Vue.set(self.bestScore, self.size, Math.floor(bs.score));
-          }
-        });
-      }
-
-      this.scoreInc = args.scoreInc + "+";
-      Vue.nextTick(function() {
-        self.scoreInc = "";
-      });
+    endGame() {
+      this.gameEnded = true;
+      clearInterval(this.timer);
+      this.timer = null;
     }
   }
 };

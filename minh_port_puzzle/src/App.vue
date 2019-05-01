@@ -171,20 +171,6 @@ html {
   color: white;
 }
 
-.main-container .game-container {
-  position: relative;
-}
-
-.main-container .game-container .overlay {
-  width: 100%;
-  height: 100%;
-  position: absolute;
-  z-index: 2;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
 .main-container .game-awards-container {
   display: flex;
   justify-content: space-around;
@@ -232,39 +218,9 @@ html {
   padding: 0 3px 0 3px;
 }
 
-.game-over {
-  font-weight: bold;
-  text-align: center;
-}
-
-.appearing {
-  animation: appearing 1s;
-  -webkit-animation: appearing 1s;
-}
-
 .appearing07 {
   animation: appearing07 1s;
   -webkit-animation: appearing07 1s;
-}
-
-@keyframes appearing {
-  0% {
-    opacity: 0;
-  }
-
-  100% {
-    opacity: 1;
-  }
-}
-
-@-webkit-keyframes appearing {
-  0% {
-    opacity: 0;
-  }
-
-  100% {
-    opacity: 1;
-  }
 }
 
 @keyframes up-disappear {
