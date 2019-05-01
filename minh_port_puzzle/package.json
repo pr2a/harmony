@@ -14,8 +14,9 @@
     "build": "node build/build.js"
   },
   "dependencies": {
-    "lodash": "^4.17.11",
     "gsap": "^2.1.2",
+    "lodash": "^4.17.11",
+    "moment": "^2.24.0",
     "vue": "^2.5.2",
     "vue-router": "^3.0.1"
   },

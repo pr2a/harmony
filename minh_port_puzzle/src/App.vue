@@ -540,6 +540,11 @@ html {
   background-repeat: no-repeat;
 }
 
+.flex-veritcal {
+  display: flex;
+  flex-direction: column;
+}
+
 .flex-horizontal {
   display: flex;
   flex-direction: row;
@@ -547,7 +552,12 @@ html {
 }
 
 .flex-grow {
-  flex: 1;
+  flex: auto;
+  min-width: 0;
+  min-height: 0;
+}
+.text-right {
+  text-align: right;
 }
 </style>
 

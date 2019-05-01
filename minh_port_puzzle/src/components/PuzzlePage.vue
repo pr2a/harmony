@@ -75,10 +75,27 @@ footer {
     opacity: 1;
   }
 }
+
+.tx-history-panel {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1000;
+  background-color: rgba(252, 247, 235, 0.95);
+}
+.view-tx-btn {
+  font-size: 0.8em;
+}
+.action-row + .action-row {
+  margin-top: 1em;
+}
 </style>
 
 <template>
   <div id="app" style="visibility:hidden">
+    <tx-history-panel v-if="isTxPanelOpen" class="tx-history-panel" @close="isTxPanelOpen = false"></tx-history-panel>
     <div class="main-container appearing" :style="mainContainerStyle">
       <div class="score-container">
         <div class="logo"></div>
@@ -111,7 +128,7 @@ footer {
             <Game
               :ref="'game' + i"
               class="game"
-              :listen-own-key-events-only="true"
+              :listen-own-key-events-only="false"
               :tab-index="1"
               :board-size-px="boardSizePx"
               :game="level"
@@ -122,13 +139,19 @@ footer {
           </transition>
         </div>
 
-        <footer class="flex-horizontal">
-          <span class="flex-grow">levels: {{ levelIndex + 1 }} / {{ levels.length }}</span>
-          <button
-            class="btn-primary pull-right"
-            @click="resetLevel"
-            :style="{ visibility: gameEnded ? 'hidden':'visible' }"
-          >Reset Level</button>
+        <footer class="flex-vertical">
+          <div class="flex-horizontal action-row">
+            <span class="flex-grow">levels: {{ levelIndex + 1 }} / {{ levels.length }}</span>
+            <button
+              class="btn-primary"
+              @click="resetLevel"
+              :style="{ visibility: gameEnded ? 'hidden':'visible' }"
+            >Reset Level</button>
+          </div>
+          <div class="flex-horizontal action-row">
+            <div class="flex-grow"></div>
+            <button class="btn-primary view-tx-btn" @click="viewTxHistory">View Transactions</button>
+          </div>
         </footer>
       </div>
     </div>
@@ -140,8 +163,10 @@ import Game from "./Game";
 import Chip from "./Chip";
 import { TweenLite } from "gsap/TweenMax";
 import Vue from "vue";
+import service from "../service";
 import { levels } from "../level-generator";
 import { setInterval, clearInterval } from "timers";
+import TxHistoryPanel from "./TxHistoryPanel";
 
 var defBoardSizePx = 420;
 var defSize = 3;
@@ -151,7 +176,8 @@ export default {
   name: "PuzzlePage",
   components: {
     Game,
-    Chip
+    Chip,
+    TxHistoryPanel
   },
   data() {
     return {
@@ -162,7 +188,8 @@ export default {
       gameEnded: false,
       secondsLeft: IntialSeconds,
       reward: 0,
-      timer: null
+      timer: null,
+      isTxPanelOpen: false
     };
   },
   created() {
@@ -238,12 +265,14 @@ export default {
       this.levelIndex = 0;
       this.levels = levels();
       this.secondsLeft = IntialSeconds;
-      this.timer = setInterval(() => {
-        this.secondsLeft--;
-        if (this.secondsLeft <= 0) {
-          this.endGame();
-        }
-      }, 1000);
+      service.stakeToken().then(() => {
+        this.timer = setInterval(() => {
+          this.secondsLeft--;
+          if (this.secondsLeft <= 0) {
+            this.endGame();
+          }
+        }, 1000);
+      });
     },
     resetLevel() {
       this.$refs[`game${this.levelIndex}`][0].reset();
@@ -253,15 +282,20 @@ export default {
         this.endGame();
         return;
       }
-      this.levelIndex++;
-      this.secondsLeft += 15;
-      this.reward += 5;
-      this.persistState();
+      service.completeLevel().then(() => {
+        this.levelIndex++;
+        this.secondsLeft += 15;
+        this.reward += 5;
+        this.persistState();
+      });
     },
     endGame() {
       this.gameEnded = true;
       clearInterval(this.timer);
       this.timer = null;
+    },
+    viewTxHistory() {
+      this.isTxPanelOpen = true;
     }
   }
 };
