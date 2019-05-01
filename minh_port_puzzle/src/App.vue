@@ -520,13 +520,30 @@ html {
   }
 }
 
-.btn-primary {
+.btn-primary,
+.btn-mini {
   background-color: #f96829;
-  padding: 0.5em 1.5em;
   border-radius: 0.3em;
   border: 0;
-  font-size: 1.2em;
   color: #fff;
+  outline: none;
+  &:disabled {
+    opacity: 0.5;
+    background-color: #aaa;
+  }
+}
+
+.btn-primary {
+  padding: 0.5em 1.5em;
+  font-size: 1.2em;
+}
+
+.btn-mini {
+  display: inline-block;
+  font-size: 1em;
+  width: 4em;
+  height: 2em;
+  padding: 0;
   outline: none;
 }
 

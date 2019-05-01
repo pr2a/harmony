@@ -20,23 +20,6 @@
   text-align: center;
 }
 
-.btn-mini {
-  display: inline-block;
-  font-size: 1em;
-  width: 4em;
-  height: 2em;
-  padding: 0;
-  background-color: #f96829;
-  border-radius: 0.3em;
-  border: 0;
-  color: #fff;
-  outline: none;
-  &:disabled {
-    opacity: 0.5;
-    background-color: #aaa;
-  }
-}
-
 .btn-primary {
   display: block;
   margin: 0 auto;
@@ -79,7 +62,7 @@
         </div>
       </div>
     </div>
-    <button class="btn-primary" @click="stakeToken">Stake</button>
+    <button class="btn-primary" @click="stakeToken" :disabled="globalData.balance < 20">Stake</button>
   </div>
 </template>
 
