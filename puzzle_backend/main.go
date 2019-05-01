@@ -101,6 +101,12 @@ func main() {
 	defer db.CloseFdb()
 	leader = readProfile(*profile)
 
+	leaders := make([]p2p.Peer, 0)
+	for _, ldr := range backendProfile.RPCServer {
+		leaders = append(leaders, ldr[0])
+	}
+	restclient.SetLeaders(leaders)
+
 	/*
 		//Get a list of all current players
 		_, err := restclient.GetPlayer(leader.IP, defaultPort)
