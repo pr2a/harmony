@@ -50,7 +50,8 @@ function createSwipeListener(onSwipe) {
     var my = Math.abs(y);
     if (mx < sens && my < sens) return;
 
-    var d = mx > my ? (x > 0 ? "left" : "right") : y > 0 ? "up" : "down";
+    var d =
+      actions[mx > my ? (x > 0 ? "left" : "right") : y > 0 ? "up" : "down"];
     onSwipe(d);
   }
 
@@ -66,11 +67,17 @@ function createSwipeListener(onSwipe) {
   };
 }
 
+const actions = {
+  left: { x: 0, y: -1 },
+  up: { x: -1, y: 0 },
+  right: { x: 0, y: 1 },
+  down: { x: 1, y: 0 }
+};
 var keyMap = {};
-keyMap[37] = { dir: "left", diff: { x: 0, y: -1 } };
-keyMap[38] = { dir: "up", diff: { x: -1, y: 0 } };
-keyMap[39] = { dir: "right", diff: { x: 0, y: 1 } };
-keyMap[40] = { dir: "down", diff: { x: 1, y: 0 } };
+keyMap[37] = actions.left;
+keyMap[38] = actions.up;
+keyMap[39] = actions.right;
+keyMap[40] = actions.down;
 
 export default {
   name: "Game",
@@ -143,6 +150,7 @@ export default {
   methods: {
     startGame() {
       this.runKeyboardControl(this.move);
+      this.runTouchControl(this.move);
     },
     runKeyboardControl(move) {
       var listenKeysOn = this.listenOwnKeyEventsOnly ? this.$el : document;
@@ -159,9 +167,9 @@ export default {
       });
     },
 
-    runTouchControl(doGameMove) {
+    runTouchControl(move) {
       var sw = createSwipeListener(function(m) {
-        doGameMove(m);
+        move(m);
       });
       var el = this.$el;
       sw.attach(el);
@@ -173,8 +181,8 @@ export default {
       this.$emit("completeLevel", this);
     },
     move(e) {
-      let x = clamp(this.position.x + e.diff.x, 0, 2);
-      let y = clamp(this.position.y + e.diff.y, 0, 2);
+      let x = clamp(this.position.x + e.x, 0, 2);
+      let y = clamp(this.position.y + e.y, 0, 2);
       if (x === this.position.x && y === this.position.y) return;
       this.position.x = x;
       this.position.y = y;
