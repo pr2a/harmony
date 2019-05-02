@@ -1,7 +1,6 @@
 package main
 
 import (
-	"encoding/json"
 	"flag"
 	"fmt"
 	"io"
@@ -9,7 +8,6 @@ import (
 	"net/http"
 	"os"
 	"path"
-	"strconv"
 
 	"github.com/go-openapi/loads"
 	"github.com/go-openapi/runtime/middleware"
@@ -26,22 +24,6 @@ import (
 	"github.com/harmony-one/demo-apps/puzzle_backend/swagger/restapi/operations"
 	_ "github.com/harmony-one/demo-apps/puzzle_backend/swagger/restapi/operations"
 )
-
-type respEnter struct {
-	Address string `json:"address"`
-	Level   uint   `json:"level"`
-	Balance uint64 `json:"balance"`
-}
-
-type respFinish struct {
-	Level   int    `json:"level"`
-	Rewards uint64 `json:"rewards"`
-}
-
-type respReg struct {
-	Account string `json:"account"`
-	Private string `json:"private"`
-}
 
 var (
 	version string
@@ -69,10 +51,9 @@ var (
 )
 
 const (
-	minimalFee = 1
-	adminKey   = "e401343197a852f361e38ce6b46c99f1d6d1f80499864c6ae7effee42b46ab6b"
-	dbKeyFile  = "./puzzle_backend/keys/benchmark_account_key.json"
-	dbProject  = "benchmark-209420"
+	adminKey  = "e401343197a852f361e38ce6b46c99f1d6d1f80499864c6ae7effee42b46ab6b"
+	dbKeyFile = "./puzzle_backend/keys/benchmark_account_key.json"
+	dbProject = "benchmark-209420"
 )
 
 // readProfile read the ini file and return the leader's IP
@@ -245,65 +226,35 @@ func handlePostPlay(params operations.PostPlayParams) middleware.Responder {
 }
 
 func handlePostFinish(params operations.PostFinishParams) middleware.Responder {
+	ctx := appengine.NewContext(params.HTTPRequest)
+
+	key := params.AccountKey
+
+	// find the existing account from firebase DB
+	accounts := db.FindAccount("privkey", key)
+
+	// can't play if player didn't register before
+	if len(accounts) == 0 {
+		return operations.NewPostPlayNotFound()
+	}
+	account := accounts[0]
+	fmt.Printf("player: %v/%v is about to get paid\n", account.Address, params.Height)
+
+	_, err := restclient.GetRewards(account.Address, *params.Height)
+	if err != nil {
+		app_log.Criticalf(ctx, "finishHandler GetRewards failed: %v", err)
+		return operations.NewPostFinishGatewayTimeout().WithPayload(
+			&operations.PostFinishGatewayTimeoutBody{
+				Msg: "finish failure",
+			},
+		)
+	}
+
 	return operations.NewPostFinishOK().WithPayload(
 		&operations.PostFinishOKBody{
 			Reward: 5e+18,
 		},
 	)
-}
-
-func finishHandler(w http.ResponseWriter, r *http.Request) {
-	ctx := appengine.NewContext(r)
-	if r.URL.Path != "/finish" {
-		http.NotFound(w, r)
-		return
-	}
-	q := r.URL.Query()
-
-	var ok bool
-
-	newlevels, ok := q["newlevel"]
-	if !ok {
-		http.Error(w, "missing params", http.StatusBadRequest)
-		return
-	}
-	newlevel, err := strconv.Atoi(newlevels[0])
-	if err != nil {
-		http.Error(w, "wrong parameters", http.StatusBadRequest)
-		return
-	}
-
-	accounts, ok := q["account"]
-	if !ok {
-		http.Error(w, "missing params", http.StatusBadRequest)
-		return
-	}
-	account := accounts[0]
-	keys, ok := q["key"]
-	if !ok || keys[0] != adminKey {
-		http.Error(w, "missing params", http.StatusBadRequest)
-		return
-	}
-
-	rewards, err := restclient.GetRewards(account, newlevel)
-	if err != nil {
-		app_log.Criticalf(ctx, "finishHandler GetRewards error: %v", err)
-		http.Error(w, "Can't Get Rewards", http.StatusInternalServerError)
-		return
-	}
-
-	resp := respFinish{
-		Level:   newlevel,
-		Rewards: rewards,
-	}
-	bytes, err := json.Marshal(resp)
-	if err != nil {
-		fmt.Printf("can't marshal finish resp: %v\n", resp)
-		http.Error(w, "Can't marshal finish response", http.StatusInternalServerError)
-		return
-	}
-	res := string(bytes)
-	_, _ = io.WriteString(w, res)
 }
 
 func testHandler(w http.ResponseWriter, r *http.Request) {

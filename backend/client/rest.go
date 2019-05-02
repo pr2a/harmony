@@ -196,6 +196,6 @@ func EnterPuzzle(account string, amount string) error {
 }
 
 // GetRewards call /finish rest call to get rewards
-func GetRewards(account string, level int) (uint64, error) {
+func GetRewards(account string, height int64) (uint64, error) {
 	return 0, nil
 }
