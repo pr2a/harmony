@@ -19,6 +19,7 @@ import (
 	fdb "github.com/harmony-one/demo-apps/backend/db"
 	"github.com/harmony-one/demo-apps/backend/p2p"
 	"github.com/harmony-one/demo-apps/backend/utils"
+	"github.com/harmony-one/demo-apps/puzzle_backend/swagger/models"
 	"github.com/harmony-one/demo-apps/puzzle_backend/swagger/restapi"
 	_ "github.com/harmony-one/demo-apps/puzzle_backend/swagger/restapi"
 	"github.com/harmony-one/demo-apps/puzzle_backend/swagger/restapi/operations"
@@ -126,6 +127,7 @@ func handlePostReg(params operations.PostRegParams) middleware.Responder {
 	var account *fdb.PzPlayer
 	// find the existing account from firebase DB
 	accounts := db.FindAccount("email", id)
+	var resFunc func(payload *models.PostRegResponse) middleware.Responder
 
 	// register the new account
 	if len(accounts) == 0 { // didn't find the account
@@ -154,44 +156,54 @@ func handlePostReg(params operations.PostRegParams) middleware.Responder {
 		}
 		account = &player
 		fmt.Printf("register new Account: %v for email: %v\n", account, id)
-		select {
-		case msg := <-rpcDone:
-			if msg.Err != nil {
-				return operations.NewPostRegGatewayTimeout().WithPayload(
-					&operations.PostRegGatewayTimeoutBody{
-						Msg: "fund me failure",
-					},
-				)
-			}
-			//TODO: send email to player
-			go func() {
-				fmt.Println("Sent email ..")
-			}()
-
-			return operations.NewPostRegCreated().WithAccessControlAllowOrigin("*").WithPayload(
-				&operations.PostRegCreatedBody{
-					Account: account.Address,
-					Email:   id,
-					Balance: "10000000000000000000", // TOOD: placeholder
+		if msg := <-rpcDone; msg.Err != nil {
+			return operations.NewPostRegGatewayTimeout().WithPayload(
+				&operations.PostRegGatewayTimeoutBody{
+					Msg: "fund me failure",
 				},
 			)
 		}
 
+		//TODO: send email to player
+		go func() {
+			fmt.Println("Sent email ..")
+		}()
+
+		resFunc = func(payload *models.PostRegResponse) middleware.Responder {
+			return operations.NewPostRegCreated().
+				WithAccessControlAllowOrigin("*").WithPayload(payload)
+		}
 	} else {
 		// we should find only one account, if more than one, just get the first one
 		account = accounts[0]
-		// TODO: leo
-		//		go restclient.GetBalance(account.Leader, account.Address, rpcDone)
-		//		fmt.Printf("found existing Account: %v for id: %v\n", account, id)
+		resFunc = func(payload *models.PostRegResponse) middleware.Responder {
+			return operations.NewPostRegOK().WithPayload(payload)
+		}
+	}
 
-		return operations.NewPostRegOK().WithPayload(
-			&operations.PostRegOKBody{
-				Account: account.Address,
-				Email:   id,
-				Balance: "900000000000000000", // TOOD: placeholder
+	leader = p2p.Peer{
+		IP:   account.Leader,
+		Port: account.Port,
+	}
+
+	chanBalanceMsg := make(chan restclient.AccountBalanceMsg)
+	go restclient.GetBalance(leader, account.Address, chanBalanceMsg)
+	balanceMsg := <-chanBalanceMsg
+	if balanceMsg.Err != nil {
+		return operations.NewPostRegGatewayTimeout().WithPayload(
+			&operations.PostRegGatewayTimeoutBody{
+				Msg: "get balance failure",
 			},
 		)
 	}
+
+	return resFunc(
+		&models.PostRegResponse{
+			Account: account.Address,
+			Email:   id,
+			Balance: balanceMsg.Balance,
+		},
+	)
 }
 
 func handlePostPlay(params operations.PostPlayParams) middleware.Responder {

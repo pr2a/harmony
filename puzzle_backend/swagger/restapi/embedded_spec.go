@@ -208,35 +208,13 @@ func init() {
           "200": {
             "description": "An existing user.",
             "schema": {
-              "type": "object",
-              "properties": {
-                "account": {
-                  "type": "string"
-                },
-                "balance": {
-                  "type": "string"
-                },
-                "email": {
-                  "type": "string"
-                }
-              }
+              "$ref": "#/definitions/postRegResponse"
             }
           },
           "201": {
             "description": "A new user.  FE should instruct the user to check email.",
             "schema": {
-              "type": "object",
-              "properties": {
-                "account": {
-                  "type": "string"
-                },
-                "balance": {
-                  "type": "string"
-                },
-                "email": {
-                  "type": "string"
-                }
-              }
+              "$ref": "#/definitions/postRegResponse"
             },
             "headers": {
               "Access-Control-Allow-Origin": {
@@ -271,6 +249,22 @@ func init() {
               }
             }
           }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "postRegResponse": {
+      "type": "object",
+      "properties": {
+        "account": {
+          "type": "string"
+        },
+        "balance": {
+          "type": "string"
+        },
+        "email": {
+          "type": "string"
         }
       }
     }
@@ -467,35 +461,13 @@ func init() {
           "200": {
             "description": "An existing user.",
             "schema": {
-              "type": "object",
-              "properties": {
-                "account": {
-                  "type": "string"
-                },
-                "balance": {
-                  "type": "string"
-                },
-                "email": {
-                  "type": "string"
-                }
-              }
+              "$ref": "#/definitions/postRegResponse"
             }
           },
           "201": {
             "description": "A new user.  FE should instruct the user to check email.",
             "schema": {
-              "type": "object",
-              "properties": {
-                "account": {
-                  "type": "string"
-                },
-                "balance": {
-                  "type": "string"
-                },
-                "email": {
-                  "type": "string"
-                }
-              }
+              "$ref": "#/definitions/postRegResponse"
             },
             "headers": {
               "Access-Control-Allow-Origin": {
@@ -530,6 +502,22 @@ func init() {
               }
             }
           }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "postRegResponse": {
+      "type": "object",
+      "properties": {
+        "account": {
+          "type": "string"
+        },
+        "balance": {
+          "type": "string"
+        },
+        "email": {
+          "type": "string"
         }
       }
     }

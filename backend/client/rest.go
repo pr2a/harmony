@@ -10,6 +10,8 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/btcsuite/goleveldb/leveldb/errors"
+
 	"github.com/harmony-one/demo-apps/backend/p2p"
 )
 
@@ -186,20 +188,26 @@ func FundMe(leader p2p.Peer, account string, done chan (RPCMsg)) {
 	}
 }
 
+type AccountBalanceMsg struct {
+	Balance string // Account balance
+	Err     error  // Error
+}
+
 // GetBalance call /balance rest call on leader
-func GetBalance(leader p2p.Peer, account string, done chan (RPCMsg)) {
+func GetBalance(leader p2p.Peer, account string, done chan AccountBalanceMsg) {
 	url := fmt.Sprintf("http://%s:%s/balance?key=0x%s", leader.IP, leader.Port, account)
 	var player = new(Player)
+	var msg AccountBalanceMsg
 
 	err := getClient(url, "/balance", player)
-	if len(player.Balances) > 0 {
-		fmt.Printf("Balance: %v", player.Balances[0])
+	if err != nil {
+		msg.Err = err
+	} else if len(player.Balances) == 0 {
+		msg.Err = errors.New("no balance was returned")
+	} else {
+		msg.Balance = player.Balances[0]
 	}
-
-	done <- RPCMsg{
-		Err:  err,
-		Done: true,
-	}
+	done <- msg
 }
 
 // PlayGame calls /play rest call to enter the game and return the current level

@@ -31,25 +31,11 @@ paths:
               type: string
               description: CORS origin bypass. TODO ek – remove this.
           schema:
-            type: object
-            properties:
-              email:
-                type: string
-              account:
-                type: string
-              balance:
-                type: string
+            $ref: "#/definitions/postRegResponse"
         "200":
           description: An existing user.
           schema:
-            type: object
-            properties:
-              email:
-                type: string
-              account:
-                type: string
-              balance:
-                type: string
+            $ref: "#/definitions/postRegResponse"
         "401":
           description: The given token is invalid.
         "504":
@@ -175,3 +161,13 @@ paths:
             properties:
               msg:
                 type: string
+definitions:
+  postRegResponse:
+    type: object
+    properties:
+      email:
+        type: string
+      account:
+        type: string
+      balance:
+        type: string
