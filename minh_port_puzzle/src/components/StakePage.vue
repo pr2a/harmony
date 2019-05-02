@@ -101,7 +101,7 @@ footer {
         </div>
       </div>
     </div>
-    <button class="btn-primary" @click="stakeToken" :disabled="globalData.balance < 20">Stake</button>
+    <button class="btn-primary" @click="stakeToken" :disabled="globalData.balance < 20">Start Game</button>
 
     <footer>
       <div class="host flex-horizontal">
