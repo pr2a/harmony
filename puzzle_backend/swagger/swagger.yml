@@ -37,6 +37,8 @@ paths:
                 type: string
               account:
                 type: string
+              balance:
+                type: string
         "200":
           description: An existing user.
           schema:
@@ -45,6 +47,8 @@ paths:
               email:
                 type: string
               account:
+                type: string
+              balance:
                 type: string
         "401":
           description: The given token is invalid.

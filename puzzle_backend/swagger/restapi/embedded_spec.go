@@ -220,6 +220,9 @@ func init() {
                 "account": {
                   "type": "string"
                 },
+                "balance": {
+                  "type": "string"
+                },
                 "email": {
                   "type": "string"
                 }
@@ -232,6 +235,9 @@ func init() {
               "type": "object",
               "properties": {
                 "account": {
+                  "type": "string"
+                },
+                "balance": {
                   "type": "string"
                 },
                 "email": {
@@ -480,6 +486,9 @@ func init() {
                 "account": {
                   "type": "string"
                 },
+                "balance": {
+                  "type": "string"
+                },
                 "email": {
                   "type": "string"
                 }
@@ -492,6 +501,9 @@ func init() {
               "type": "object",
               "properties": {
                 "account": {
+                  "type": "string"
+                },
+                "balance": {
                   "type": "string"
                 },
                 "email": {
