@@ -152,8 +152,6 @@ paths:
               reward:
                 type: string
                 description: reward amount, in wei (divide by 10^18 to get HRX)
-            type: object
-            properties:
               txid:
                 type: string
         "504":
