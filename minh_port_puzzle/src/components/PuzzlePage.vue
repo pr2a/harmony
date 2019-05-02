@@ -227,7 +227,7 @@ import { levels } from "../level-generator";
 import { setInterval, clearInterval } from "timers";
 
 const DefaultBoardSizePx = 420;
-const InitialSeconds = 1;
+const InitialSeconds = 30;
 
 export default {
   name: "PuzzlePage",
