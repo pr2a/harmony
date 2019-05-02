@@ -57,11 +57,6 @@ type PostFinishParams struct {
 	  In: query
 	*/
 	Sequence string
-	/*the game ID (staking transaction ID) returned by POST /play
-	  Required: true
-	  In: query
-	*/
-	Txid string
 }
 
 // BindRequest both binds and validates a request, it assumes that complex things implement a Validatable(strfmt.Registry) error interface
@@ -97,11 +92,6 @@ func (o *PostFinishParams) BindRequest(r *http.Request, route *middleware.Matche
 
 	qSequence, qhkSequence, _ := qs.GetOK("sequence")
 	if err := o.bindSequence(qSequence, qhkSequence, route.Formats); err != nil {
-		res = append(res, err)
-	}
-
-	qTxid, qhkTxid, _ := qs.GetOK("txid")
-	if err := o.bindTxid(qTxid, qhkTxid, route.Formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -221,27 +211,6 @@ func (o *PostFinishParams) bindSequence(rawData []string, hasKey bool, formats s
 	}
 
 	o.Sequence = raw
-
-	return nil
-}
-
-// bindTxid binds and validates parameter Txid from query.
-func (o *PostFinishParams) bindTxid(rawData []string, hasKey bool, formats strfmt.Registry) error {
-	if !hasKey {
-		return errors.Required("txid", "query")
-	}
-	var raw string
-	if len(rawData) > 0 {
-		raw = rawData[len(rawData)-1]
-	}
-
-	// Required: true
-	// AllowEmptyValue: false
-	if err := validate.RequiredString("txid", "query", raw); err != nil {
-		return err
-	}
-
-	o.Txid = raw
 
 	return nil
 }

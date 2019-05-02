@@ -191,11 +191,11 @@ func GetBalance(leader p2p.Peer, account string, done chan (RPCMsg)) (uint64, er
 }
 
 // EnterPuzzle calls /enter rest call to enter the game and return the current level
-func EnterPuzzle(account string, amount string) (uint, error) {
-	return 0, nil
+func EnterPuzzle(account string, amount string) error {
+	return nil
 }
 
 // GetRewards call /finish rest call to get rewards
-func GetRewards(account string, level int) (uint64, error) {
+func GetRewards(account string, height int64) (uint64, error) {
 	return 0, nil
 }

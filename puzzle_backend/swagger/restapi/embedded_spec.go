@@ -46,13 +46,6 @@ func init() {
             "required": true
           },
           {
-            "type": "string",
-            "description": "the game ID (staking transaction ID) returned by POST /play",
-            "name": "txid",
-            "in": "query",
-            "required": true
-          },
-          {
             "type": "integer",
             "description": "level number (1-based)",
             "name": "level",
@@ -308,13 +301,6 @@ func init() {
             "type": "string",
             "description": "user's account private key, hex-encoded",
             "name": "accountKey",
-            "in": "query",
-            "required": true
-          },
-          {
-            "type": "string",
-            "description": "the game ID (staking transaction ID) returned by POST /play",
-            "name": "txid",
             "in": "query",
             "required": true
           },
