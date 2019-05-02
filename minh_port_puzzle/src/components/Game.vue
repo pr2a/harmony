@@ -56,6 +56,8 @@
 <script>
 import Chip from "./Chip";
 import Vue from "vue";
+import { playMoveSound, playBeginSound, playEndSound } from "../lib/sound";
+import { constants } from "fs";
 
 function clamp(v, min, max) {
   return Math.max(min, Math.min(max, v));
@@ -177,6 +179,8 @@ export default {
   },
   methods: {
     startGame() {
+      // Add begin sound.
+      playBeginSound();
       this.runKeyboardControl(this.move);
       this.runTouchControl(this.move);
     },
@@ -186,6 +190,8 @@ export default {
         var m = keyMap[e.keyCode];
         if (m == null) return;
         e.preventDefault();
+        // Add sound before any move.
+        playMoveSound();
         move(m);
       };
       listenKeysOn.addEventListener("keydown", h);
@@ -197,6 +203,8 @@ export default {
 
     runTouchControl(move) {
       var sw = createSwipeListener(function(m) {
+        // Add sound before any move.
+        playMoveSound();
         move(m);
       });
       var el = this.$el;
@@ -209,6 +217,7 @@ export default {
       this.$emit("completeLevel", this.moves);
     },
     move(dir) {
+      console.log("minh move", this.moves);
       this.moves += dir;
       let diff = actions[dir];
       let x = clamp(this.position.x + diff.x, 0, 2);
