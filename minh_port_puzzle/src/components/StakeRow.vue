@@ -62,7 +62,7 @@ footer {
   font-size: 0.8em;
 }
 .stake-row {
-  margin-top: 1em;
+  margin: 1em auto 0;
 }
 </style>
 

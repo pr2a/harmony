@@ -127,6 +127,13 @@ footer {
     transform: translateY(-40px);
   }
 }
+.link-footer {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  padding: 1em;
+}
 </style>
 
 <template>
@@ -134,7 +141,7 @@ footer {
     <div class="main-container appearing">
       <div class="game-container" ref="gameContainer">
         <div class="score-container" :style="{ width: boardSizePx + 'px' }">
-          <div class="logo"></div>
+          <a href="https://explorer.harmony.one" class="logo"></a>
           <div class="flex-horizontal">
             <div class="count-down info-item">
               <div class="label">Time Left</div>
@@ -189,7 +196,7 @@ footer {
             ></Game>
           </transition>
         </div>
-        <stake-row v-if="!gameStarted" @stake="startGame"></stake-row>
+        <stake-row v-if="!gameStarted" @stake="startGame" :style="{ width: boardSizePx + 'px' }"></stake-row>
         <footer class="flex-vertical" :style="{ width: boardSizePx + 'px' }" v-if="gameStarted">
           <div class="flex-horizontal action-row">
             <span class="flex-grow">levels: {{ levelIndex + 1 }} / {{ levels.length }}</span>
@@ -211,6 +218,7 @@ footer {
 import Game from "./Game";
 import Chip from "./Chip";
 import StakeRow from "./StakeRow";
+import TxHistoryLink from "./TxHistoryLink";
 import { TweenLite } from "gsap/TweenMax";
 import Vue from "vue";
 import service from "../service";
@@ -226,7 +234,8 @@ export default {
   components: {
     Game,
     Chip,
-    StakeRow
+    StakeRow,
+    TxHistoryLink
   },
   data() {
     return {
