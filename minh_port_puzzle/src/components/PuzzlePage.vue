@@ -137,6 +137,18 @@ footer {
   text-align: center;
   z-index: 1000;
 }
+.icon-clock,
+.icon-token {
+  background-size: contain;
+  height: 1.5em;
+  width: 1.5em;
+}
+.icon-clock {
+  background-image: url(../assets/clock.svg);
+}
+.icon-token {
+  background-image: url(../assets/token.svg);
+}
 </style>
 
 <template>
@@ -147,12 +159,14 @@ footer {
           <a href="https://explorer.harmony.one" class="logo"></a>
           <div class="flex-horizontal">
             <div class="count-down info-item">
-              <div class="label">Time Left</div>
+              <div class="label">
+                <div class="icon-clock"></div>
+              </div>
               <div class="content">
                 <div
                   class="seconds-left"
                   :class="{ 'hurry-up': secondsLeft && secondsLeft <= 12, 'game-over': !secondsLeft }"
-                >{{ secondsLeft }}</div>
+                >{{ secondsLeft | time }}</div>
                 <transition>
                   <span v-if="timeIncrease!=''" class="number-increase">
                     {{
@@ -163,7 +177,9 @@ footer {
               </div>
             </div>
             <div class="balance info-item">
-              <div class="label">Balance</div>
+              <div class="label">
+                <div class="icon-token"></div>
+              </div>
               <div class="content">
                 {{ globalData.balance }}
                 <transition>
