@@ -32,6 +32,13 @@ type Player struct {
 	Success  bool     `json:success`
 }
 
+//PlayResp is the structure returned from /play rest call
+type PlayResp struct {
+	Players  []string `json:players`
+	Balances []string `json:balances`
+	Success  bool     `json:success`
+}
+
 // RPCMsg is a structure to exchange info between RPC client
 type RPCMsg struct {
 	Err  error
@@ -126,35 +133,78 @@ func GetPlayer(ip, port string) (*Player, error) {
 	return &player, nil
 }
 
+// getClient is the generic get client for rest call
+func getClient(url string, prefix string, result interface{}) error {
+	fmt.Printf("getClient [%v]\n", url)
+
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		return fmt.Errorf("[%v] can't new request", prefix)
+	}
+
+	ctx, cancel := context.WithTimeout(req.Context(), rpcTimeout)
+	client := http.DefaultClient
+	defer cancel()
+
+	req = req.WithContext(ctx)
+
+	response, err := client.Do(req)
+	if err != nil {
+		return fmt.Errorf("[%v] Do error: %s", prefix, err)
+	}
+
+	if response.StatusCode != http.StatusOK {
+		return fmt.Errorf("[%v] Status is not Ok", prefix)
+	}
+
+	contents, err := ioutil.ReadAll(response.Body)
+	defer response.Body.Close()
+
+	if err != nil {
+		return fmt.Errorf("[%v] ReadAll failed: %v", prefix, err)
+	}
+
+	err = json.Unmarshal(contents, result)
+
+	if err != nil {
+		return fmt.Errorf("[%v] Unmarshal failed: %v", prefix, err)
+	}
+
+	return nil
+}
+
 // FundMe call /fundme rest call on leader
 func FundMe(leader p2p.Peer, account string, done chan (RPCMsg)) {
 	var err error
 	var player Player
 	var contents []byte
 	var response *http.Response
+	var ctx context.Context
+	var cancel context.CancelFunc
 
 	url := fmt.Sprintf("http://%s:%s/fundme?key=0x%s", leader.IP, leader.Port, account)
 	fmt.Printf("FundMe: %v\n", url)
 
+	client := http.DefaultClient
+
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		err = fmt.Errorf("[FundMe] can't new request")
-		return
+		goto DONE
 	}
 
-	ctx, cancel := context.WithTimeout(req.Context(), rpcTimeout)
+	ctx, cancel = context.WithTimeout(req.Context(), rpcTimeout)
 	defer cancel()
 
 	req = req.WithContext(ctx)
-	client := http.DefaultClient
 
 	response, err = client.Do(req)
 	if err != nil {
-		err = fmt.Errorf("[FundMe] GET result error: %s", err)
+		err = fmt.Errorf("[FundMe] GET Do error: %s", err)
 		goto DONE
 	}
 	if response.StatusCode != http.StatusOK {
-		err = fmt.Errorf("[FundMe] can't get result data")
+		err = fmt.Errorf("[FundMe] Status is not Ok")
 		goto DONE
 	}
 	contents, err = ioutil.ReadAll(response.Body)
@@ -190,9 +240,20 @@ func GetBalance(leader p2p.Peer, account string, done chan (RPCMsg)) (uint64, er
 	return 0, nil
 }
 
-// EnterPuzzle calls /enter rest call to enter the game and return the current level
-func EnterPuzzle(account string, amount string) error {
-	return nil
+// PlayGame calls /play rest call to enter the game and return the current level
+func PlayGame(leader p2p.Peer, account string, amount string, done chan (RPCMsg)) {
+	// FIXME: this is based on old RPC API
+	//	url := fmt.Sprintf("http://%s:%s/play?key=0x%s&amount=%s", leader.IP, leader.Port, account, amount)
+	url := fmt.Sprintf("http://%s:%s/play?key=%s", leader.IP, leader.Port, account)
+
+	var play = new(PlayResp)
+
+	err := getClient(url, "/play", play)
+
+	done <- RPCMsg{
+		Err:  err,
+		Done: true,
+	}
 }
 
 // GetRewards call /finish rest call to get rewards
