@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
-	"io"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -369,61 +368,4 @@ func handlePostFinish(params operations.PostFinishParams) middleware.Responder {
 			Txid:   msg.Txid,
 		},
 	)
-}
-
-func testHandler(w http.ResponseWriter, r *http.Request) {
-	if r.URL.Path != "/api/v1/test" {
-		http.NotFound(w, r)
-		return
-	}
-	q := r.URL.Query()
-
-	var ok bool
-	var res string
-
-	function, ok := q["function"]
-	if !ok {
-		http.Error(w, "missing params", http.StatusBadRequest)
-		return
-	}
-
-	switch function[0] {
-	case "FindAccount":
-		keys, ok := q["key"]
-		if !ok {
-			http.Error(w, "missing key params", http.StatusBadRequest)
-			break
-		}
-		values, ok := q["value"]
-		if !ok {
-			http.Error(w, "missing value params", http.StatusBadRequest)
-			break
-		}
-		accounts := db.FindAccount(keys[0], values[0])
-		middleware.Logger.Printf("accounts: %v", accounts)
-		res = fmt.Sprintf("accounts: %v\n", accounts)
-	case "RegisterAccount":
-		account, priv := utils.GenereateKeys()
-		emails, ok := q["email"]
-		if !ok {
-			http.Error(w, "missing email params", http.StatusBadRequest)
-			break
-		}
-		middleware.Logger.Printf("accounts: %v/%v", account, priv)
-		player := fdb.PzPlayer{
-			Email:   emails[0],
-			CosID:   "133",
-			PrivKey: priv,
-			Address: account,
-			Leader:  "192.168.192.1",
-			Port:    defaultPort,
-		}
-		err := db.RegisterAccount(&player)
-		if err != nil {
-			middleware.Logger.Printf("playHandler registerAccount error: %v", err)
-			http.Error(w, "Register Account, please retry", http.StatusInternalServerError)
-		}
-		res = fmt.Sprintf("accounts: %v\n", account)
-	}
-	io.WriteString(w, res)
 }
