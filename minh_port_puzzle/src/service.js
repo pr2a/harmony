@@ -59,6 +59,7 @@ export default {
             }
         ).then((res) => {
             console.log('completeLevel', res.data);
+            res.data.rewards = 4;
             store.addTx({
                 action: "CompleteLevel",
                 timestamp: res.data.timestamp,
