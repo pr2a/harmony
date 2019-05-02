@@ -252,7 +252,7 @@ func handlePostFinish(params operations.PostFinishParams) middleware.Responder {
 	account := accounts[0]
 	fmt.Printf("player: %v/%v is about to get paid\n", account.Address, params.Height)
 
-	_, err := restclient.GetRewards(account.Address, *params.Height)
+	_, err := restclient.PayOut(account.Address, *params.Height)
 	if err != nil {
 		app_log.Criticalf(ctx, "finishHandler GetRewards failed: %v", err)
 		return operations.NewPostFinishGatewayTimeout().WithPayload(
