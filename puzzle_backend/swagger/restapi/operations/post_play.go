@@ -8,9 +8,11 @@ package operations
 import (
 	"net/http"
 
+	errors "github.com/go-openapi/errors"
 	middleware "github.com/go-openapi/runtime/middleware"
 	strfmt "github.com/go-openapi/strfmt"
 	swag "github.com/go-openapi/swag"
+	validate "github.com/go-openapi/validate"
 )
 
 // PostPlayHandlerFunc turns a function with the right signature into a post play handler
@@ -57,6 +59,94 @@ func (o *PostPlay) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 
 	o.Context.Respond(rw, r, route.Produces, route, res)
 
+}
+
+// PostPlayCreatedBody post play created body
+// swagger:model PostPlayCreatedBody
+type PostPlayCreatedBody struct {
+
+	// txid
+	Txid string `json:"txid,omitempty"`
+}
+
+// Validate validates this post play created body
+func (o *PostPlayCreatedBody) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (o *PostPlayCreatedBody) MarshalBinary() ([]byte, error) {
+	if o == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(o)
+}
+
+// UnmarshalBinary interface implementation
+func (o *PostPlayCreatedBody) UnmarshalBinary(b []byte) error {
+	var res PostPlayCreatedBody
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*o = res
+	return nil
+}
+
+// PostPlayForbiddenBody post play forbidden body
+// swagger:model PostPlayForbiddenBody
+type PostPlayForbiddenBody struct {
+
+	// An error message that can be displayed to the user.
+	DisplayMessage string `json:"displayMessage,omitempty"`
+
+	// An error code; one of:
+	//
+	// - `insufficientFund` – The account had not enough fund to
+	//   cover the deposit.
+	//
+	// Required: true
+	ErrorCode *string `json:"errorCode"`
+}
+
+// Validate validates this post play forbidden body
+func (o *PostPlayForbiddenBody) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := o.validateErrorCode(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (o *PostPlayForbiddenBody) validateErrorCode(formats strfmt.Registry) error {
+
+	if err := validate.Required("postPlayForbidden"+"."+"errorCode", "body", o.ErrorCode); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (o *PostPlayForbiddenBody) MarshalBinary() ([]byte, error) {
+	if o == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(o)
+}
+
+// UnmarshalBinary interface implementation
+func (o *PostPlayForbiddenBody) UnmarshalBinary(b []byte) error {
+	var res PostPlayForbiddenBody
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*o = res
+	return nil
 }
 
 // PostPlayGatewayTimeoutBody post play gateway timeout body

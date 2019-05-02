@@ -1,6 +1,6 @@
 <style scoped lang="less">
 .host {
-  max-width: 800px;
+  max-width: 600px;
   margin: 0 auto;
 }
 </style>
@@ -10,8 +10,8 @@
     <welcome-page @join="join" v-if="step === 0"></welcome-page>
     <email-page @submit="submitEmail" v-if="step === 1"></email-page>
     <key-page :userKey="userKey" v-if="step === 2" @start="startGame"></key-page>
-    <stake-page @stake="stake" v-if="step === 3"></stake-page>
-    <tutorial-page @start="startGame" v-if="step === 4"></tutorial-page>
+    <stake-page @stake="stake" @seeTutorial="seeTutorial" v-if="step === 3"></stake-page>
+    <tutorial-page @done="doneTutorial" v-if="step === 4"></tutorial-page>
     <puzzle-page @restart="restartGame" v-if="step === 5"></puzzle-page>
   </div>
 </template>
@@ -25,6 +25,9 @@ import TutorialPage from "./TutorialPage";
 import StakePage from "./StakePage";
 import service from "../service";
 
+const StakePageIndex = 3;
+const TutorialPageIndex = 4;
+const PuzzlePageIndex = 5;
 export default {
   name: "HostingPage",
   components: {
@@ -37,7 +40,7 @@ export default {
   },
   data() {
     return {
-      step: 0,
+      step: 3,
       userKey: "Oxhsa89sd23jkl3450stypose00"
     };
   },
@@ -53,15 +56,20 @@ export default {
     },
     stake(value) {
       service.stakeToken(value).then(() => {
-        if (localStorage.getItem("hideTutorial")) this.step++;
-        this.step++;
+        this.step = PuzzlePageIndex;
       });
     },
     startGame() {
       this.step++;
     },
+    seeTutorial() {
+      this.step = TutorialPageIndex;
+    },
+    doneTutorial() {
+      this.step = StakePageIndex;
+    },
     restartGame() {
-      this.step = 3;
+      this.step = StakePageIndex;
     }
   }
 };

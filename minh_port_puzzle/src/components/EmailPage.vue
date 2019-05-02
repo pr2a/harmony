@@ -4,7 +4,8 @@
 }
 .email-input {
   border-radius: 0.5em;
-  border: 0.15em solid #979797;
+  border: 0;
+  // border: 0.15em solid #979797;
   padding: 1em;
   background-color: #fff;
   display: block;
@@ -43,9 +44,18 @@
   <div class="email-page">
     <div class="content">
       <div class="logo"></div>
-      <input class="email-input" type="text" v-model="email" placeholder="Email Address">
+      <input
+        class="email-input"
+        type="text"
+        v-model="email"
+        placeholder="Enter Email Address Here..."
+      >
     </div>
-    <button class="btn-primary" @click="$emit('submit', email)">Submit</button>
+    <button
+      class="btn-primary"
+      @click="$emit('submit', email.trim())"
+      :disabled="!email.trim()"
+    >Submit</button>
   </div>
 </template>
 

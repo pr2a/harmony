@@ -4,7 +4,7 @@
 }
 .key {
   border-radius: 0.5em;
-  border: 0.15em solid #979797;
+  // border: 0.15em solid #979797;
   padding: 1em;
   background-color: #fff;
   display: block;
@@ -29,21 +29,21 @@
     <div class="content">
       <div class="logo"></div>
       <div class="msg">Your key has generated</div>
-      <div class="key">{{ userKey }}</div>
+      <div class="key">{{ globalData.account }}</div>
     </div>
     <button class="btn-primary" @click="$emit('start')">Start Game</button>
   </div>
 </template>
 
 <script>
+import store from "../store";
 export default {
   name: "KeyPage",
 
-  props: {
-    userKey: String
-  },
   data() {
-    return {};
+    return {
+      globalData: store.data
+    };
   }
 };
 </script>

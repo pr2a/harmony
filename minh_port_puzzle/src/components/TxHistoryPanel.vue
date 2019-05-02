@@ -1,6 +1,6 @@
 <style scoped lang="less">
 .content {
-  padding: 3em;
+  padding: 3em 1em;
   height: 100%;
   overflow: auto;
 }
@@ -11,6 +11,7 @@
   overflow: hidden;
 }
 .tx-history-table {
+  font-size: 0.8em;
   width: 100%;
   background-color: #fff;
   padding: 1em;
@@ -35,23 +36,38 @@
   font-size: 0.8em;
   margin-bottom: 0.5em;
 }
+
+.action-row {
+  justify-content: space-between;
+  .link {
+    font-size: 0.8em;
+  }
+}
 </style>
 
 <template >
-  <div class="key-page">
+  <div class="tx-history-panel">
     <div class="content flex-vertical">
-      <button class="btn-primary close-btn" @click="$emit('close')">Close</button>
+      <div class="action-row flex-horizontal">
+        <button class="btn-primary close-btn" @click="$emit('close')">Close</button>
+        <a class="link" @click="viewDashboard">
+          <font-awesome-icon icon="external-link-alt"></font-awesome-icon>&nbsp;HMY Dashboard
+        </a>
+      </div>
       <div class="table-wrapper">
         <table class="tx-history-table">
           <tr>
             <th>Timestamp</th>
-            <th>Action</th>
-            <th class="text-right">Token Change</th>
+            <th>Tx</th>
+            <!-- <th class="text-right">Token Change</th> -->
           </tr>
           <tr class="container" v-for="(tx, i) in globalData.txs" :key="i">
             <td>{{ tx.timestamp | timestamp }}</td>
-            <td>{{ tx.action }}</td>
-            <td class="text-right">{{ tx.tokenChange }}</td>
+            <td>
+              <a :href="'https://explorer.harmony.one/#/tx/' + tx.id">{{tx.id | shorten}}</a>
+            </td>
+            <!-- <td>{{ tx.action }}</td> -->
+            <!-- <td class="text-right">{{ tx.tokenChange > 0 ? '+' + tx.tokenChange : tx.tokenChange }}</td> -->
           </tr>
         </table>
       </div>
@@ -67,6 +83,11 @@ export default {
     return {
       globalData: store.data
     };
+  },
+  methods: {
+    viewDashboard() {
+      window.location.href = "https://explorer.harmony.one";
+    }
   }
 };
 </script>

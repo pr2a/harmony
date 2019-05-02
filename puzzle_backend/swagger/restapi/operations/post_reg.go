@@ -59,40 +59,6 @@ func (o *PostReg) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 
 }
 
-// PostRegCreatedBody post reg created body
-// swagger:model PostRegCreatedBody
-type PostRegCreatedBody struct {
-
-	// account
-	Account string `json:"account,omitempty"`
-
-	// email
-	Email string `json:"email,omitempty"`
-}
-
-// Validate validates this post reg created body
-func (o *PostRegCreatedBody) Validate(formats strfmt.Registry) error {
-	return nil
-}
-
-// MarshalBinary interface implementation
-func (o *PostRegCreatedBody) MarshalBinary() ([]byte, error) {
-	if o == nil {
-		return nil, nil
-	}
-	return swag.WriteJSON(o)
-}
-
-// UnmarshalBinary interface implementation
-func (o *PostRegCreatedBody) UnmarshalBinary(b []byte) error {
-	var res PostRegCreatedBody
-	if err := swag.ReadJSON(b, &res); err != nil {
-		return err
-	}
-	*o = res
-	return nil
-}
-
 // PostRegGatewayTimeoutBody post reg gateway timeout body
 // swagger:model PostRegGatewayTimeoutBody
 type PostRegGatewayTimeoutBody struct {
@@ -117,40 +83,6 @@ func (o *PostRegGatewayTimeoutBody) MarshalBinary() ([]byte, error) {
 // UnmarshalBinary interface implementation
 func (o *PostRegGatewayTimeoutBody) UnmarshalBinary(b []byte) error {
 	var res PostRegGatewayTimeoutBody
-	if err := swag.ReadJSON(b, &res); err != nil {
-		return err
-	}
-	*o = res
-	return nil
-}
-
-// PostRegOKBody post reg o k body
-// swagger:model PostRegOKBody
-type PostRegOKBody struct {
-
-	// account
-	Account string `json:"account,omitempty"`
-
-	// email
-	Email string `json:"email,omitempty"`
-}
-
-// Validate validates this post reg o k body
-func (o *PostRegOKBody) Validate(formats strfmt.Registry) error {
-	return nil
-}
-
-// MarshalBinary interface implementation
-func (o *PostRegOKBody) MarshalBinary() ([]byte, error) {
-	if o == nil {
-		return nil, nil
-	}
-	return swag.WriteJSON(o)
-}
-
-// UnmarshalBinary interface implementation
-func (o *PostRegOKBody) UnmarshalBinary(b []byte) error {
-	var res PostRegOKBody
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

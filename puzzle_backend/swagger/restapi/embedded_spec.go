@@ -46,13 +46,6 @@ func init() {
             "required": true
           },
           {
-            "type": "string",
-            "description": "the game ID (staking transaction ID) returned by POST /play",
-            "name": "txid",
-            "in": "query",
-            "required": true
-          },
-          {
             "type": "integer",
             "description": "level number (1-based)",
             "name": "level",
@@ -88,7 +81,10 @@ func init() {
               "properties": {
                 "reward": {
                   "description": "reward amount, in wei (divide by 10^18 to get HRX)",
-                  "type": "number"
+                  "type": "string"
+                },
+                "txid": {
+                  "type": "string"
                 }
               }
             }
@@ -143,7 +139,37 @@ func init() {
         ],
         "responses": {
           "201": {
-            "description": "A new game has been started."
+            "description": "A new game has been started.",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "txid": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The request was denied.",
+            "schema": {
+              "type": "object",
+              "required": [
+                "errorCode"
+              ],
+              "properties": {
+                "displayMessage": {
+                  "description": "An error message that can be displayed to the user.",
+                  "type": "string"
+                },
+                "errorCode": {
+                  "description": "An error code; one of:\n\n- ` + "`" + `insufficientFund` + "`" + ` – The account had not enough fund to\n  cover the deposit.\n",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "The player account does not exist."
           },
           "503": {
             "description": "Firebase DB error.",
@@ -183,8 +209,8 @@ func init() {
         "parameters": [
           {
             "type": "string",
-            "description": "user's email",
-            "name": "email",
+            "description": "Temporary COS login token.",
+            "name": "token",
             "in": "query",
             "required": true
           }
@@ -193,29 +219,13 @@ func init() {
           "200": {
             "description": "An existing user.",
             "schema": {
-              "type": "object",
-              "properties": {
-                "account": {
-                  "type": "string"
-                },
-                "email": {
-                  "type": "string"
-                }
-              }
+              "$ref": "#/definitions/postRegResponse"
             }
           },
           "201": {
             "description": "A new user.  FE should instruct the user to check email.",
             "schema": {
-              "type": "object",
-              "properties": {
-                "account": {
-                  "type": "string"
-                },
-                "email": {
-                  "type": "string"
-                }
-              }
+              "$ref": "#/definitions/postRegResponse"
             },
             "headers": {
               "Access-Control-Allow-Origin": {
@@ -253,6 +263,29 @@ func init() {
         }
       }
     }
+  },
+  "definitions": {
+    "postRegResponse": {
+      "type": "object",
+      "properties": {
+        "account": {
+          "description": "The player's Harmony account address.",
+          "type": "string"
+        },
+        "balance": {
+          "description": "The player's Harmony account balance (in wei), represented\nas a decimal integer.\n",
+          "type": "string"
+        },
+        "txid": {
+          "description": "The player's Harmony account address.",
+          "type": "string"
+        },
+        "uid": {
+          "description": "Contentos user ID.",
+          "type": "string"
+        }
+      }
+    }
   }
 }`))
 	FlatSwaggerJSON = json.RawMessage([]byte(`{
@@ -280,13 +313,6 @@ func init() {
             "type": "string",
             "description": "user's account private key, hex-encoded",
             "name": "accountKey",
-            "in": "query",
-            "required": true
-          },
-          {
-            "type": "string",
-            "description": "the game ID (staking transaction ID) returned by POST /play",
-            "name": "txid",
             "in": "query",
             "required": true
           },
@@ -326,7 +352,10 @@ func init() {
               "properties": {
                 "reward": {
                   "description": "reward amount, in wei (divide by 10^18 to get HRX)",
-                  "type": "number"
+                  "type": "string"
+                },
+                "txid": {
+                  "type": "string"
                 }
               }
             }
@@ -381,7 +410,37 @@ func init() {
         ],
         "responses": {
           "201": {
-            "description": "A new game has been started."
+            "description": "A new game has been started.",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "txid": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The request was denied.",
+            "schema": {
+              "type": "object",
+              "required": [
+                "errorCode"
+              ],
+              "properties": {
+                "displayMessage": {
+                  "description": "An error message that can be displayed to the user.",
+                  "type": "string"
+                },
+                "errorCode": {
+                  "description": "An error code; one of:\n\n- ` + "`" + `insufficientFund` + "`" + ` – The account had not enough fund to\n  cover the deposit.\n",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "The player account does not exist."
           },
           "503": {
             "description": "Firebase DB error.",
@@ -421,8 +480,8 @@ func init() {
         "parameters": [
           {
             "type": "string",
-            "description": "user's email",
-            "name": "email",
+            "description": "Temporary COS login token.",
+            "name": "token",
             "in": "query",
             "required": true
           }
@@ -431,29 +490,13 @@ func init() {
           "200": {
             "description": "An existing user.",
             "schema": {
-              "type": "object",
-              "properties": {
-                "account": {
-                  "type": "string"
-                },
-                "email": {
-                  "type": "string"
-                }
-              }
+              "$ref": "#/definitions/postRegResponse"
             }
           },
           "201": {
             "description": "A new user.  FE should instruct the user to check email.",
             "schema": {
-              "type": "object",
-              "properties": {
-                "account": {
-                  "type": "string"
-                },
-                "email": {
-                  "type": "string"
-                }
-              }
+              "$ref": "#/definitions/postRegResponse"
             },
             "headers": {
               "Access-Control-Allow-Origin": {
@@ -488,6 +531,29 @@ func init() {
               }
             }
           }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "postRegResponse": {
+      "type": "object",
+      "properties": {
+        "account": {
+          "description": "The player's Harmony account address.",
+          "type": "string"
+        },
+        "balance": {
+          "description": "The player's Harmony account balance (in wei), represented\nas a decimal integer.\n",
+          "type": "string"
+        },
+        "txid": {
+          "description": "The player's Harmony account address.",
+          "type": "string"
+        },
+        "uid": {
+          "description": "Contentos user ID.",
+          "type": "string"
         }
       }
     }

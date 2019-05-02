@@ -20,7 +20,6 @@ type PostFinishURL struct {
 	LastPos    int64
 	Level      int64
 	Sequence   string
-	Txid       string
 
 	_basePath string
 	// avoid unkeyed usage
@@ -82,11 +81,6 @@ func (o *PostFinishURL) Build() (*url.URL, error) {
 	sequence := o.Sequence
 	if sequence != "" {
 		qs.Set("sequence", sequence)
-	}
-
-	txid := o.Txid
-	if txid != "" {
-		qs.Set("txid", txid)
 	}
 
 	_result.RawQuery = qs.Encode()

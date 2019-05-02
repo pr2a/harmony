@@ -1,10 +1,38 @@
 <style scoped lang="less">
 .board {
+  display: flex;
+  flex-wrap: wrap;
+  align-content: flex-start;
+  align-items: space-around;
+  background-color: white;
+  outline: none;
+  position: absolute;
   border-radius: 0.5em;
+  margin: 0 auto;
 
   .cell {
+    background-color: #ada49f;
+    position: relative;
+    border-radius: 7%;
     &.selected {
-      box-shadow: 0 0 0 0.4em rgba(255, 255, 255, 0.8);
+      box-shadow: 0 0 0 0.4em rgba(0, 0, 0, 0.8);
+    }
+    .chip {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden;
+      text-align: justify;
+      font-weight: bold;
+      background-color: honeydew;
+      z-index: 1;
+      border-radius: 7%;
+      /* Hack to improve transition performance on mobile devices. It enables GPU rendering. */
+      transform: translateZ(0);
+      -webkit-transform: translateZ(0);
     }
   }
 }
@@ -28,6 +56,8 @@
 <script>
 import Chip from "./Chip";
 import Vue from "vue";
+import { playMoveSound, playBeginSound, playEndSound } from "../lib/sound";
+import { constants } from "fs";
 
 function clamp(v, min, max) {
   return Math.max(min, Math.min(max, v));
@@ -149,6 +179,8 @@ export default {
   },
   methods: {
     startGame() {
+      // Add begin sound.
+      playBeginSound();
       this.runKeyboardControl(this.move);
       this.runTouchControl(this.move);
     },
@@ -158,6 +190,8 @@ export default {
         var m = keyMap[e.keyCode];
         if (m == null) return;
         e.preventDefault();
+        // Add sound before any move.
+        playMoveSound();
         move(m);
       };
       listenKeysOn.addEventListener("keydown", h);
@@ -169,6 +203,8 @@ export default {
 
     runTouchControl(move) {
       var sw = createSwipeListener(function(m) {
+        // Add sound before any move.
+        playMoveSound();
         move(m);
       });
       var el = this.$el;
@@ -181,6 +217,7 @@ export default {
       this.$emit("completeLevel", this.moves);
     },
     move(dir) {
+      console.log("minh move", this.moves);
       this.moves += dir;
       let diff = actions[dir];
       let x = clamp(this.position.x + diff.x, 0, 2);

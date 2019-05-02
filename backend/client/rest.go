@@ -6,9 +6,11 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	_ "math/rand" // use it later
+	"math/rand"
 	"net/http"
 	"time"
+
+	"github.com/btcsuite/goleveldb/leveldb/errors"
 
 	"github.com/harmony-one/demo-apps/backend/p2p"
 )
@@ -22,6 +24,7 @@ type Winner struct {
 	Players  string `json:players`
 	Balances string `json:balances`
 	Success  bool   `json:success`
+	Txid     string `json:txid`
 }
 
 //Player is the structure returned from /result rest call
@@ -30,12 +33,28 @@ type Player struct {
 	Players  []string `json:players`
 	Balances []string `json:balances`
 	Success  bool     `json:success`
+	Txid     string   `json:txid`
+}
+
+//PlayResp is the structure returned from /play rest call
+type PlayResp struct {
+	Players  []string `json:players`
+	Balances []string `json:balances`
+	Success  bool     `json:success`
+	Txid     string   `json:txid`
+}
+
+//Resp is the structure returned from /payout or /end rest call
+type Resp struct {
+	Success bool   `json:sucess`
+	Txid    string `json:txid`
 }
 
 // RPCMsg is a structure to exchange info between RPC client
 type RPCMsg struct {
 	Err  error
 	Done bool
+	Txid string
 }
 
 var (
@@ -57,9 +76,7 @@ func GetLeaders() []p2p.Peer {
 
 // PickALeader return a random leader from the leader list
 func PickALeader() p2p.Peer {
-	//	return leaders[rand.Intn(len(leaders))]
-	// FIXME: leo testing only
-	return leaders[0]
+	return leaders[rand.Intn(len(leaders))]
 }
 
 //GetWinner return the result of a rest api call
@@ -126,76 +143,122 @@ func GetPlayer(ip, port string) (*Player, error) {
 	return &player, nil
 }
 
-// FundMe call /fundme rest call on leader
-func FundMe(leader p2p.Peer, account string, done chan (RPCMsg)) {
-	var err error
-	var player Player
-	var contents []byte
-	var response *http.Response
-
-	url := fmt.Sprintf("http://%s:%s/fundme?key=0x%s", leader.IP, leader.Port, account)
-	fmt.Printf("FundMe: %v\n", url)
+// getClient is the generic get client for rest call
+func getClient(url string, prefix string, result interface{}) error {
+	fmt.Printf("getClient [%v]\n", url)
 
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
-		err = fmt.Errorf("[FundMe] can't new request")
-		return
+		return fmt.Errorf("[%v] can't new request", prefix)
 	}
 
 	ctx, cancel := context.WithTimeout(req.Context(), rpcTimeout)
+	client := http.DefaultClient
 	defer cancel()
 
 	req = req.WithContext(ctx)
-	client := http.DefaultClient
 
-	response, err = client.Do(req)
+	response, err := client.Do(req)
 	if err != nil {
-		err = fmt.Errorf("[FundMe] GET result error: %s", err)
-		goto DONE
+		return fmt.Errorf("[%v] Do error: %s", prefix, err)
 	}
+
 	if response.StatusCode != http.StatusOK {
-		err = fmt.Errorf("[FundMe] can't get result data")
-		goto DONE
+		return fmt.Errorf("[%v] Status is not Ok", prefix)
 	}
-	contents, err = ioutil.ReadAll(response.Body)
+
+	contents, err := ioutil.ReadAll(response.Body)
 	defer response.Body.Close()
 
 	if err != nil {
-		err = fmt.Errorf("[FundMe] failed to read response: %v", err)
-		goto DONE
+		return fmt.Errorf("[%v] ReadAll failed: %v", prefix, err)
 	}
 
-	err = json.Unmarshal(contents, &player)
+	err = json.Unmarshal(contents, result)
 
 	if err != nil {
-		err = fmt.Errorf("[FundMe] failed to unmarshal result response: %v", err)
-		goto DONE
+		return fmt.Errorf("[%v] Unmarshal failed: %v", prefix, err)
 	}
 
-	if !player.Success {
-		err = fmt.Errorf("[FundMe] Failed on blockchain")
-		goto DONE
-	}
+	return nil
+}
 
-DONE:
+// FundMe call /fundme rest call on leader
+func FundMe(leader p2p.Peer, account string, done chan (RPCMsg)) {
+	url := fmt.Sprintf("http://%s:%s/fundme?key=0x%s", leader.IP, leader.Port, account)
+	var player = new(Player)
+
+	err := getClient(url, "/fundme", player)
+
 	done <- RPCMsg{
 		Err:  err,
 		Done: true,
+		Txid: player.Txid,
 	}
-	return
+}
+
+// AccountBalanceMsg ...
+type AccountBalanceMsg struct {
+	Balance string // Account balance
+	Err     error  // Error
 }
 
 // GetBalance call /balance rest call on leader
-func GetBalance(account string) (uint64, error) {
-	return 0, nil
+func GetBalance(leader p2p.Peer, account string, done chan AccountBalanceMsg) {
+	url := fmt.Sprintf("http://%s:%s/balance?key=0x%s", leader.IP, leader.Port, account)
+	var player = new(Player)
+	var msg AccountBalanceMsg
+
+	err := getClient(url, "/balance", player)
+	if err != nil {
+		msg.Err = err
+	} else if len(player.Balances) == 0 {
+		msg.Err = errors.New("no balance was returned")
+	} else {
+		msg.Balance = player.Balances[0]
+	}
+	done <- msg
 }
 
-// EnterPuzzle calls /enter rest call to enter the game and return the current level
-func EnterPuzzle(account string, amount string) (uint, error) {
-	return 0, nil
+// PlayGame calls /play rest call to enter the game and return the current level
+func PlayGame(leader p2p.Peer, account string, amount string, done chan (RPCMsg)) {
+	url := fmt.Sprintf("http://%s:%s/play?key=0x%s&amount=%s", leader.IP, leader.Port, account, amount)
+
+	var play = new(PlayResp)
+
+	err := getClient(url, "/play", play)
+
+	done <- RPCMsg{
+		Err:  err,
+		Done: true,
+		Txid: play.Txid,
+	}
 }
 
-// GetRewards call /finish rest call to get rewards
-func GetRewards(account string, level int) (uint64, error) {
-	return 0, nil
+// PayOut call /payout rest call to get rewards
+func PayOut(leader p2p.Peer, key string, height int64, sequence string, done chan (RPCMsg)) {
+	url := fmt.Sprintf("http://%s:%s/payout?key=%s&level=%s&sequence=%", leader.IP, leader.Port, key, height, sequence)
+
+	var resp = new(Resp)
+	err := getClient(url, "/payout", resp)
+
+	done <- RPCMsg{
+		Err:  err,
+		Done: true,
+		Txid: resp.Txid,
+	}
+}
+
+// EndGame call /end rest call to end the game
+func EndGame(leader p2p.Peer, key string, done chan (RPCMsg)) {
+	url := fmt.Sprintf("http://%s:%s/end?key=%s", leader.IP, leader.Port, key)
+
+	var resp = new(Resp)
+	err := getClient(url, "/end", resp)
+
+	done <- RPCMsg{
+		Err:  err,
+		Done: true,
+		Txid: resp.Txid,
+	}
 }

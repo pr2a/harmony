@@ -1,4 +1,5 @@
-//const axios = require("axios");
+const axios = require("axios");
+const pinfo = require("./playinfo");
 const API_URL = "http://127.0.0.1:30000/v1";
 
 function validateEmail(email) {
@@ -16,9 +17,7 @@ function validatePrivateKey(key) {
 }
 
 function sendReq(url, data) {
-  return axios.post(API_URL + url, data, {
-    headers: { "Access-Control-Allow-Origin": "*" }
-  });
+  return axios.post(API_URL + url, data, {});
 }
 
 function register(email) {
@@ -32,7 +31,7 @@ function register(email) {
         }
       })
       .catch(err => {
-        console.log(err);
+        console.log(err.response);
       });
   }
 }
@@ -49,18 +48,17 @@ function play(key, stake) {
         }
       })
       .catch(err => {
-        console.log(err);
+        console.log(err.response);
       });
   }
 }
 
-function finish(key, txid, level, seq) {
+function finish(key, txid, playinfo) {
   if (validatePrivateKey(key)) {
     sendReq("/finish", {
       key: key,
       txid: txid,
-      level: level,
-      seq: seq
+      playinfo: playinfo
     })
       .then(res => {
         if (res && res.data) {
@@ -68,11 +66,11 @@ function finish(key, txid, level, seq) {
         }
       })
       .catch(err => {
-        console.log(err);
+        console.log(err.response);
       });
   }
 }
 
 register("chao@harmony.one");
 play("0xabc", 23);
-finish("0xabc", "0x2341", 22, "ULDRU");
+finish("0xabc", "0x2341", 22, pinfo.playHistory);

@@ -4,31 +4,12 @@
 }
 .intro-wrapper {
   position: relative;
-  .brain {
-    background: url(../assets/brain.svg);
-  }
-  .eye {
-    background: url(../assets/eye.svg);
-  }
-  .brain,
-  .eye {
-    background-size: contain;
-    position: absolute;
-    width: 5em;
-    height: 5em;
-    top: -3em;
-  }
-  .brain {
-    left: -3em;
-  }
-  .eye {
-    right: -3em;
-  }
+
   .intro {
     position: relative;
     z-index: 10;
     border-radius: 0.5em;
-    border: 0.15em solid #979797;
+    // border: 0.15em solid #979797;
     padding: 1em;
     background-color: #fff;
     height: 10em;
@@ -47,37 +28,14 @@
     <div class="content">
       <div class="logo"></div>
       <div class="intro-wrapper">
-        <div class="brain"></div>
-        <div class="eye"></div>
         <div class="intro">
-          The contentos harmony puzzle game utilizes fast
-          finality of the game to make it frictionless and the
-          immutability of ledger to record game state, and
-          thus enable trust between players.
-          "In order to play the game the player has to stake
-          tokens. Harmony would be able to confirm the
-          staking transaction instantly. The player can then
-          proceed to be matched with another player. The
-          other player is also ready to play instantly as their
-          staking transaction has also gone through. Because The contentos harmony puzzle game utilizes fast
-          finality of the game to make it frictionless and the
-          immutability of ledger to record game state, and
-          thus enable trust between players.
-          "In order to play the game the player has to stake
-          tokens. Harmony would be able to confirm the
-          staking transaction instantly. The player can then
-          proceed to be matched with another player. The
-          other player is also ready to play instantly as their
-          staking transaction has also gone through. Because The contentos harmony puzzle game utilizes fast
-          finality of the game to make it frictionless and the
-          immutability of ledger to record game state, and
-          thus enable trust between players.
-          "In order to play the game the player has to stake
-          tokens. Harmony would be able to confirm the
-          staking transaction instantly. The player can then
-          proceed to be matched with another player. The
-          other player is also ready to play instantly as their
-          staking transaction has also gone through. Because
+          <p>
+            The contentos harmony puzzle game utilizes fast
+            finality of the game to make it frictionless and the
+            immutability of ledger to record game state, and
+            thus enable trust between players.
+          </p>
+          <p>Stake. Play. Get rewarded!</p>
         </div>
       </div>
     </div>
