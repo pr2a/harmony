@@ -44,7 +44,12 @@
   <div class="email-page">
     <div class="content">
       <div class="logo"></div>
-      <input class="email-input" type="text" v-model="email" placeholder="Email Address">
+      <input
+        class="email-input"
+        type="text"
+        v-model="email"
+        placeholder="Enter Email Address Here..."
+      >
     </div>
     <button
       class="btn-primary"
