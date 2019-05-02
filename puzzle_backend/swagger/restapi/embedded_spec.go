@@ -151,7 +151,7 @@ func init() {
                   "type": "string"
                 },
                 "errorCode": {
-                  "description": "An error code; one of:\n- ` + "`" + `insufficientFund` + "`" + ` – The account had not enough fund to\n  cover the deposit.\n",
+                  "description": "An error code; one of:\n\n- ` + "`" + `insufficientFund` + "`" + ` – The account had not enough fund to\n  cover the deposit.\n",
                   "type": "string"
                 }
               }
@@ -198,8 +198,8 @@ func init() {
         "parameters": [
           {
             "type": "string",
-            "description": "user's email",
-            "name": "email",
+            "description": "Temporary COS login token.",
+            "name": "token",
             "in": "query",
             "required": true
           }
@@ -208,35 +208,13 @@ func init() {
           "200": {
             "description": "An existing user.",
             "schema": {
-              "type": "object",
-              "properties": {
-                "account": {
-                  "type": "string"
-                },
-                "balance": {
-                  "type": "string"
-                },
-                "email": {
-                  "type": "string"
-                }
-              }
+              "$ref": "#/definitions/postRegResponse"
             }
           },
           "201": {
             "description": "A new user.  FE should instruct the user to check email.",
             "schema": {
-              "type": "object",
-              "properties": {
-                "account": {
-                  "type": "string"
-                },
-                "balance": {
-                  "type": "string"
-                },
-                "email": {
-                  "type": "string"
-                }
-              }
+              "$ref": "#/definitions/postRegResponse"
             },
             "headers": {
               "Access-Control-Allow-Origin": {
@@ -271,6 +249,25 @@ func init() {
               }
             }
           }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "postRegResponse": {
+      "type": "object",
+      "properties": {
+        "account": {
+          "description": "The player's Harmony account address.",
+          "type": "string"
+        },
+        "balance": {
+          "description": "The player's Harmony account balance (in wei), represented\nas a decimal integer.\n",
+          "type": "string"
+        },
+        "uid": {
+          "description": "Contentos user ID.",
+          "type": "string"
         }
       }
     }
@@ -410,7 +407,7 @@ func init() {
                   "type": "string"
                 },
                 "errorCode": {
-                  "description": "An error code; one of:\n- ` + "`" + `insufficientFund` + "`" + ` – The account had not enough fund to\n  cover the deposit.\n",
+                  "description": "An error code; one of:\n\n- ` + "`" + `insufficientFund` + "`" + ` – The account had not enough fund to\n  cover the deposit.\n",
                   "type": "string"
                 }
               }
@@ -457,8 +454,8 @@ func init() {
         "parameters": [
           {
             "type": "string",
-            "description": "user's email",
-            "name": "email",
+            "description": "Temporary COS login token.",
+            "name": "token",
             "in": "query",
             "required": true
           }
@@ -467,35 +464,13 @@ func init() {
           "200": {
             "description": "An existing user.",
             "schema": {
-              "type": "object",
-              "properties": {
-                "account": {
-                  "type": "string"
-                },
-                "balance": {
-                  "type": "string"
-                },
-                "email": {
-                  "type": "string"
-                }
-              }
+              "$ref": "#/definitions/postRegResponse"
             }
           },
           "201": {
             "description": "A new user.  FE should instruct the user to check email.",
             "schema": {
-              "type": "object",
-              "properties": {
-                "account": {
-                  "type": "string"
-                },
-                "balance": {
-                  "type": "string"
-                },
-                "email": {
-                  "type": "string"
-                }
-              }
+              "$ref": "#/definitions/postRegResponse"
             },
             "headers": {
               "Access-Control-Allow-Origin": {
@@ -530,6 +505,25 @@ func init() {
               }
             }
           }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "postRegResponse": {
+      "type": "object",
+      "properties": {
+        "account": {
+          "description": "The player's Harmony account address.",
+          "type": "string"
+        },
+        "balance": {
+          "description": "The player's Harmony account balance (in wei), represented\nas a decimal integer.\n",
+          "type": "string"
+        },
+        "uid": {
+          "description": "Contentos user ID.",
+          "type": "string"
         }
       }
     }

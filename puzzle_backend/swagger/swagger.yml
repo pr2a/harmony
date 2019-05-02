@@ -1,7 +1,7 @@
 swagger: "2.0"
 info:
   title: "Harmony Puzzle"
-  description: >
+  description: |
     Harmony Puzzle is a simple yet addictive blockchain-based puzzle game.
   version: "0.0.1"
 host: "harmony-puzzle-ek.appspot.com"
@@ -17,9 +17,9 @@ paths:
         - application/json
       parameters:
         - in: query
-          name: email
+          name: token
           type: string
-          description: user's email
+          description: Temporary COS login token.
           required: true
       produces:
         - application/json
@@ -31,25 +31,11 @@ paths:
               type: string
               description: CORS origin bypass. TODO ek – remove this.
           schema:
-            type: object
-            properties:
-              email:
-                type: string
-              account:
-                type: string
-              balance:
-                type: string
+            $ref: "#/definitions/postRegResponse"
         "200":
           description: An existing user.
           schema:
-            type: object
-            properties:
-              email:
-                type: string
-              account:
-                type: string
-              balance:
-                type: string
+            $ref: "#/definitions/postRegResponse"
         "401":
           description: The given token is invalid.
         "504":
@@ -96,7 +82,7 @@ paths:
             properties:
               errorCode:
                 type: string
-                description: >
+                description: |
                   An error code; one of:
 
                   - `insufficientFund` – The account had not enough fund to
@@ -175,3 +161,18 @@ paths:
             properties:
               msg:
                 type: string
+definitions:
+  postRegResponse:
+    type: object
+    properties:
+      uid:
+        type: string
+        description: Contentos user ID.
+      account:
+        type: string
+        description: The player's Harmony account address.
+      balance:
+        type: string
+        description: |
+          The player's Harmony account balance (in wei), represented
+          as a decimal integer.

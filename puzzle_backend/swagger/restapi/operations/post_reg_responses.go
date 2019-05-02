@@ -9,6 +9,8 @@ import (
 	"net/http"
 
 	"github.com/go-openapi/runtime"
+
+	models "github.com/harmony-one/demo-apps/puzzle_backend/swagger/models"
 )
 
 // PostRegOKCode is the HTTP code returned for type PostRegOK
@@ -23,7 +25,7 @@ type PostRegOK struct {
 	/*
 	  In: Body
 	*/
-	Payload *PostRegOKBody `json:"body,omitempty"`
+	Payload *models.PostRegResponse `json:"body,omitempty"`
 }
 
 // NewPostRegOK creates PostRegOK with default headers values
@@ -33,13 +35,13 @@ func NewPostRegOK() *PostRegOK {
 }
 
 // WithPayload adds the payload to the post reg o k response
-func (o *PostRegOK) WithPayload(payload *PostRegOKBody) *PostRegOK {
+func (o *PostRegOK) WithPayload(payload *models.PostRegResponse) *PostRegOK {
 	o.Payload = payload
 	return o
 }
 
 // SetPayload sets the payload to the post reg o k response
-func (o *PostRegOK) SetPayload(payload *PostRegOKBody) {
+func (o *PostRegOK) SetPayload(payload *models.PostRegResponse) {
 	o.Payload = payload
 }
 
@@ -71,7 +73,7 @@ type PostRegCreated struct {
 	/*
 	  In: Body
 	*/
-	Payload *PostRegCreatedBody `json:"body,omitempty"`
+	Payload *models.PostRegResponse `json:"body,omitempty"`
 }
 
 // NewPostRegCreated creates PostRegCreated with default headers values
@@ -92,13 +94,13 @@ func (o *PostRegCreated) SetAccessControlAllowOrigin(accessControlAllowOrigin st
 }
 
 // WithPayload adds the payload to the post reg created response
-func (o *PostRegCreated) WithPayload(payload *PostRegCreatedBody) *PostRegCreated {
+func (o *PostRegCreated) WithPayload(payload *models.PostRegResponse) *PostRegCreated {
 	o.Payload = payload
 	return o
 }
 
 // SetPayload sets the payload to the post reg created response
-func (o *PostRegCreated) SetPayload(payload *PostRegCreatedBody) {
+func (o *PostRegCreated) SetPayload(payload *models.PostRegResponse) {
 	o.Payload = payload
 }
 

@@ -69,6 +69,7 @@ type PostPlayForbiddenBody struct {
 	DisplayMessage string `json:"displayMessage,omitempty"`
 
 	// An error code; one of:
+	//
 	// - `insufficientFund` – The account had not enough fund to
 	//   cover the deposit.
 	//
