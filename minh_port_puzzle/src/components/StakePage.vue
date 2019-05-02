@@ -6,6 +6,12 @@
 .logo {
   font-size: 2em;
 }
+
+@media (min-width: 800px) {
+  .logo {
+    font-size: 2.5em;
+  }
+}
 .msg {
   padding: 0.5em;
   color: #59504d;

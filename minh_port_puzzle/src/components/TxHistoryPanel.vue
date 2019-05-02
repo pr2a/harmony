@@ -36,12 +36,24 @@
   font-size: 0.8em;
   margin-bottom: 0.5em;
 }
+
+.action-row {
+  justify-content: space-between;
+  .link {
+    font-size: 0.8em;
+  }
+}
 </style>
 
 <template >
   <div class="tx-history-panel">
     <div class="content flex-vertical">
-      <button class="btn-primary close-btn" @click="$emit('close')">Close</button>
+      <div class="action-row flex-horizontal">
+        <button class="btn-primary close-btn" @click="$emit('close')">Close</button>
+        <a class="link" @click="viewDashboard">
+          <font-awesome-icon icon="external-link-alt"></font-awesome-icon>&nbsp;View Harmony Dashboard
+        </a>
+      </div>
       <div class="table-wrapper">
         <table class="tx-history-table">
           <tr>
@@ -68,6 +80,11 @@ export default {
     return {
       globalData: store.data
     };
+  },
+  methods: {
+    viewDashboard() {
+      window.location.href = "https://explorer.harmony.one";
+    }
   }
 };
 </script>
