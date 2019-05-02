@@ -61,6 +61,10 @@ footer {
   z-index: 1000;
   background-color: rgba(252, 247, 235, 0.95);
 }
+.host {
+  max-width: 600px;
+  margin: 0 auto;
+}
 </style>
 
 <template >
@@ -73,11 +77,11 @@ footer {
       <div class="stake">
         <div class="msg">How many tokens to stake?</div>
         <div class="flex-horizontal">
-          <div class="balance info-item">
+          <div class="balance info-item flex-grow">
             <div class="label">Balance</div>
             <div class="content">{{ globalData.balance - stake}}</div>
           </div>
-          <div class="info-item">
+          <div class="info-item flex-grow">
             <div class="label">Stake Amount</div>
             <div class="content">{{ stake }}</div>
           </div>
@@ -99,9 +103,11 @@ footer {
     </div>
     <button class="btn-primary" @click="stakeToken" :disabled="globalData.balance < 20">Stake</button>
 
-    <footer class="flex-horizontal">
-      <a class="link flex-grow" @click="$emit('seeTutorial')">Tutorial</a>
-      <a class="link flex-grow" @click="viewTxHistory">View Transactions</a>
+    <footer>
+      <div class="host flex-horizontal">
+        <a class="link flex-grow" @click="$emit('seeTutorial')">Tutorial</a>
+        <a class="link flex-grow" @click="viewTxHistory">View Transactions</a>
+      </div>
     </footer>
   </div>
 </template>

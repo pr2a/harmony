@@ -1,6 +1,6 @@
 <style scoped lang="less">
 .host {
-  max-width: 800px;
+  max-width: 600px;
   margin: 0 auto;
 }
 </style>
