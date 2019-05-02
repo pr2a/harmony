@@ -13,6 +13,10 @@ html {
   height: 100%;
 }
 body,
+#app {
+  height: 100%;
+}
+body,
 html {
   font-family: "Source Sans Pro", Arial, sans-serif;
   color: #2c3e50;
@@ -73,7 +77,7 @@ html {
 
 .btn-primary,
 .btn-mini {
-  background-color: #3c25ce;
+  background-color: #19586d;
   border-radius: 0.3em;
   border: 0;
   color: #fff;
@@ -92,7 +96,7 @@ html {
 .btn-mini {
   display: inline-block;
   font-size: 0.8em;
-  width: 4em;
+  width: 2em;
   height: 2em;
   padding: 0;
   outline: none;
@@ -101,8 +105,8 @@ html {
 .logo {
   margin: 1em auto;
   color: red;
-  height: 4em;
-  width: 5em;
+  height: 2em;
+  width: 2em;
   background-image: url(./assets/logo.svg);
   background-size: contain;
   background-repeat: no-repeat;
@@ -144,6 +148,11 @@ html {
   flex-direction: row;
   align-items: center;
 }
+.flex-hv-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
 
 .flex-grow {
   flex: auto;
@@ -155,7 +164,7 @@ html {
 }
 
 .info-item {
-  background-color: #fff;
+  background-color: #69fabd;
   border-radius: 0.5em;
   // border: 0.15em solid #979797;
   padding: 1em;
