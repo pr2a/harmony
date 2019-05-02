@@ -30,6 +30,7 @@ footer {
 }
 
 .main-container {
+  height: 100%;
   .game-container {
     position: relative;
     .overlay {
@@ -133,6 +134,8 @@ footer {
   left: 0;
   width: 100%;
   padding: 1em;
+  text-align: center;
+  z-index: 1000;
 }
 </style>
 
@@ -209,6 +212,9 @@ footer {
             </button>
           </div>
         </footer>
+        <div class="link-footer">
+          <tx-history-link></tx-history-link>
+        </div>
       </div>
     </div>
   </div>
