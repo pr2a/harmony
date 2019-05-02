@@ -44,6 +44,12 @@ type PlayResp struct {
 	Txid     string   `json:txid`
 }
 
+//Resp is the structure returned from /payout or /end rest call
+type Resp struct {
+	Success bool   `json:sucess`
+	Txid    string `json:txid`
+}
+
 // RPCMsg is a structure to exchange info between RPC client
 type RPCMsg struct {
 	Err  error
@@ -229,7 +235,30 @@ func PlayGame(leader p2p.Peer, account string, amount string, done chan (RPCMsg)
 	}
 }
 
-// PayOut call /finish rest call to get rewards
-func PayOut(account string, height int64) (uint64, error) {
-	return 0, nil
+// PayOut call /payout rest call to get rewards
+func PayOut(leader p2p.Peer, key string, height int64, sequence string, done chan (RPCMsg)) {
+	url := fmt.Sprintf("http://%s:%s/payout?key=%s&level=%s&sequence=%", leader.IP, leader.Port, key, height, sequence)
+
+	var resp = new(Resp)
+	err := getClient(url, "/payout", resp)
+
+	done <- RPCMsg{
+		Err:  err,
+		Done: true,
+		Txid: resp.Txid,
+	}
+}
+
+// EndGame call /end rest call to end the game
+func EndGame(leader p2p.Peer, key string, done chan (RPCMsg)) {
+	url := fmt.Sprintf("http://%s:%s/end?key=%s", leader.IP, leader.Port, key)
+
+	var resp = new(Resp)
+	err := getClient(url, "/end", resp)
+
+	done <- RPCMsg{
+		Err:  err,
+		Done: true,
+		Txid: resp.Txid,
+	}
 }

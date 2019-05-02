@@ -343,15 +343,24 @@ func handlePostFinish(params operations.PostFinishParams) middleware.Responder {
 	if len(accounts) == 0 {
 		return operations.NewPostPlayNotFound()
 	}
+
 	account := accounts[0]
 	middleware.Logger.Printf("player: %v/%v is about to get paid", account.Address, params.Height)
 
-	_, err := restclient.PayOut(account.Address, *params.Height)
-	if err != nil {
-		middleware.Logger.Printf("finishHandler GetRewards failed: %v", err)
+	leader := p2p.Peer{
+		IP:   account.Leader,
+		Port: account.Port,
+	}
+
+	rpcDone := make(chan (restclient.RPCMsg))
+	go restclient.PayOut(leader, key, *params.Height, params.Sequence, rpcDone)
+	msg := <-rpcDone
+
+	if msg.Err != nil {
+		middleware.Logger.Printf("/finish PayOut failed: %v", msg.Err)
 		return operations.NewPostFinishGatewayTimeout().WithPayload(
 			&operations.PostFinishGatewayTimeoutBody{
-				Msg: "finish failure",
+				Msg: "payout failure",
 			},
 		)
 	}
@@ -359,7 +368,7 @@ func handlePostFinish(params operations.PostFinishParams) middleware.Responder {
 	return operations.NewPostFinishOK().WithPayload(
 		&operations.PostFinishOKBody{
 			Reward: "",
-			Txid:   "",
+			Txid:   msg.Txid,
 		},
 	)
 }
