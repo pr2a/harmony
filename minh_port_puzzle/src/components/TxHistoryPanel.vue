@@ -51,7 +51,7 @@
       <div class="action-row flex-horizontal">
         <button class="btn-primary close-btn" @click="$emit('close')">Close</button>
         <a class="link" @click="viewDashboard">
-          <font-awesome-icon icon="external-link-alt"></font-awesome-icon>&nbsp;View Harmony Dashboard
+          <font-awesome-icon icon="external-link-alt"></font-awesome-icon>&nbsp;HMY Dashboard
         </a>
       </div>
       <div class="table-wrapper">
