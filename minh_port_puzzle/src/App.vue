@@ -13,6 +13,10 @@ html {
   height: 100%;
 }
 body,
+#app {
+  height: 100%;
+}
+body,
 html {
   font-family: "Source Sans Pro", Arial, sans-serif;
   color: #2c3e50;
@@ -101,8 +105,8 @@ html {
 .logo {
   margin: 1em auto;
   color: red;
-  height: 4em;
-  width: 5em;
+  height: 2em;
+  width: 2em;
   background-image: url(./assets/logo.svg);
   background-size: contain;
   background-repeat: no-repeat;
@@ -117,6 +121,11 @@ html {
   display: flex;
   flex-direction: row;
   align-items: center;
+}
+.flex-hv-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .flex-grow {

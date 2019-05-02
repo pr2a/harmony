@@ -40,7 +40,7 @@ export default {
   },
   data() {
     return {
-      step: 3,
+      step: 5,
       userKey: "Oxhsa89sd23jkl3450stypose00"
     };
   },
@@ -69,7 +69,7 @@ export default {
       this.step = StakePageIndex;
     },
     restartGame() {
-      this.step = StakePageIndex;
+      this.step = PuzzlePageIndex;
     }
   }
 };

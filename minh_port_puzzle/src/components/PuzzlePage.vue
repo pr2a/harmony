@@ -174,11 +174,12 @@ footer {
               <div class="content">
                 <p :style="gameOverStyle">Game over!</p>
                 <div>
-                  <button class="btn-primary" @click="$emit('restart')">Restart</button>
+                  <button class="btn-primary" @click="restart">Restart</button>
                 </div>
               </div>
             </div>
           </div>
+          <stake-panel v-if="isStakePanelOpen" @stake="startGame"></stake-panel>
           <transition name="fade" v-for="(level, i) in levels" :key="i">
             <Game
               :ref="'game' + i"
@@ -188,12 +189,16 @@ footer {
               :game="level"
               :gameEnded="gameEnded"
               @completeLevel="onLevelComplete"
-              v-if="i === levelIndex"
+              v-if="!isStakePanelOpen && i === levelIndex"
             ></Game>
           </transition>
         </div>
 
-        <footer class="flex-vertical" :style="{ width: boardSizePx + 'px' }">
+        <footer
+          class="flex-vertical"
+          :style="{ width: boardSizePx + 'px' }"
+          v-if="!isStakePanelOpen"
+        >
           <div class="flex-horizontal action-row">
             <span class="flex-grow">levels: {{ levelIndex + 1 }} / {{ levels.length }}</span>
             <button
@@ -213,6 +218,7 @@ footer {
 <script>
 import Game from "./Game";
 import Chip from "./Chip";
+import StakePanel from "./StakePanel";
 import { TweenLite } from "gsap/TweenMax";
 import Vue from "vue";
 import service from "../service";
@@ -221,13 +227,14 @@ import { levels } from "../level-generator";
 import { setInterval, clearInterval } from "timers";
 
 const DefaultBoardSizePx = 420;
-const InitialSeconds = 30;
+const InitialSeconds = 1;
 
 export default {
   name: "PuzzlePage",
   components: {
     Game,
-    Chip
+    Chip,
+    StakePanel
   },
   data() {
     return {
@@ -240,14 +247,15 @@ export default {
       secondsLeft: InitialSeconds,
       timer: null,
       timeIncrease: "",
-      balanceIncrease: ""
+      balanceIncrease: "",
+      isStakePanelOpen: true
     };
   },
   created() {
     this.loadState();
   },
   mounted() {
-    this.startGame();
+    // this.startGame();
     this.boardSizePx = Math.min(
       this.$refs.gameContainer.clientWidth,
       DefaultBoardSizePx
@@ -290,6 +298,7 @@ export default {
       } catch (e) {}
     },
     startGame() {
+      this.isStakePanelOpen = false;
       this.gameEnded = false;
       this.levelIndex = 0;
       this.levels = levels();
@@ -328,6 +337,10 @@ export default {
       this.gameEnded = true;
       clearInterval(this.timer);
       this.timer = null;
+    },
+    restart() {
+      this.gameEnded = false;
+      this.isStakePanelOpen = true;
     }
   }
 };
