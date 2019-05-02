@@ -59,18 +59,6 @@ footer {
   }
 }
 
-.tx-history-panel {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  z-index: 1000;
-  background-color: rgba(252, 247, 235, 0.95);
-}
-.view-tx-btn {
-  font-size: 0.8em;
-}
 .action-row + .action-row {
   margin-top: 1em;
 }
@@ -143,7 +131,6 @@ footer {
 
 <template>
   <div id="app">
-    <tx-history-panel v-if="isTxPanelOpen" class="tx-history-panel" @close="isTxPanelOpen = false"></tx-history-panel>
     <div class="main-container appearing">
       <div class="game-container" ref="gameContainer">
         <div class="score-container" :style="{ width: boardSizePx + 'px' }">
@@ -217,10 +204,6 @@ footer {
               <font-awesome-icon icon="sync"></font-awesome-icon>
             </button>
           </div>
-          <div class="flex-horizontal action-row">
-            <div class="flex-grow"></div>
-            <button class="btn-primary view-tx-btn" @click="viewTxHistory">View Transactions</button>
-          </div>
         </footer>
       </div>
     </div>
@@ -236,7 +219,6 @@ import service from "../service";
 import store from "../store";
 import { levels } from "../level-generator";
 import { setInterval, clearInterval } from "timers";
-import TxHistoryPanel from "./TxHistoryPanel";
 
 const DefaultBoardSizePx = 420;
 const InitialSeconds = 30;
@@ -245,8 +227,7 @@ export default {
   name: "PuzzlePage",
   components: {
     Game,
-    Chip,
-    TxHistoryPanel
+    Chip
   },
   data() {
     return {
@@ -259,8 +240,7 @@ export default {
       secondsLeft: InitialSeconds,
       timer: null,
       timeIncrease: "",
-      balanceIncrease: "",
-      isTxPanelOpen: false
+      balanceIncrease: ""
     };
   },
   created() {
@@ -348,9 +328,6 @@ export default {
       this.gameEnded = true;
       clearInterval(this.timer);
       this.timer = null;
-    },
-    viewTxHistory() {
-      this.isTxPanelOpen = true;
     }
   }
 };

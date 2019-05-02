@@ -49,12 +49,23 @@ footer {
   padding: 2em 1em;
   .link {
     font-size: 0.8em;
+    text-align: center;
   }
+}
+.tx-history-panel {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1000;
+  background-color: rgba(252, 247, 235, 0.95);
 }
 </style>
 
 <template >
   <div class="tutorial-page">
+    <tx-history-panel v-if="isTxPanelOpen" class="tx-history-panel" @close="isTxPanelOpen = false"></tx-history-panel>
     <div class="page-content">
       <header>
         <div class="logo"></div>
@@ -88,21 +99,28 @@ footer {
     </div>
     <button class="btn-primary" @click="stakeToken" :disabled="globalData.balance < 20">Stake</button>
 
-    <footer>
-      <a class="link" @click="$emit('seeTutorial')">Tutorial</a>
+    <footer class="flex-horizontal">
+      <a class="link flex-grow" @click="$emit('seeTutorial')">Tutorial</a>
+      <a class="link flex-grow" @click="viewTxHistory">View Transactions</a>
     </footer>
   </div>
 </template>
 
 <script>
+import TxHistoryPanel from "./TxHistoryPanel";
+
 import store from "../store";
 export default {
   name: "TutorialPage",
   data() {
     return {
       globalData: store.data,
-      stake: 20
+      stake: 20,
+      isTxPanelOpen: false
     };
+  },
+  components: {
+    TxHistoryPanel
   },
   methods: {
     minus() {
@@ -123,6 +141,9 @@ export default {
       // ) {
       this.$emit("stake", this.stake);
       // }
+    },
+    viewTxHistory() {
+      this.isTxPanelOpen = true;
     }
   }
 };
