@@ -128,7 +128,7 @@ type cosGetUIDRequestBody struct {
 }
 
 type cosGetUIDResponseBodyData struct {
-	UID string `json:"string"` // COS UID.
+	UID string `json:"uid"` // COS UID.
 }
 
 type cosGetUIDResponseBody struct {
@@ -205,6 +205,7 @@ func handlePostReg(params operations.PostRegParams) middleware.Responder {
 		middleware.Logger.Printf("handlePostReg: getUID returned %#v", err)
 		return operations.NewPostRegUnauthorized()
 	}
+	middleware.Logger.Printf("handlePostReg: UID %#v logging in", uid)
 
 	rpcDone := make(chan (restclient.RPCMsg))
 
