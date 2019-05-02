@@ -44,7 +44,7 @@ export function levels() {
     // Figure out a number to end on
     difficulty = getDifficulty(i)
     var minMoves = difficulty*3
-    var maxMoves = difficulty*5
+    var maxMoves = difficulty*4
     var parity = difficulty
     var moves = randRange(minMoves, maxMoves);
     var levelDict = {}
@@ -71,12 +71,8 @@ export function levels() {
       do {
         roll = randRange(0,4);
       } while(!possible(data, selected, roll))
-      if (hitZero < maxZero) {
-        j = j + 1;
-      } else {
-        j = maxMoves - randRange(1,3)
-      }
-
+      j = j + 1;
+      
       switch(roll) {
         case 0: // Up
           selected -= 3;
@@ -95,12 +91,13 @@ export function levels() {
           solution.push("\"l\"");
           break;
       }
-      if(j+1 != maxMoves ) {
-        data[selected] -= 1;
-        if (data[selected] == 0){
-            hitZero += 1;
-        }
-       }
+      // if(j+1 <= maxMoves ) {
+      //   data[selected] -= 1;
+      //   if (data[selected] == 0){
+      //       hitZero += 1;
+      //   }
+      //  }
+
        
     }
 
