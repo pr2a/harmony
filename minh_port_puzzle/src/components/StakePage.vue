@@ -2,6 +2,10 @@
 .page-content {
   margin: 3em;
 }
+
+.logo {
+  font-size: 2em;
+}
 .msg {
   padding: 0.5em;
   color: #59504d;
@@ -36,23 +40,39 @@
 .multiplier {
   font-size: 1.2em;
 }
+
+footer {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  padding: 2em 1em;
+  .link {
+    font-size: 0.8em;
+  }
+}
 </style>
 
 <template >
   <div class="tutorial-page">
     <div class="page-content">
-      <header class="flex-horizontal">
+      <header>
         <div class="logo"></div>
-        <div class="balance info-item">
-          <div class="label">Balance</div>
-          <div class="content">{{ globalData.balance }}</div>
-        </div>
       </header>
       <div class="stake">
-        <div class="msg">How many tokens do you want to stake?</div>
-        <div class="value">{{ stake }}</div>
+        <div class="msg">How many tokens to stake?</div>
+        <div class="flex-horizontal">
+          <div class="balance info-item">
+            <div class="label">Balance</div>
+            <div class="content">{{ globalData.balance - stake}}</div>
+          </div>
+          <div class="info-item">
+            <div class="label">Stake Amount</div>
+            <div class="content">{{ stake }}</div>
+          </div>
+        </div>
         <div class="msg">
-          Stake more, win more! You'll get
+          You'll get
           <span class="multiplier">{{ stake / 20 }}x</span>
           rewards.
         </div>
@@ -67,6 +87,10 @@
       </div>
     </div>
     <button class="btn-primary" @click="stakeToken" :disabled="globalData.balance < 20">Stake</button>
+
+    <footer>
+      <a class="link" @click="$emit('seeTutorial')">Tutorial</a>
+    </footer>
   </div>
 </template>
 
@@ -90,15 +114,15 @@ export default {
       this.stake += 20;
     },
     stakeToken() {
-      if (
-        confirm(
-          `${
-            this.stake
-          } tokens will be deducted from your balance. Are you sure?`
-        )
-      ) {
-        this.$emit("stake", this.stake);
-      }
+      // if (
+      //   confirm(
+      //     `${
+      //       this.stake
+      //     } tokens will be deducted from your balance. Are you sure?`
+      //   )
+      // ) {
+      this.$emit("stake", this.stake);
+      // }
     }
   }
 };

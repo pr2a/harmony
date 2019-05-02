@@ -91,7 +91,7 @@ html {
 
 .btn-mini {
   display: inline-block;
-  font-size: 1em;
+  font-size: 0.8em;
   width: 4em;
   height: 2em;
   padding: 0;
