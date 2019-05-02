@@ -169,13 +169,10 @@ footer {
         </div>
 
         <div class="board-wrapper" :style="boardWrapperStyle">
-          <div v-if="gameEnded">
+          <div v-if="gameEnded || !gameStarted">
             <div class="overlay game-over-message appearing">
               <div class="content">
-                <p :style="gameOverStyle">Game over!</p>
-                <div>
-                  <button class="btn-primary" @click="$emit('restart')">Restart</button>
-                </div>
+                <p :style="gameOverStyle">{{ gameEnded ? 'Game over!' : 'Game Not Started' }}</p>
               </div>
             </div>
           </div>
@@ -192,8 +189,8 @@ footer {
             ></Game>
           </transition>
         </div>
-
-        <footer class="flex-vertical" :style="{ width: boardSizePx + 'px' }">
+        <stake-row v-if="!gameStarted" @stake="startGame"></stake-row>
+        <footer class="flex-vertical" :style="{ width: boardSizePx + 'px' }" v-if="gameStarted">
           <div class="flex-horizontal action-row">
             <span class="flex-grow">levels: {{ levelIndex + 1 }} / {{ levels.length }}</span>
             <button
@@ -213,6 +210,7 @@ footer {
 <script>
 import Game from "./Game";
 import Chip from "./Chip";
+import StakeRow from "./StakeRow";
 import { TweenLite } from "gsap/TweenMax";
 import Vue from "vue";
 import service from "../service";
@@ -227,7 +225,8 @@ export default {
   name: "PuzzlePage",
   components: {
     Game,
-    Chip
+    Chip,
+    StakeRow
   },
   data() {
     return {
@@ -236,6 +235,7 @@ export default {
       levels: [],
       boardSizePx: 0,
       size: 3,
+      gameStarted: false,
       gameEnded: false,
       secondsLeft: InitialSeconds,
       timer: null,
@@ -243,11 +243,9 @@ export default {
       balanceIncrease: ""
     };
   },
-  created() {
-    this.loadState();
-  },
   mounted() {
-    this.startGame();
+    this.levels = levels();
+    // this.startGame();
     this.boardSizePx = Math.min(
       this.$refs.gameContainer.clientWidth,
       DefaultBoardSizePx
@@ -268,28 +266,8 @@ export default {
     }
   },
   methods: {
-    loadState() {
-      try {
-        var s = document.cookie;
-        if (s) {
-          var state = JSON.parse(s);
-          if (state) {
-            if (state.awards) this.awards = state.awards;
-            if (state.bestScore) this.bestScore = state.bestScore;
-          }
-        }
-      } catch (e) {}
-    },
-    persistState() {
-      try {
-        var state = {
-          bestScore: this.bestScore,
-          awards: this.awards
-        };
-        document.cookie = JSON.stringify(state);
-      } catch (e) {}
-    },
     startGame() {
+      this.gameStarted = true;
       this.gameEnded = false;
       this.levelIndex = 0;
       this.levels = levels();
@@ -321,13 +299,16 @@ export default {
           this.timeIncrease = "";
           this.balanceIncrease = "";
         });
-        this.persistState();
       });
     },
     endGame() {
       this.gameEnded = true;
+      this.gameStarted = false;
       clearInterval(this.timer);
       this.timer = null;
+    },
+    restart() {
+      this.gameEnded = false;
     }
   }
 };

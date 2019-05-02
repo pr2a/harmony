@@ -221,8 +221,8 @@ func GetBalance(leader p2p.Peer, account string, done chan AccountBalanceMsg) {
 }
 
 // PlayGame calls /play rest call to enter the game and return the current level
-func PlayGame(leader p2p.Peer, account string, amount string, done chan (RPCMsg)) {
-	url := fmt.Sprintf("http://%s:%s/play?key=0x%s&amount=%s", leader.IP, leader.Port, account, amount)
+func PlayGame(leader p2p.Peer, key string, amount string, done chan (RPCMsg)) {
+	url := fmt.Sprintf("http://%s:%s/play?key=%s&amount=%s", leader.IP, leader.Port, key, amount)
 
 	var play = new(PlayResp)
 
@@ -237,7 +237,7 @@ func PlayGame(leader p2p.Peer, account string, amount string, done chan (RPCMsg)
 
 // PayOut call /payout rest call to get rewards
 func PayOut(leader p2p.Peer, key string, height int64, sequence string, done chan (RPCMsg)) {
-	url := fmt.Sprintf("http://%s:%s/payout?key=%s&level=%s&sequence=%", leader.IP, leader.Port, key, height, sequence)
+	url := fmt.Sprintf("http://%s:%s/payout?key=%s&level=%v&sequence=%v", leader.IP, leader.Port, key, height, sequence)
 
 	var resp = new(Resp)
 	err := getClient(url, "/payout", resp)
