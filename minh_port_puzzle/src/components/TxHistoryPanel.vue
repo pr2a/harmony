@@ -1,6 +1,6 @@
 <style scoped lang="less">
 .content {
-  padding: 3em;
+  padding: 3em 1em;
   height: 100%;
   overflow: auto;
 }
