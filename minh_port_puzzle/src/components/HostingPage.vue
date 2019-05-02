@@ -37,7 +37,7 @@ export default {
   },
   data() {
     return {
-      step: 0,
+      step: 5,
       userKey: "Oxhsa89sd23jkl3450stypose00"
     };
   },

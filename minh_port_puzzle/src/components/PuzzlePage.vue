@@ -195,7 +195,6 @@ footer {
           <transition name="fade" v-for="(level, i) in levels" :key="i">
             <Game
               :ref="'game' + i"
-              class="game"
               :listen-own-key-events-only="false"
               :tab-index="1"
               :board-size-px="boardSizePx"

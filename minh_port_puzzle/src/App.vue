@@ -242,59 +242,6 @@ html {
   }
 }
 
-@keyframes appearing07 {
-  0% {
-    opacity: 0;
-  }
-
-  100% {
-    opacity: 0.7;
-  }
-}
-
-@-webkit-keyframes appearing07 {
-  0% {
-    opacity: 0;
-  }
-
-  100% {
-    opacity: 0.7;
-  }
-}
-
-.board {
-  display: flex;
-  flex-wrap: wrap;
-  align-content: flex-start;
-  align-items: space-around;
-  background-color: #c9c0bb;
-  outline: none;
-}
-
-.board .cell {
-  background-color: #ada49f;
-  position: relative;
-  border-radius: 7%;
-}
-
-.board .cell .chip {
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  overflow: hidden;
-  text-align: justify;
-  font-weight: bold;
-  background-color: honeydew;
-  z-index: 1;
-  border-radius: 7%;
-  /* Hack to improve transition performance on mobile devices. It enables GPU rendering. */
-  transform: translateZ(0);
-  -webkit-transform: translateZ(0);
-}
-
 @keyframes chip-value-changed {
   0% {
     transform: scale(1);
@@ -306,20 +253,6 @@ html {
 
   100% {
     transform: scale(1);
-  }
-}
-
-@-webkit-keyframes chip-value-changed {
-  0% {
-    -webkit-transform: scale(1);
-  }
-
-  50% {
-    -webkit-transform: scale(1.2);
-  }
-
-  100% {
-    -webkit-transform: scale(1);
   }
 }
 
