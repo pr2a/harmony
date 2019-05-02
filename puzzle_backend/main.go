@@ -362,6 +362,19 @@ func handlePostFinish(params operations.PostFinishParams) middleware.Responder {
 		)
 	}
 
+	rpcEndDone := make(chan (restclient.RPCMsg))
+	go restclient.EndGame(leader, key, rpcEndDone)
+	msgEnd := <-rpcEndDone
+
+	if msgEnd.Err != nil {
+		middleware.Logger.Printf("/finish EndGame failed: %v", msgEnd.Err)
+		return operations.NewPostFinishGatewayTimeout().WithPayload(
+			&operations.PostFinishGatewayTimeoutBody{
+				Msg: "endgame failure",
+			},
+		)
+	}
+
 	return operations.NewPostFinishOK().WithPayload(
 		&operations.PostFinishOKBody{
 			Reward: "",
