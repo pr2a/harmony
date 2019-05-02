@@ -200,6 +200,8 @@ func handlePostPlay(params operations.PostPlayParams) middleware.Responder {
 	key := params.AccountKey
 	stake := params.Stake
 
+	rpcDone := make(chan (restclient.RPCMsg))
+
 	_ = stake
 
 	// find the existing account from firebase DB
@@ -211,15 +213,25 @@ func handlePostPlay(params operations.PostPlayParams) middleware.Responder {
 	}
 	account := accounts[0]
 	fmt.Printf("player: %v is about to play\n", account.Address)
+	leader := p2p.Peer{
+		IP:   account.Leader,
+		Port: account.Port,
+	}
 
-	err := restclient.EnterPuzzle(account.Address, fmt.Sprintf("%v", stake))
-	if err != nil {
-		app_log.Criticalf(ctx, "playHandler EnterPuzzle failed: %v", err)
-		return operations.NewPostPlayGatewayTimeout().WithPayload(
-			&operations.PostPlayGatewayTimeoutBody{
-				Msg: "play failure",
-			},
-		)
+	go restclient.PlayGame(leader, key, fmt.Sprintf("%v", stake), rpcDone)
+
+	select {
+	case msg := <-rpcDone:
+
+		if msg.Err != nil {
+			app_log.Criticalf(ctx, "playHandler PlayGame failed: %v", msg.Err)
+			return operations.NewPostPlayGatewayTimeout().WithPayload(
+				&operations.PostPlayGatewayTimeoutBody{
+					Msg: "play failure",
+				},
+			)
+		}
+		break
 	}
 
 	return operations.NewPostPlayCreated()
