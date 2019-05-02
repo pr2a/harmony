@@ -11,6 +11,7 @@
   overflow: hidden;
 }
 .tx-history-table {
+  font-size: 0.8em;
   width: 100%;
   background-color: #fff;
   padding: 1em;
@@ -38,7 +39,7 @@
 </style>
 
 <template >
-  <div class="key-page">
+  <div class="tx-history-panel">
     <div class="content flex-vertical">
       <button class="btn-primary close-btn" @click="$emit('close')">Close</button>
       <div class="table-wrapper">
@@ -51,7 +52,7 @@
           <tr class="container" v-for="(tx, i) in globalData.txs" :key="i">
             <td>{{ tx.timestamp | timestamp }}</td>
             <td>{{ tx.action }}</td>
-            <td class="text-right">{{ tx.tokenChange }}</td>
+            <td class="text-right">{{ tx.tokenChange > 0 ? '+' + tx.tokenChange : tx.tokenChange }}</td>
           </tr>
         </table>
       </div>

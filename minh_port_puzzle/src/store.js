@@ -3,14 +3,22 @@ let store = {
     data: {
         txs: [],
         stakeTxId: '',
-        balance: 100
+        balance: 0,
+        email: '',
+        account: ''
     },
     addTx(tx) {
         this.data.txs.push(tx);
-    },
-    stake(value, txId) {
-        this.data.stakeTxId = txId;
-        this.data.balance -= value;
+        if (tx.action === "Register") {
+            this.data.email = tx.email;
+            this.data.account = tx.account;
+            this.data.balance += tx.tokenChange;
+        } else if (tx.action === "Stake") {
+            this.data.stakeTxId = tx.txId;
+            this.data.balance += tx.tokenChange;
+        } else if (tx.action === "CompleteLevel") {
+            this.data.balance += tx.tokenChange;
+        }
     },
     getStakeTxId() {
         return this.data.stakeTxId;
