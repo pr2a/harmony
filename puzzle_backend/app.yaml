@@ -1,4 +1,4 @@
-runtime: go1.12
+runtime: custom
 env: flex
 endpoints_api_service:
   name: harmony-puzzle-ek.appspot.com

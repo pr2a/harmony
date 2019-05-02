@@ -1,3 +1,10 @@
+GCLOUD_PROJECT_ID ?= benchmark-209420
+GCLOUD_CONFIG_NAME ?= ${GCLOUD_PROJECT_ID}
+GCLOUD_ENDPOINTS_SERVICE_NAME := $(shell sed -n 's/^host: "\(.*\)\.appspot\.com"$$/\1/p' swagger/swagger.yml)
+
+print-endpoint-service-name:
+	@echo "${GCLOUD_ENDPOINTS_SERVICE_NAME}"
+
 install:
 	go install -v
 
@@ -12,5 +19,31 @@ gen: validate
 		--exclude-main \
 		--name=harmony-puzzle
 	git add swagger
+
+deploy-init:
+	gcloud config configurations create ${GCLOUD_CONFIG_NAME}
+	gcloud auth login --configuration=${GCLOUD_CONFIG_NAME}
+
+deploy-deinit:
+	gcloud config configurations delete ${GCLOUD_CONFIG_NAME}
+
+deploy:
+	gcloud config set project ${GCLOUD_PROJECT_ID} --configuration=${GCLOUD_CONFIG_NAME}
+	gcloud endpoints services deploy swagger/swagger.yml --configuration=${GCLOUD_CONFIG_NAME}
+	gcloud services enable servicemanagement.googleapis.com --configuration=${GCLOUD_CONFIG_NAME}
+	gcloud services enable servicecontrol.googleapis.com --configuration=${GCLOUD_CONFIG_NAME}
+	gcloud services enable endpoints.googleapis.com --configuration=${GCLOUD_CONFIG_NAME}
+	unset -v GOPATH_DST dep deptar code; \
+		GOPATH_DST=$$(mktemp -d); \
+		dep=$$(mktemp -d); \
+		deptar=$$(mktemp); \
+		export GOPATH_DST; \
+		sh mkgopath.sh; \
+		(cd "$${GOPATH_DST}/src"; find -L . -depth -print0 | cpio -o0 -Hnewc) | (cd "$${dep}"; cpio -idum); \
+		tar -cf dep.tar -C "$${dep}" .; \
+		code=0; \
+		GOPATH="$${GOPATH_DST}" gcloud app deploy --configuration=${GCLOUD_CONFIG_NAME} || code=$?; \
+		rm -rf "$${GOPATH_DST}" "$${dep}" dep.tar 2> /dev/null; \
+		exit $${code}
 
 .PHONY: install gen validate
