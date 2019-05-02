@@ -175,69 +175,31 @@ func getClient(url string, prefix string, result interface{}) error {
 
 // FundMe call /fundme rest call on leader
 func FundMe(leader p2p.Peer, account string, done chan (RPCMsg)) {
-	var err error
-	var player Player
-	var contents []byte
-	var response *http.Response
-	var ctx context.Context
-	var cancel context.CancelFunc
-
 	url := fmt.Sprintf("http://%s:%s/fundme?key=0x%s", leader.IP, leader.Port, account)
-	fmt.Printf("FundMe: %v\n", url)
+	var player = new(Player)
 
-	client := http.DefaultClient
+	err := getClient(url, "/fundme", player)
 
-	req, err := http.NewRequest("GET", url, nil)
-	if err != nil {
-		err = fmt.Errorf("[FundMe] can't new request")
-		goto DONE
-	}
-
-	ctx, cancel = context.WithTimeout(req.Context(), rpcTimeout)
-	defer cancel()
-
-	req = req.WithContext(ctx)
-
-	response, err = client.Do(req)
-	if err != nil {
-		err = fmt.Errorf("[FundMe] GET Do error: %s", err)
-		goto DONE
-	}
-	if response.StatusCode != http.StatusOK {
-		err = fmt.Errorf("[FundMe] Status is not Ok")
-		goto DONE
-	}
-	contents, err = ioutil.ReadAll(response.Body)
-	defer response.Body.Close()
-
-	if err != nil {
-		err = fmt.Errorf("[FundMe] failed to read response: %v", err)
-		goto DONE
-	}
-
-	err = json.Unmarshal(contents, &player)
-
-	if err != nil {
-		err = fmt.Errorf("[FundMe] failed to unmarshal result response: %v", err)
-		goto DONE
-	}
-
-	if !player.Success {
-		err = fmt.Errorf("[FundMe] Failed on blockchain")
-		goto DONE
-	}
-
-DONE:
 	done <- RPCMsg{
 		Err:  err,
 		Done: true,
 	}
-	return
 }
 
 // GetBalance call /balance rest call on leader
-func GetBalance(leader p2p.Peer, account string, done chan (RPCMsg)) (uint64, error) {
-	return 0, nil
+func GetBalance(leader p2p.Peer, account string, done chan (RPCMsg)) {
+	url := fmt.Sprintf("http://%s:%s/balance?key=0x%s", leader.IP, leader.Port, account)
+	var player = new(Player)
+
+	err := getClient(url, "/balance", player)
+	if len(player.Balances) > 0 {
+		fmt.Printf("Balance: %v", player.Balances[0])
+	}
+
+	done <- RPCMsg{
+		Err:  err,
+		Done: true,
+	}
 }
 
 // PlayGame calls /play rest call to enter the game and return the current level
@@ -256,7 +218,7 @@ func PlayGame(leader p2p.Peer, account string, amount string, done chan (RPCMsg)
 	}
 }
 
-// GetRewards call /finish rest call to get rewards
-func GetRewards(account string, height int64) (uint64, error) {
+// PayOut call /finish rest call to get rewards
+func PayOut(account string, height int64) (uint64, error) {
 	return 0, nil
 }
