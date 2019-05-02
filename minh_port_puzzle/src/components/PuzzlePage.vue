@@ -213,7 +213,9 @@ footer {
               class="btn-primary"
               @click="resetLevel"
               :style="{ visibility: gameEnded ? 'hidden':'visible' }"
-            >Reset Level</button>
+            >
+              <font-awesome-icon icon="sync"></font-awesome-icon>
+            </button>
           </div>
           <div class="flex-horizontal action-row">
             <div class="flex-grow"></div>

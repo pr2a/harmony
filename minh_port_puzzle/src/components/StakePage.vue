@@ -57,8 +57,12 @@
           rewards.
         </div>
         <div class="action-buttons flex-horizontal">
-          <button class="btn-mini" @click="minus" :disabled="stake <= 20">-</button>
-          <button class="btn-mini" @click="plus" :disabled="stake + 20 > globalData.balance">+</button>
+          <button class="btn-mini" @click="minus" :disabled="stake <= 20">
+            <font-awesome-icon icon="minus"></font-awesome-icon>
+          </button>
+          <button class="btn-mini" @click="plus" :disabled="stake + 20 > globalData.balance">
+            <font-awesome-icon icon="plus"></font-awesome-icon>
+          </button>
         </div>
       </div>
     </div>
