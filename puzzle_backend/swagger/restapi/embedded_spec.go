@@ -151,7 +151,7 @@ func init() {
                   "type": "string"
                 },
                 "errorCode": {
-                  "description": "An error code; one of:\n- ` + "`" + `insufficientFund` + "`" + ` – The account had not enough fund to\n  cover the deposit.\n",
+                  "description": "An error code; one of:\n\n- ` + "`" + `insufficientFund` + "`" + ` – The account had not enough fund to\n  cover the deposit.\n",
                   "type": "string"
                 }
               }
@@ -258,12 +258,15 @@ func init() {
       "type": "object",
       "properties": {
         "account": {
+          "description": "The player's Harmony account address.",
           "type": "string"
         },
         "balance": {
+          "description": "The player's Harmony account balance (in wei), represented\nas a decimal integer.\n",
           "type": "string"
         },
-        "email": {
+        "uid": {
+          "description": "Contentos user ID.",
           "type": "string"
         }
       }
@@ -404,7 +407,7 @@ func init() {
                   "type": "string"
                 },
                 "errorCode": {
-                  "description": "An error code; one of:\n- ` + "`" + `insufficientFund` + "`" + ` – The account had not enough fund to\n  cover the deposit.\n",
+                  "description": "An error code; one of:\n\n- ` + "`" + `insufficientFund` + "`" + ` – The account had not enough fund to\n  cover the deposit.\n",
                   "type": "string"
                 }
               }
@@ -511,12 +514,15 @@ func init() {
       "type": "object",
       "properties": {
         "account": {
+          "description": "The player's Harmony account address.",
           "type": "string"
         },
         "balance": {
+          "description": "The player's Harmony account balance (in wei), represented\nas a decimal integer.\n",
           "type": "string"
         },
-        "email": {
+        "uid": {
+          "description": "Contentos user ID.",
           "type": "string"
         }
       }

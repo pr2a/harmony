@@ -1,19 +1,23 @@
 package main
 
 import (
+	"bytes"
+	"crypto/md5"
+	"encoding/json"
 	"flag"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
 	"path"
+	"time"
 
+	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/go-openapi/loads"
 	"github.com/go-openapi/runtime/middleware"
 	_ "github.com/go-openapi/swag"
-	"google.golang.org/appengine"
-	app_log "google.golang.org/appengine/log"
 
 	restclient "github.com/harmony-one/demo-apps/backend/client"
 	fdb "github.com/harmony-one/demo-apps/backend/db"
@@ -103,7 +107,7 @@ func main() {
 	api := operations.NewHarmonyPuzzleAPI(swaggerSpec)
 	server := restapi.NewServer(api)
 	server.EnabledListeners = []string{"http"}
-	defer server.Shutdown()
+	defer func() { _ = server.Shutdown() }()
 
 	server.Port = 30000 // TODO ek – parametrize this
 
@@ -115,18 +119,99 @@ func main() {
 		log.Fatalln(err)
 	}
 
-	appengine.Main()
+	//appengine.Main()
+}
+
+type cosGetUIDRequestBody struct {
+	Token     string `json:"token"`     // Temporary COS login token.
+	Timestamp int64  `json:"timestamp"` // Current UNIX timestamp, in ms.
+	ClientID  string `json:"client_id"` // App-specific client ID.
+}
+
+type cosGetUIDResponseBodyData struct {
+	UID string `json:"string"` // COS UID.
+}
+
+type cosGetUIDResponseBody struct {
+	Status  int64                     `json:"status"`  // Status code.
+	Message string                    `json:"message"` // Status message.
+	Data    cosGetUIDResponseBodyData `json:"data"`    // Data (“meat”).
+}
+
+type getUIDError struct {
+	Status  int64
+	Message string
+}
+
+func (e *getUIDError) Error() string {
+	return fmt.Sprintf("get_uid failed with status=%#v message=%#v",
+		e.Status, e.Message)
+}
+
+func getUID(token string) (string, error) {
+	ts := int64(time.Now().UnixNano() / 1000000)
+	reqBodyBytes, err := json.Marshal(cosGetUIDRequestBody{
+		Token:     token,
+		Timestamp: ts,
+		ClientID:  "3",
+	})
+	if err != nil {
+		return "", err
+	}
+
+	h := md5.New()
+	h.Write([]byte("5VCjkUpHkueWo77S1TJC8d3dAgDry0pitRIGliIbucE=")) // TODO ek parametrize
+	h.Write(reqBodyBytes)
+	if _, err := fmt.Fprint(h, ts); err != nil {
+		return "", err
+	}
+	auth := hexutil.Encode(h.Sum(nil))[2:]
+
+	cosClient := &http.Client{}
+	req, err := http.NewRequest(
+		"POST",
+		"http://qa.contentos.io/api/v1/open/get_uid",
+		bytes.NewReader(reqBodyBytes),
+	)
+	if err != nil {
+		return "", err
+	}
+	req.Header.Add("Content-Type", "application/json")
+	req.Header.Add("Authorization", auth)
+
+	res, err := cosClient.Do(req)
+	if err != nil {
+		return "", err
+	}
+
+	defer func() { _ = res.Body.Close() }()
+	resBodyBytes, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+		return "", err
+	}
+	resBody := cosGetUIDResponseBody{}
+	err = json.Unmarshal(resBodyBytes, &resBody)
+	if err != nil {
+		return "", err
+	}
+	if resBody.Status != 1 {
+		return "", &getUIDError{resBody.Status, resBody.Message}
+	}
+	return resBody.Data.UID, nil
 }
 
 func handlePostReg(params operations.PostRegParams) middleware.Responder {
-	ctx := appengine.NewContext(params.HTTPRequest)
-	id := params.Email
+	uid, err := getUID(params.Token)
+	if err != nil {
+		middleware.Logger.Printf("handlePostReg: getUID returned %#v", err)
+		return operations.NewPostRegUnauthorized()
+	}
 
 	rpcDone := make(chan (restclient.RPCMsg))
 
 	var account *fdb.PzPlayer
 	// find the existing account from firebase DB
-	accounts := db.FindAccount("email", id)
+	accounts := db.FindAccount("cosid", uid)
 	var resFunc func(payload *models.PostRegResponse) middleware.Responder
 
 	// register the new account
@@ -138,8 +223,8 @@ func handlePostReg(params operations.PostRegParams) middleware.Responder {
 		go restclient.FundMe(leader, address, rpcDone)
 
 		player := fdb.PzPlayer{
-			Email:   id,
-			CosID:   "133", //FIXME: this has to be an id
+			Email:   "",
+			CosID:   uid,
 			PrivKey: priv,
 			Address: address,
 			Leader:  leader.IP,
@@ -147,7 +232,7 @@ func handlePostReg(params operations.PostRegParams) middleware.Responder {
 		}
 		err := db.RegisterAccount(&player)
 		if err != nil {
-			app_log.Criticalf(ctx, "handlePostReg registerAccount error: %v", err)
+			middleware.Logger.Printf("handlePostReg registerAccount error: %v", err)
 			return operations.NewPostRegServiceUnavailable().WithPayload(
 				&operations.PostRegServiceUnavailableBody{
 					Msg: "register account failure",
@@ -155,7 +240,7 @@ func handlePostReg(params operations.PostRegParams) middleware.Responder {
 			)
 		}
 		account = &player
-		fmt.Printf("register new Account: %v for email: %v\n", account, id)
+		middleware.Logger.Printf("handlePostReg: register new Account: %v for cosid: %v", account, uid)
 		if msg := <-rpcDone; msg.Err != nil {
 			return operations.NewPostRegGatewayTimeout().WithPayload(
 				&operations.PostRegGatewayTimeoutBody{
@@ -166,7 +251,7 @@ func handlePostReg(params operations.PostRegParams) middleware.Responder {
 
 		//TODO: send email to player
 		go func() {
-			fmt.Println("Sent email ..")
+			middleware.Logger.Printf("Sent email ..")
 		}()
 
 		resFunc = func(payload *models.PostRegResponse) middleware.Responder {
@@ -190,6 +275,7 @@ func handlePostReg(params operations.PostRegParams) middleware.Responder {
 	go restclient.GetBalance(leader, account.Address, chanBalanceMsg)
 	balanceMsg := <-chanBalanceMsg
 	if balanceMsg.Err != nil {
+		middleware.Logger.Printf("get balance failure: %#v", balanceMsg.Err)
 		return operations.NewPostRegGatewayTimeout().WithPayload(
 			&operations.PostRegGatewayTimeoutBody{
 				Msg: "get balance failure",
@@ -200,15 +286,13 @@ func handlePostReg(params operations.PostRegParams) middleware.Responder {
 	return resFunc(
 		&models.PostRegResponse{
 			Account: account.Address,
-			Email:   id,
+			UID:     uid,
 			Balance: balanceMsg.Balance,
 		},
 	)
 }
 
 func handlePostPlay(params operations.PostPlayParams) middleware.Responder {
-	ctx := appengine.NewContext(params.HTTPRequest)
-
 	key := params.AccountKey
 	stake := params.Stake
 
@@ -224,7 +308,7 @@ func handlePostPlay(params operations.PostPlayParams) middleware.Responder {
 		return operations.NewPostPlayNotFound()
 	}
 	account := accounts[0]
-	fmt.Printf("player: %v is about to play\n", account.Address)
+	middleware.Logger.Printf("player: %v is about to play", account.Address)
 	leader := p2p.Peer{
 		IP:   account.Leader,
 		Port: account.Port,
@@ -236,7 +320,7 @@ func handlePostPlay(params operations.PostPlayParams) middleware.Responder {
 	case msg := <-rpcDone:
 
 		if msg.Err != nil {
-			app_log.Criticalf(ctx, "playHandler PlayGame failed: %v", msg.Err)
+			middleware.Logger.Printf("playHandler PlayGame failed: %v", msg.Err)
 			return operations.NewPostPlayGatewayTimeout().WithPayload(
 				&operations.PostPlayGatewayTimeoutBody{
 					Msg: "play failure",
@@ -250,8 +334,6 @@ func handlePostPlay(params operations.PostPlayParams) middleware.Responder {
 }
 
 func handlePostFinish(params operations.PostFinishParams) middleware.Responder {
-	ctx := appengine.NewContext(params.HTTPRequest)
-
 	key := params.AccountKey
 
 	// find the existing account from firebase DB
@@ -262,11 +344,11 @@ func handlePostFinish(params operations.PostFinishParams) middleware.Responder {
 		return operations.NewPostPlayNotFound()
 	}
 	account := accounts[0]
-	fmt.Printf("player: %v/%v is about to get paid\n", account.Address, params.Height)
+	middleware.Logger.Printf("player: %v/%v is about to get paid", account.Address, params.Height)
 
 	_, err := restclient.PayOut(account.Address, *params.Height)
 	if err != nil {
-		app_log.Criticalf(ctx, "finishHandler GetRewards failed: %v", err)
+		middleware.Logger.Printf("finishHandler GetRewards failed: %v", err)
 		return operations.NewPostFinishGatewayTimeout().WithPayload(
 			&operations.PostFinishGatewayTimeoutBody{
 				Msg: "finish failure",
@@ -282,7 +364,6 @@ func handlePostFinish(params operations.PostFinishParams) middleware.Responder {
 }
 
 func testHandler(w http.ResponseWriter, r *http.Request) {
-	ctx := appengine.NewContext(r)
 	if r.URL.Path != "/api/v1/test" {
 		http.NotFound(w, r)
 		return
@@ -311,7 +392,7 @@ func testHandler(w http.ResponseWriter, r *http.Request) {
 			break
 		}
 		accounts := db.FindAccount(keys[0], values[0])
-		app_log.Infof(ctx, "accounts: %v", accounts)
+		middleware.Logger.Printf("accounts: %v", accounts)
 		res = fmt.Sprintf("accounts: %v\n", accounts)
 	case "RegisterAccount":
 		account, priv := utils.GenereateKeys()
@@ -320,7 +401,7 @@ func testHandler(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "missing email params", http.StatusBadRequest)
 			break
 		}
-		app_log.Infof(ctx, "accounts: %v/%v", account, priv)
+		middleware.Logger.Printf("accounts: %v/%v", account, priv)
 		player := fdb.PzPlayer{
 			Email:   emails[0],
 			CosID:   "133",
@@ -331,7 +412,7 @@ func testHandler(w http.ResponseWriter, r *http.Request) {
 		}
 		err := db.RegisterAccount(&player)
 		if err != nil {
-			app_log.Criticalf(ctx, "playHandler registerAccount error: %v", err)
+			middleware.Logger.Printf("playHandler registerAccount error: %v", err)
 			http.Error(w, "Register Account, please retry", http.StatusInternalServerError)
 		}
 		res = fmt.Sprintf("accounts: %v\n", account)
