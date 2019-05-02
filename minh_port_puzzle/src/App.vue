@@ -77,7 +77,7 @@ html {
 
 .btn-primary,
 .btn-mini {
-  background-color: #3c25ce;
+  background-color: #19586d;
   border-radius: 0.3em;
   border: 0;
   color: #fff;
@@ -96,7 +96,7 @@ html {
 .btn-mini {
   display: inline-block;
   font-size: 0.8em;
-  width: 4em;
+  width: 2em;
   height: 2em;
   padding: 0;
   outline: none;
@@ -138,7 +138,7 @@ html {
 }
 
 .info-item {
-  background-color: #fff;
+  background-color: #69fabd;
   border-radius: 0.5em;
   // border: 0.15em solid #979797;
   padding: 1em;
