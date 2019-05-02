@@ -1,11 +1,11 @@
-
+import axios from "axios";
 import store from "./store";
 
-const HTTP_BACKEND_URL = `https://127.0.0.1/api/v1`;
-function sendPost(url, params, config) {
+const HTTP_BACKEND_URL = `https://us-central1-harmony-puzzle.cloudfunctions.net`;
+function sendPost(url, params) {
     params.key = PRIV_KEY;
     return Promise.resolve('fake data');
-    return axios.post(HTTP_BACKEND_URL + url, params, config);
+    return axios.post(HTTP_BACKEND_URL + url, params);
 }
 
 const PRIV_KEY = '1';
@@ -28,8 +28,13 @@ export default {
                 stake: value
             }
         ).then((res) => {
+            res = {
+                data: {
+                    txId: "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
+                }
+            }
             console.log("stakeToken", res);
-            store.stake(value,"1");
+            store.stake(value, res.data.txId);
             store.addTx({ action: "Stake", timestamp: new Date(), tokenChange: -value });
         });
     },
