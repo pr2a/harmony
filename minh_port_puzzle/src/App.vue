@@ -13,16 +13,11 @@ html {
   background-color: #fcf7eb;
 }
 
-.half-white {
-  background-color: white;
-  opacity: 0.7;
-}
-
 .main-container {
   display: flex;
   flex-direction: column;
   margin: 0 auto;
-  padding: 2%;
+  padding: 1em;
   /* Hack to improve transition performance on mobile devices. It enables GPU rendering. */
   transform: translateZ(0);
   -webkit-transform: translateZ(0);

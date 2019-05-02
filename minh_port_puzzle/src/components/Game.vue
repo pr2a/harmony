@@ -1,6 +1,7 @@
 <style scoped lang="less">
 .board {
   border-radius: 0.5em;
+  margin: 0 auto;
 
   .cell {
     &.selected {

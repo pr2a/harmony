@@ -1,20 +1,18 @@
 <style scoped lang="less">
 .score-container {
-  margin-bottom: 1em;
+  margin: 0 auto 1em;
 }
 
 footer {
-  margin-top: 1em;
+  margin: 1em auto 0;
   .btn-primary {
     font-size: 0.8em;
   }
 }
 
-.game-wrapper {
+.board-wrapper {
   position: relative;
-  .game {
-    position: absolute;
-  }
+  margin: 0 auto;
 }
 
 .fade-enter-active,
@@ -28,6 +26,7 @@ footer {
 .game-over-message {
   font-weight: bold;
   text-align: center;
+  background-color: rgba(255, 255, 255, 0.7);
 }
 
 .main-container {
@@ -143,57 +142,56 @@ footer {
 </style>
 
 <template>
-  <div id="app" style="visibility:hidden">
+  <div id="app">
     <tx-history-panel v-if="isTxPanelOpen" class="tx-history-panel" @close="isTxPanelOpen = false"></tx-history-panel>
-    <div class="main-container appearing" :style="mainContainerStyle">
-      <div class="score-container">
-        <div class="logo"></div>
-        <div class="flex-horizontal">
-          <div class="count-down info-item">
-            <div class="label">Time Left</div>
-            <div class="content">
-              <span
-                class="seconds-left"
-                :class="{ 'hurry-up': secondsLeft && secondsLeft <= 12, 'game-over': !secondsLeft }"
-              >{{ secondsLeft }}</span>
-              <transition>
-                <span v-if="timeIncrease!=''" class="number-increase">
-                  {{
-                  timeIncrease
-                  }}
-                </span>
-              </transition>
+    <div class="main-container appearing">
+      <div class="game-container" ref="gameContainer">
+        <div class="score-container" :style="{ width: boardSizePx + 'px' }">
+          <div class="logo"></div>
+          <div class="flex-horizontal">
+            <div class="count-down info-item">
+              <div class="label">Time Left</div>
+              <div class="content">
+                <div
+                  class="seconds-left"
+                  :class="{ 'hurry-up': secondsLeft && secondsLeft <= 12, 'game-over': !secondsLeft }"
+                >{{ secondsLeft }}</div>
+                <transition>
+                  <span v-if="timeIncrease!=''" class="number-increase">
+                    {{
+                    timeIncrease
+                    }}
+                  </span>
+                </transition>
+              </div>
             </div>
-          </div>
-          <div class="balance info-item">
-            <div class="label">Balance</div>
-            <div class="content">
-              {{ globalData.balance }}
-              <transition>
-                <span v-if="balanceIncrease!=''" class="number-increase">
-                  {{
-                  balanceIncrease
-                  }}
-                </span>
-              </transition>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div class="game-container" :style="gameContainerStyle">
-        <div v-if="gameEnded">
-          <div class="overlay half-white appearing07"></div>
-          <div class="overlay game-over-message appearing">
-            <div class="content">
-              <p :style="gameOverStyle">Game over!</p>
-              <div>
-                <button class="btn-primary" @click="$emit('restart')">Restart</button>
+            <div class="balance info-item">
+              <div class="label">Balance</div>
+              <div class="content">
+                {{ globalData.balance }}
+                <transition>
+                  <span v-if="balanceIncrease!=''" class="number-increase">
+                    {{
+                    balanceIncrease
+                    }}
+                  </span>
+                </transition>
               </div>
             </div>
           </div>
         </div>
 
-        <div class="game-wrapper" :style="boardStyle">
+        <div class="board-wrapper" :style="boardWrapperStyle">
+          <div v-if="gameEnded">
+            <div class="overlay game-over-message appearing">
+              <div class="content">
+                <p :style="gameOverStyle">Game over!</p>
+                <div>
+                  <button class="btn-primary" @click="$emit('restart')">Restart</button>
+                </div>
+              </div>
+            </div>
+          </div>
           <transition name="fade" v-for="(level, i) in levels" :key="i">
             <Game
               :ref="'game' + i"
@@ -209,7 +207,7 @@ footer {
           </transition>
         </div>
 
-        <footer class="flex-vertical">
+        <footer class="flex-vertical" :style="{ width: boardSizePx + 'px' }">
           <div class="flex-horizontal action-row">
             <span class="flex-grow">levels: {{ levelIndex + 1 }} / {{ levels.length }}</span>
             <button
@@ -239,9 +237,9 @@ import { levels } from "../level-generator";
 import { setInterval, clearInterval } from "timers";
 import TxHistoryPanel from "./TxHistoryPanel";
 
-var defBoardSizePx = 420;
+const DefaultBoardSizePx = 420;
+const InitialSeconds = 30;
 
-const IntialSeconds = 30;
 export default {
   name: "PuzzlePage",
   components: {
@@ -254,10 +252,10 @@ export default {
       globalData: store.data,
       levelIndex: 0,
       levels: [],
-      boardSizePx: defBoardSizePx,
+      boardSizePx: 0,
       size: 3,
       gameEnded: false,
-      secondsLeft: IntialSeconds,
+      secondsLeft: InitialSeconds,
       timer: null,
       timeIncrease: "",
       balanceIncrease: "",
@@ -268,35 +266,20 @@ export default {
     this.loadState();
   },
   mounted() {
-    var self = this;
     this.startGame();
-    requestAnimationFrame(function() {
-      self.fitBoardSizePx();
-      requestAnimationFrame(function() {
-        self.$el.style.visibility = "visible";
-      });
-    });
+    this.boardSizePx = Math.min(
+      this.$refs.gameContainer.clientWidth,
+      DefaultBoardSizePx
+    );
   },
   computed: {
-    boardStyle() {
-      return {
-        width: this.boardSizePx > 0 ? this.boardSizePx + "px" : "100%",
-        height: this.boardSizePx > 0 ? this.boardSizePx + "px" : "100%",
-        borderRadius: 7 / this.size + "%"
-      };
-    },
     gameOverStyle() {
       return { fontSize: this.boardSizePx / 6 + "px" };
     },
-    gameContainerStyle() {
+    boardWrapperStyle() {
       return {
         width: this.boardSizePx + "px",
         height: this.boardSizePx + "px"
-      };
-    },
-    mainContainerStyle() {
-      return {
-        width: this.boardSizePx + "px"
       };
     },
     level() {
@@ -304,13 +287,6 @@ export default {
     }
   },
   methods: {
-    fitBoardSizePx() {
-      if (window.innerWidth < defBoardSizePx * 1.04) {
-        this.boardSizePx = window.innerWidth * 0.96;
-      } else {
-        this.boardSizePx = defBoardSizePx;
-      }
-    },
     loadState() {
       try {
         var s = document.cookie;
@@ -336,7 +312,7 @@ export default {
       this.gameEnded = false;
       this.levelIndex = 0;
       this.levels = levels();
-      this.secondsLeft = IntialSeconds;
+      this.secondsLeft = InitialSeconds;
       this.timer = setInterval(() => {
         this.secondsLeft--;
         if (this.secondsLeft <= 0) {
