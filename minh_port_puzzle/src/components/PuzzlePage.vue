@@ -314,8 +314,8 @@ export default {
         let timeChange = 15;
         this.secondsLeft += timeChange;
         this.timeIncrease = `+${timeChange}`;
-        let balanceChange = 5;
-        this.globalData.balance += balanceChange;
+        let balanceChange = 4;
+        // this.globalData.balance += balanceChange;
         this.balanceIncrease = `+${balanceChange}`;
         Vue.nextTick(() => {
           this.timeIncrease = "";
