@@ -65,7 +65,11 @@ footer {
   right: 0;
   bottom: 0;
   z-index: 1000;
-  background-color: rgba(252, 247, 235, 0.95);
+  background-image: linear-gradient(
+    180deg,
+    rgba(0, 174, 233, 0.9) 0%,
+    rgba(255, 255, 255, 0.9) 119.53%
+  );
 }
 .host {
   max-width: 600px;

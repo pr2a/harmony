@@ -58,13 +58,16 @@
         <table class="tx-history-table">
           <tr>
             <th>Timestamp</th>
-            <th>Action</th>
-            <th class="text-right">Token Change</th>
+            <th>Tx</th>
+            <!-- <th class="text-right">Token Change</th> -->
           </tr>
           <tr class="container" v-for="(tx, i) in globalData.txs" :key="i">
             <td>{{ tx.timestamp | timestamp }}</td>
-            <td>{{ tx.action }}</td>
-            <td class="text-right">{{ tx.tokenChange > 0 ? '+' + tx.tokenChange : tx.tokenChange }}</td>
+            <td>
+              <a :href="'https://explorer.harmony.one/#/tx/' + tx.id">{{tx.id | shorten}}</a>
+            </td>
+            <!-- <td>{{ tx.action }}</td> -->
+            <!-- <td class="text-right">{{ tx.tokenChange > 0 ? '+' + tx.tokenChange : tx.tokenChange }}</td> -->
           </tr>
         </table>
       </div>

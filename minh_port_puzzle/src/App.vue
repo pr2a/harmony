@@ -73,7 +73,7 @@ html {
 
 .btn-primary,
 .btn-mini {
-  background-color: #482bff;
+  background-color: #3c25ce;
   border-radius: 0.3em;
   border: 0;
   color: #fff;

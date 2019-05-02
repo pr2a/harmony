@@ -27,6 +27,7 @@ export default {
                 email: res.data.email,
                 account: res.data.account,
                 timestamp: res.data.timestamp,
+                id: res.data.txid,
                 tokenChange: 100
             });
         })
@@ -43,7 +44,7 @@ export default {
                 action: "Stake",
                 timestamp: res.data.timestamp,
                 value: value,
-                txId: res.data.txId,
+                id: res.data.txid,
                 tokenChange: -value
             });
         });
@@ -64,6 +65,7 @@ export default {
                 action: "CompleteLevel",
                 timestamp: res.data.timestamp,
                 tokenChange: res.data.rewards,
+                id: res.data.txid,
                 level: res.data.level
              });
         });
