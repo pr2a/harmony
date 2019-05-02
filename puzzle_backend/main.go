@@ -214,6 +214,8 @@ func handlePostReg(params operations.PostRegParams) middleware.Responder {
 	accounts := db.FindAccount("cosid", uid)
 	var resFunc func(payload *models.PostRegResponse) middleware.Responder
 
+	var balance string
+
 	// register the new account
 	if len(accounts) == 0 { // didn't find the account
 		// generate the key
@@ -258,36 +260,44 @@ func handlePostReg(params operations.PostRegParams) middleware.Responder {
 			return operations.NewPostRegCreated().
 				WithAccessControlAllowOrigin("*").WithPayload(payload)
 		}
+		// TODO ek – change this later.
+		//  We should probably let FE query the balance independently,
+		//  and not query the balance here.
+		//  A balance query will fail here because fundme is likely to be
+		//  still in flight.
+		balance = "10000000000000000000"
 	} else {
 		// we should find only one account, if more than one, just get the first one
 		account = accounts[0]
+
+		leader = p2p.Peer{
+			IP:   account.Leader,
+			Port: account.Port,
+		}
+
+		chanBalanceMsg := make(chan restclient.AccountBalanceMsg)
+		go restclient.GetBalance(leader, account.Address, chanBalanceMsg)
+		balanceMsg := <-chanBalanceMsg
+		if balanceMsg.Err != nil {
+			middleware.Logger.Printf("get balance failure: %#v", balanceMsg.Err)
+			return operations.NewPostRegGatewayTimeout().WithPayload(
+				&operations.PostRegGatewayTimeoutBody{
+					Msg: "get balance failure",
+				},
+			)
+		}
+
+		balance = balanceMsg.Balance
 		resFunc = func(payload *models.PostRegResponse) middleware.Responder {
 			return operations.NewPostRegOK().WithPayload(payload)
 		}
-	}
-
-	leader = p2p.Peer{
-		IP:   account.Leader,
-		Port: account.Port,
-	}
-
-	chanBalanceMsg := make(chan restclient.AccountBalanceMsg)
-	go restclient.GetBalance(leader, account.Address, chanBalanceMsg)
-	balanceMsg := <-chanBalanceMsg
-	if balanceMsg.Err != nil {
-		middleware.Logger.Printf("get balance failure: %#v", balanceMsg.Err)
-		return operations.NewPostRegGatewayTimeout().WithPayload(
-			&operations.PostRegGatewayTimeoutBody{
-				Msg: "get balance failure",
-			},
-		)
 	}
 
 	return resFunc(
 		&models.PostRegResponse{
 			Account: account.Address,
 			UID:     uid,
-			Balance: balanceMsg.Balance,
+			Balance: balance,
 		},
 	)
 }
