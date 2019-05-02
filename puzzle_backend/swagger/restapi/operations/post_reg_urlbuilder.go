@@ -13,7 +13,7 @@ import (
 
 // PostRegURL generates an URL for the post reg operation
 type PostRegURL struct {
-	Email string
+	Token string
 
 	_basePath string
 	// avoid unkeyed usage
@@ -49,9 +49,9 @@ func (o *PostRegURL) Build() (*url.URL, error) {
 
 	qs := make(url.Values)
 
-	email := o.Email
-	if email != "" {
-		qs.Set("email", email)
+	token := o.Token
+	if token != "" {
+		qs.Set("token", token)
 	}
 
 	_result.RawQuery = qs.Encode()

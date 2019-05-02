@@ -198,8 +198,8 @@ func init() {
         "parameters": [
           {
             "type": "string",
-            "description": "user's email",
-            "name": "email",
+            "description": "Temporary COS login token.",
+            "name": "token",
             "in": "query",
             "required": true
           }
@@ -457,8 +457,8 @@ func init() {
         "parameters": [
           {
             "type": "string",
-            "description": "user's email",
-            "name": "email",
+            "description": "Temporary COS login token.",
+            "name": "token",
             "in": "query",
             "required": true
           }

@@ -17,9 +17,9 @@ paths:
         - application/json
       parameters:
         - in: query
-          name: email
+          name: token
           type: string
-          description: user's email
+          description: Temporary COS login token.
           required: true
       produces:
         - application/json

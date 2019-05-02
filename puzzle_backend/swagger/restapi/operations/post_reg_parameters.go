@@ -32,11 +32,11 @@ type PostRegParams struct {
 	// HTTP Request Object
 	HTTPRequest *http.Request `json:"-"`
 
-	/*user's email
+	/*Temporary COS login token.
 	  Required: true
 	  In: query
 	*/
-	Email string
+	Token string
 }
 
 // BindRequest both binds and validates a request, it assumes that complex things implement a Validatable(strfmt.Registry) error interface
@@ -50,8 +50,8 @@ func (o *PostRegParams) BindRequest(r *http.Request, route *middleware.MatchedRo
 
 	qs := runtime.Values(r.URL.Query())
 
-	qEmail, qhkEmail, _ := qs.GetOK("email")
-	if err := o.bindEmail(qEmail, qhkEmail, route.Formats); err != nil {
+	qToken, qhkToken, _ := qs.GetOK("token")
+	if err := o.bindToken(qToken, qhkToken, route.Formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -61,10 +61,10 @@ func (o *PostRegParams) BindRequest(r *http.Request, route *middleware.MatchedRo
 	return nil
 }
 
-// bindEmail binds and validates parameter Email from query.
-func (o *PostRegParams) bindEmail(rawData []string, hasKey bool, formats strfmt.Registry) error {
+// bindToken binds and validates parameter Token from query.
+func (o *PostRegParams) bindToken(rawData []string, hasKey bool, formats strfmt.Registry) error {
 	if !hasKey {
-		return errors.Required("email", "query")
+		return errors.Required("token", "query")
 	}
 	var raw string
 	if len(rawData) > 0 {
@@ -73,11 +73,11 @@ func (o *PostRegParams) bindEmail(rawData []string, hasKey bool, formats strfmt.
 
 	// Required: true
 	// AllowEmptyValue: false
-	if err := validate.RequiredString("email", "query", raw); err != nil {
+	if err := validate.RequiredString("token", "query", raw); err != nil {
 		return err
 	}
 
-	o.Email = raw
+	o.Token = raw
 
 	return nil
 }
