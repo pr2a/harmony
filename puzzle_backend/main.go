@@ -66,8 +66,6 @@ var (
 
 	profile     = flag.String("profile", defaultProfile, "name of the profile")
 	versionFlag = flag.Bool("version", false, "Output version info")
-
-	rpcDone chan (restclient.RPCMsg)
 )
 
 const (
@@ -103,8 +101,6 @@ func main() {
 		log.Fatalf("Failed to create Fdb client: %v", err)
 		os.Exit(1)
 	}
-
-	rpcDone = make(chan (restclient.RPCMsg))
 
 	// Close FDB when done.
 	defer db.CloseFdb()
@@ -143,6 +139,8 @@ func main() {
 func handlePostReg(params operations.PostRegParams) middleware.Responder {
 	ctx := appengine.NewContext(params.HTTPRequest)
 	id := params.Email
+
+	rpcDone := make(chan (restclient.RPCMsg))
 
 	var account *fdb.PzPlayer
 	// find the existing account from firebase DB
@@ -186,10 +184,10 @@ func handlePostReg(params operations.PostRegParams) middleware.Responder {
 			}
 			//TODO: send email to player
 			go func() {
-				fmt.Println("Sending email ..")
+				fmt.Println("Sent email ..")
 			}()
 
-			return operations.NewPostRegCreated().WithAccessControlAllowOrigin("*",).WithPayload(
+			return operations.NewPostRegCreated().WithAccessControlAllowOrigin("*").WithPayload(
 				&operations.PostRegCreatedBody{
 					Account: account.Address,
 					Email:   id,
@@ -205,28 +203,44 @@ func handlePostReg(params operations.PostRegParams) middleware.Responder {
 		//		go restclient.GetBalance(account.Leader, account.Address, rpcDone)
 		//		fmt.Printf("found existing Account: %v for id: %v\n", account, id)
 
-		select {
-		case msg := <-rpcDone:
-			if msg.Err != nil {
-				return operations.NewPostRegGatewayTimeout().WithPayload(
-					&operations.PostRegGatewayTimeoutBody{
-						Msg: "get balance failure",
-					},
-				)
-			}
-			return operations.NewPostRegOK().WithPayload(
-				&operations.PostRegOKBody{
-					Account: account.Address,
-					Email:   id,
-					Balance: "900000000000000000", // TOOD: placeholder
-				},
-			)
-		}
-
+		return operations.NewPostRegOK().WithPayload(
+			&operations.PostRegOKBody{
+				Account: account.Address,
+				Email:   id,
+				Balance: "900000000000000000", // TOOD: placeholder
+			},
+		)
 	}
 }
 
 func handlePostPlay(params operations.PostPlayParams) middleware.Responder {
+	ctx := appengine.NewContext(params.HTTPRequest)
+
+	key := params.AccountKey
+	stake := params.Stake
+
+	_ = stake
+
+	// find the existing account from firebase DB
+	accounts := db.FindAccount("privkey", key)
+
+	// can't play if player didn't register before
+	if len(accounts) == 0 {
+		return operations.NewPostPlayNotFound()
+	}
+	account := accounts[0]
+	fmt.Printf("player: %v is about to play\n", account.Address)
+
+	err := restclient.EnterPuzzle(account.Address, fmt.Sprintf("%v", stake))
+	if err != nil {
+		app_log.Criticalf(ctx, "playHandler EnterPuzzle failed: %v", err)
+		return operations.NewPostPlayGatewayTimeout().WithPayload(
+			&operations.PostPlayGatewayTimeoutBody{
+				Msg: "play failure",
+			},
+		)
+	}
+
 	return operations.NewPostPlayCreated()
 }
 
@@ -236,66 +250,6 @@ func handlePostFinish(params operations.PostFinishParams) middleware.Responder {
 			Reward: 5e+18,
 		},
 	)
-}
-
-func playHandler(w http.ResponseWriter, r *http.Request) {
-	ctx := appengine.NewContext(r)
-	if r.URL.Path != "/api/v1/play" {
-		http.NotFound(w, r)
-		return
-	}
-	q := r.URL.Query()
-
-	keys, ok := q["key"]
-	if !ok {
-		http.Error(w, "missing key params", http.StatusBadRequest)
-		return
-	}
-	key := keys[0]
-
-	stakes, ok := q["stake"]
-	if !ok {
-		http.Error(w, "missing stake params", http.StatusBadRequest)
-		return
-	}
-	stake := stakes[0]
-
-	// find the existing account from firebase DB
-	accounts := db.FindAccount("privkey", key)
-
-	// can't play if player didn't register before
-	if len(accounts) == 0 {
-		http.Error(w, "can't find the registered player", http.StatusBadRequest)
-		return
-
-	}
-
-	// we should find only one account, if more than one, just get the first one
-	account := accounts[0]
-	app_log.Infof(ctx, "player: %v is about to play", account.Address)
-
-	// calling the play smart contract
-	level, err := restclient.EnterPuzzle(account.Address, stake)
-	if err != nil {
-		app_log.Criticalf(ctx, "playHandler EnterPuzzle failed: %v", err)
-		http.Error(w, "can't play the game, please retry", http.StatusInternalServerError)
-		return
-	}
-
-	resp := respEnter{
-		Address: account.Address,
-		Level:   level,
-		Balance: 0,
-	}
-
-	bytes, err := json.Marshal(resp)
-	if err != nil {
-		fmt.Printf("can't marshal enter resp: %v\n", resp)
-		http.Error(w, "Can't marshal enter response", http.StatusInternalServerError)
-		return
-	}
-	res := string(bytes)
-	_, _ = io.WriteString(w, res)
 }
 
 func finishHandler(w http.ResponseWriter, r *http.Request) {
