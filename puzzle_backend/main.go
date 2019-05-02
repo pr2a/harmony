@@ -358,7 +358,8 @@ func handlePostFinish(params operations.PostFinishParams) middleware.Responder {
 
 	return operations.NewPostFinishOK().WithPayload(
 		&operations.PostFinishOKBody{
-			Reward: 5e+18,
+			Reward: "",
+			Txid:   "",
 		},
 	)
 }

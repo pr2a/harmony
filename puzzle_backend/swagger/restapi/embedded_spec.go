@@ -81,7 +81,10 @@ func init() {
               "properties": {
                 "reward": {
                   "description": "reward amount, in wei (divide by 10^18 to get HRX)",
-                  "type": "number"
+                  "type": "string"
+                },
+                "txid": {
+                  "type": "string"
                 }
               }
             }
@@ -136,7 +139,15 @@ func init() {
         ],
         "responses": {
           "201": {
-            "description": "A new game has been started."
+            "description": "A new game has been started.",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "txid": {
+                  "type": "string"
+                }
+              }
+            }
           },
           "403": {
             "description": "The request was denied.",
@@ -263,6 +274,10 @@ func init() {
         },
         "balance": {
           "description": "The player's Harmony account balance (in wei), represented\nas a decimal integer.\n",
+          "type": "string"
+        },
+        "txid": {
+          "description": "The player's Harmony account address.",
           "type": "string"
         },
         "uid": {
@@ -337,7 +352,10 @@ func init() {
               "properties": {
                 "reward": {
                   "description": "reward amount, in wei (divide by 10^18 to get HRX)",
-                  "type": "number"
+                  "type": "string"
+                },
+                "txid": {
+                  "type": "string"
                 }
               }
             }
@@ -392,7 +410,15 @@ func init() {
         ],
         "responses": {
           "201": {
-            "description": "A new game has been started."
+            "description": "A new game has been started.",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "txid": {
+                  "type": "string"
+                }
+              }
+            }
           },
           "403": {
             "description": "The request was denied.",
@@ -519,6 +545,10 @@ func init() {
         },
         "balance": {
           "description": "The player's Harmony account balance (in wei), represented\nas a decimal integer.\n",
+          "type": "string"
+        },
+        "txid": {
+          "description": "The player's Harmony account address.",
           "type": "string"
         },
         "uid": {

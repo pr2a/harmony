@@ -23,6 +23,9 @@ type PostRegResponse struct {
 	//
 	Balance string `json:"balance,omitempty"`
 
+	// The player's Harmony account address.
+	Txid string `json:"txid,omitempty"`
+
 	// Contentos user ID.
 	UID string `json:"uid,omitempty"`
 }

@@ -19,6 +19,11 @@ const PostPlayCreatedCode int = 201
 swagger:response postPlayCreated
 */
 type PostPlayCreated struct {
+
+	/*
+	  In: Body
+	*/
+	Payload *PostPlayCreatedBody `json:"body,omitempty"`
 }
 
 // NewPostPlayCreated creates PostPlayCreated with default headers values
@@ -27,12 +32,27 @@ func NewPostPlayCreated() *PostPlayCreated {
 	return &PostPlayCreated{}
 }
 
+// WithPayload adds the payload to the post play created response
+func (o *PostPlayCreated) WithPayload(payload *PostPlayCreatedBody) *PostPlayCreated {
+	o.Payload = payload
+	return o
+}
+
+// SetPayload sets the payload to the post play created response
+func (o *PostPlayCreated) SetPayload(payload *PostPlayCreatedBody) {
+	o.Payload = payload
+}
+
 // WriteResponse to the client
 func (o *PostPlayCreated) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 
-	rw.Header().Del(runtime.HeaderContentType) //Remove Content-Type on empty responses
-
 	rw.WriteHeader(201)
+	if o.Payload != nil {
+		payload := o.Payload
+		if err := producer.Produce(rw, payload); err != nil {
+			panic(err) // let the recovery middleware deal with this
+		}
+	}
 }
 
 // PostPlayForbiddenCode is the HTTP code returned for type PostPlayForbidden

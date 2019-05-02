@@ -95,7 +95,10 @@ func (o *PostFinishGatewayTimeoutBody) UnmarshalBinary(b []byte) error {
 type PostFinishOKBody struct {
 
 	// reward amount, in wei (divide by 10^18 to get HRX)
-	Reward float64 `json:"reward,omitempty"`
+	Reward string `json:"reward,omitempty"`
+
+	// txid
+	Txid string `json:"txid,omitempty"`
 }
 
 // Validate validates this post finish o k body

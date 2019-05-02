@@ -73,6 +73,11 @@ paths:
       responses:
         "201":
           description: A new game has been started.
+          schema:
+            type: object
+            properties:
+              txid:
+                type: string
         "404":
           description: The player account does not exist.
         "403":
@@ -145,8 +150,12 @@ paths:
             type: object
             properties:
               reward:
-                type: number
+                type: string
                 description: reward amount, in wei (divide by 10^18 to get HRX)
+            type: object
+            properties:
+              txid:
+                type: string
         "504":
           description: Blockchain RPC call failed.
           schema:
@@ -169,6 +178,9 @@ definitions:
         type: string
         description: Contentos user ID.
       account:
+        type: string
+        description: The player's Harmony account address.
+      txid:
         type: string
         description: The player's Harmony account address.
       balance:
