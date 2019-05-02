@@ -6,7 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	_ "math/rand" // use it later
+	"math/rand"
 	"net/http"
 	"time"
 
@@ -48,6 +48,7 @@ type PlayResp struct {
 type RPCMsg struct {
 	Err  error
 	Done bool
+	Txid string
 }
 
 var (
@@ -186,6 +187,7 @@ func FundMe(leader p2p.Peer, account string, done chan (RPCMsg)) {
 	done <- RPCMsg{
 		Err:  err,
 		Done: true,
+		Txid: player.Txid,
 	}
 }
 
@@ -214,9 +216,7 @@ func GetBalance(leader p2p.Peer, account string, done chan AccountBalanceMsg) {
 
 // PlayGame calls /play rest call to enter the game and return the current level
 func PlayGame(leader p2p.Peer, account string, amount string, done chan (RPCMsg)) {
-	// FIXME: this is based on old RPC API
-	//	url := fmt.Sprintf("http://%s:%s/play?key=0x%s&amount=%s", leader.IP, leader.Port, account, amount)
-	url := fmt.Sprintf("http://%s:%s/play?key=%s", leader.IP, leader.Port, account)
+	url := fmt.Sprintf("http://%s:%s/play?key=0x%s&amount=%s", leader.IP, leader.Port, account, amount)
 
 	var play = new(PlayResp)
 
@@ -225,6 +225,7 @@ func PlayGame(leader p2p.Peer, account string, amount string, done chan (RPCMsg)
 	done <- RPCMsg{
 		Err:  err,
 		Done: true,
+		Txid: play.Txid,
 	}
 }
 
