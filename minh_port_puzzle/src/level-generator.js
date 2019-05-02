@@ -60,7 +60,14 @@ export function levels() {
       levelDict["initialSelected"]["x"] = 0
       levelDict["initialSelected"]["y"] = 0
       outputArray[i-1] = levelDict
-    } else {
+    } else if ( i == 2){
+      data = [1,0,0,0,0,0,1,1,1];
+      levelDict['contents'] = data
+      levelDict["initialSelected"] = {}
+      levelDict["initialSelected"]["x"] = 2
+      levelDict["initialSelected"]["y"] = 0
+      outputArray[i-1] = levelDict
+    } else  { 
     for (var j = 0; j < 9; j++) {
       data.push(parity);
     }

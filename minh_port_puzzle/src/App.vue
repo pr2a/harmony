@@ -108,6 +108,32 @@ html {
   background-repeat: no-repeat;
 }
 
+.demo-arrow-1{
+  position: absolute;
+  z-index: 2;
+  display: inline-block;
+  left: 10px;
+  top: 10px;
+  width: 400px;
+  height: 400px;
+  opacity: 0.5;
+  background-size: cover;
+  background-image: url(./assets/pointer.png);
+}
+
+.demo-arrow-2{
+  position: absolute;
+  z-index: 2;
+  display: inline-block;
+  left: 10px;
+  top: 10px;
+  width: 400px;
+  height: 400px;
+  opacity: 0.5;
+  background-size: cover;
+  background-image: url(./assets/pointer.png);
+}
+
 .flex-veritcal {
   display: flex;
   flex-direction: column;

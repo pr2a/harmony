@@ -172,7 +172,7 @@ footer {
           <div v-if="gameEnded">
             <div class="overlay game-over-message appearing">
               <div class="content">
-                <p :style="gameOverStyle">Game over!</p>
+                <p :style="gameOverStyle">Game Over!</p>
                 <div>
                   <button class="btn-primary" @click="$emit('restart')">Restart</button>
                 </div>
@@ -186,6 +186,7 @@ footer {
               :tab-index="1"
               :board-size-px="boardSizePx"
               :game="level"
+              :gameLevel="levelIndex+1"
               :gameEnded="gameEnded"
               @completeLevel="onLevelComplete"
               v-if="i === levelIndex"
@@ -221,7 +222,7 @@ import { levels } from "../level-generator";
 import { setInterval, clearInterval } from "timers";
 
 const DefaultBoardSizePx = 420;
-const InitialSeconds = 30;
+const InitialSeconds = 20;
 
 export default {
   name: "PuzzlePage",
