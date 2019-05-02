@@ -53,31 +53,65 @@ footer {
 }
 .stake-amount {
   margin: 0 0.5em;
-  background-color: #69fabd;
   border-radius: 0.3em;
   border: 0;
-  color: #19586d;
+  color: #1b2a5d;
   height: 2em;
-  width: 5em;
-  font-size: 0.8em;
+  width: 4em;
+  font-weight: bold;
 }
 .stake-row {
   margin: 1em auto 0;
+  justify-content: space-between;
+}
+.icon-dark-token {
+  background-size: contain;
+  height: 1.2em;
+  width: 1.2em;
+  background-image: url(../assets/dark-token.svg);
+  margin-right: 0.5em;
+}
+.stake-buttons {
+  background-color: #fff;
+  border-radius: 0.3em;
+}
+.btn-mini {
+  font-size: 1em;
+  background-color: transparent;
+  border: 0;
+  color: #482aff;
+  outline: none;
+  &:disabled {
+    opacity: 0.5;
+    color: #ddd;
+  }
+}
+
+.btn-primary {
+  font-size: 1em;
+  background-color: #482bff;
 }
 </style>
 
 <template >
   <div class="flex-horizontal stake-row">
-    <div class="action-buttons flex-horizontal flex-grow">
+    <div class="stake-buttons flex-horizontal">
       <button class="btn-mini" @click="minus" :disabled="stake <= 20">
         <font-awesome-icon icon="minus"></font-awesome-icon>
       </button>
-      <div class="stake-amount flex-hv-center">{{ stake }}</div>
+      <div class="stake-amount flex-hv-center">
+        <div class="icon-dark-token"></div>
+        {{ stake }}
+      </div>
       <button class="btn-mini" @click="plus" :disabled="stake + 20 > globalData.balance">
         <font-awesome-icon icon="plus"></font-awesome-icon>
       </button>
     </div>
-    <button class="btn-mini start-btn" @click="stakeToken" :disabled="globalData.balance < 20">Start</button>
+    <button
+      class="btn-primary start-btn"
+      @click="stakeToken"
+      :disabled="globalData.balance < 20"
+    >Start</button>
   </div>
 </template>
 

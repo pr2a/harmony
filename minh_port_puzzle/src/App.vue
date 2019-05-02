@@ -146,6 +146,7 @@ html {
   text-align: center;
   .content {
     margin-left: 0.5em;
+    font-weight: bold;
   }
 }
 

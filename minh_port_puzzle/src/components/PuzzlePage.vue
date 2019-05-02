@@ -6,7 +6,8 @@
 footer {
   margin: 1em auto 0;
   .btn-primary {
-    font-size: 0.8em;
+    font-size: 1em;
+    background-color: #482bff;
   }
 }
 
@@ -27,6 +28,7 @@ footer {
   font-weight: bold;
   text-align: center;
   background-color: rgba(255, 255, 255, 0.7);
+  border-radius: 0.3em;
 }
 
 .main-container {
@@ -70,7 +72,6 @@ footer {
 }
 .count-down {
   .seconds-left {
-    &.game-over,
     &.hurry-up {
       color: #f6371d;
     }
@@ -149,6 +150,9 @@ footer {
 .icon-token {
   background-image: url(../assets/token.svg);
 }
+.level-text {
+  font-weight: bold;
+}
 </style>
 
 <template>
@@ -198,7 +202,7 @@ footer {
           <div v-if="gameEnded || !gameStarted">
             <div class="overlay game-over-message appearing">
               <div class="content">
-                <p :style="gameOverStyle">{{ gameEnded ? 'Game over!' : 'Game Not Started' }}</p>
+                <p :style="gameOverStyle" v-if="gameEnded">Game over!</p>
               </div>
             </div>
           </div>
@@ -218,7 +222,7 @@ footer {
         <stake-row v-if="!gameStarted" @stake="startGame" :style="{ width: boardSizePx + 'px' }"></stake-row>
         <footer class="flex-vertical" :style="{ width: boardSizePx + 'px' }" v-if="gameStarted">
           <div class="flex-horizontal action-row">
-            <span class="flex-grow">levels: {{ levelIndex + 1 }} / {{ levels.length }}</span>
+            <span class="flex-grow level-text">Lv: {{ levelIndex + 1 }} / {{ levels.length }}</span>
             <button
               class="btn-primary"
               @click="resetLevel"
@@ -249,7 +253,7 @@ import { levels } from "../level-generator";
 import { setInterval, clearInterval } from "timers";
 
 const DefaultBoardSizePx = 420;
-const InitialSeconds = 30;
+const InitialSeconds = 1000;
 
 export default {
   name: "PuzzlePage",
