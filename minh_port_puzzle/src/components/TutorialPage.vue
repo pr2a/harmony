@@ -13,7 +13,6 @@
   color: #59504d;
   font-family: Fira Sans, sans-serif;
   border: 0.15em solid #979797;
-  height: 10em;
   overflow: auto;
   background-color: #fff;
   li {
