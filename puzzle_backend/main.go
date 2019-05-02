@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"context"
 	"crypto/md5"
 	"encoding/json"
 	"flag"
@@ -11,22 +12,18 @@ import (
 	"net/http"
 	"os"
 	"path"
+	"strconv"
 	"time"
 
 	"github.com/ethereum/go-ethereum/common/hexutil"
-	"github.com/go-openapi/loads"
-	"github.com/go-openapi/runtime/middleware"
 	_ "github.com/go-openapi/swag"
+	"google.golang.org/appengine"
+	app_log "google.golang.org/appengine/log"
 
 	restclient "github.com/harmony-one/demo-apps/backend/client"
 	fdb "github.com/harmony-one/demo-apps/backend/db"
 	"github.com/harmony-one/demo-apps/backend/p2p"
 	"github.com/harmony-one/demo-apps/backend/utils"
-	"github.com/harmony-one/demo-apps/puzzle_backend/swagger/models"
-	"github.com/harmony-one/demo-apps/puzzle_backend/swagger/restapi"
-	_ "github.com/harmony-one/demo-apps/puzzle_backend/swagger/restapi"
-	"github.com/harmony-one/demo-apps/puzzle_backend/swagger/restapi/operations"
-	_ "github.com/harmony-one/demo-apps/puzzle_backend/swagger/restapi/operations"
 )
 
 var (
@@ -90,6 +87,10 @@ func main() {
 	// Close FDB when done.
 	defer db.CloseFdb()
 
+	http.HandleFunc("/reg", handlePostReg)
+	http.HandleFunc("/play", handlePostPlay)
+	http.HandleFunc("/finish", handlePostFinish)
+
 	leader = readProfile(*profile)
 
 	leaders := make([]p2p.Peer, 0)
@@ -98,27 +99,7 @@ func main() {
 	}
 	restclient.SetLeaders(leaders)
 
-	swaggerSpec, err := loads.Analyzed(restapi.SwaggerJSON, "")
-	if err != nil {
-		log.Fatalln(err)
-	}
-
-	api := operations.NewHarmonyPuzzleAPI(swaggerSpec)
-	server := restapi.NewServer(api)
-	server.EnabledListeners = []string{"http"}
-	defer func() { _ = server.Shutdown() }()
-
-	server.Port = 30000 // TODO ek – parametrize this
-
-	api.PostRegHandler = operations.PostRegHandlerFunc(handlePostReg)
-	api.PostPlayHandler = operations.PostPlayHandlerFunc(handlePostPlay)
-	api.PostFinishHandler = operations.PostFinishHandlerFunc(handlePostFinish)
-
-	if err := server.Serve(); err != nil {
-		log.Fatalln(err)
-	}
-
-	//appengine.Main()
+	appengine.Main()
 }
 
 type cosGetUIDRequestBody struct {
@@ -199,20 +180,43 @@ func getUID(token string) (string, error) {
 	return resBody.Data.UID, nil
 }
 
-func handlePostReg(params operations.PostRegParams) middleware.Responder {
-	uid, err := getUID(params.Token)
-	if err != nil {
-		middleware.Logger.Printf("handlePostReg: getUID returned %#v", err)
-		return operations.NewPostRegUnauthorized()
+type msgBody struct {
+	Msg string `json:"msg"`
+}
+
+type postRegResponseBody struct {
+	Account string `json:"address"`
+	UID     string `json:"uid"`
+	Balance string `json:"balance"`
+}
+
+func handlePostReg(w http.ResponseWriter, r *http.Request) {
+	ctx := appengine.NewContext(r)
+	if r.URL.Path != "/reg" {
+		http.NotFound(w, r)
+		return
 	}
-	middleware.Logger.Printf("handlePostReg: UID %#v logging in", uid)
+	q := r.URL.Query()
+
+	tokens, ok := q["token"]
+	if !ok {
+		http.Error(w, "missing token", http.StatusBadRequest)
+		return
+	}
+	token := tokens[0]
+	uid, err := getUID(token)
+	if err != nil {
+		app_log.Infof(ctx, "handlePostReg: getUID returned %#v", err)
+		http.Error(w, "", http.StatusUnauthorized)
+	}
+	app_log.Infof(ctx, "handlePostReg: UID %#v logging in", uid)
 
 	rpcDone := make(chan (restclient.RPCMsg))
 
 	var account *fdb.PzPlayer
 	// find the existing account from firebase DB
 	accounts := db.FindAccount("cosid", uid)
-	var resFunc func(payload *models.PostRegResponse) middleware.Responder
+	var resCode int
 
 	// register the new account
 	if len(accounts) == 0 { // didn't find the account
@@ -232,38 +236,27 @@ func handlePostReg(params operations.PostRegParams) middleware.Responder {
 		}
 		err := db.RegisterAccount(&player)
 		if err != nil {
-			middleware.Logger.Printf("handlePostReg registerAccount error: %v", err)
-			return operations.NewPostRegServiceUnavailable().WithPayload(
-				&operations.PostRegServiceUnavailableBody{
-					Msg: "register account failure",
-				},
-			)
+			app_log.Infof(ctx, "handlePostReg registerAccount error: %v", err)
+			http.Error(w, "register account failure", http.StatusServiceUnavailable)
+			return
 		}
 		account = &player
-		middleware.Logger.Printf("handlePostReg: register new Account: %v for cosid: %v", account, uid)
+		app_log.Infof(ctx, "handlePostReg: register new Account: %v for cosid: %v", account, uid)
 		if msg := <-rpcDone; msg.Err != nil {
-			return operations.NewPostRegGatewayTimeout().WithPayload(
-				&operations.PostRegGatewayTimeoutBody{
-					Msg: "fund me failure",
-				},
-			)
+			http.Error(w, "fund me failure", http.StatusGatewayTimeout)
+			return
 		}
 
 		//TODO: send email to player
 		go func() {
-			middleware.Logger.Printf("Sent email ..")
+			app_log.Infof(ctx, "Sent email ..")
 		}()
 
-		resFunc = func(payload *models.PostRegResponse) middleware.Responder {
-			return operations.NewPostRegCreated().
-				WithAccessControlAllowOrigin("*").WithPayload(payload)
-		}
+		resCode = http.StatusCreated
 	} else {
 		// we should find only one account, if more than one, just get the first one
 		account = accounts[0]
-		resFunc = func(payload *models.PostRegResponse) middleware.Responder {
-			return operations.NewPostRegOK().WithPayload(payload)
-		}
+		resCode = http.StatusOK
 	}
 
 	leader = p2p.Peer{
@@ -275,26 +268,42 @@ func handlePostReg(params operations.PostRegParams) middleware.Responder {
 	go restclient.GetBalance(leader, account.Address, chanBalanceMsg)
 	balanceMsg := <-chanBalanceMsg
 	if balanceMsg.Err != nil {
-		middleware.Logger.Printf("get balance failure: %#v", balanceMsg.Err)
-		return operations.NewPostRegGatewayTimeout().WithPayload(
-			&operations.PostRegGatewayTimeoutBody{
-				Msg: "get balance failure",
-			},
-		)
+		app_log.Infof(ctx, "get balance failure: %#v", balanceMsg.Err)
+		http.Error(w, "get balance failure", http.StatusGatewayTimeout)
+		return
 	}
 
-	return resFunc(
-		&models.PostRegResponse{
-			Account: account.Address,
-			UID:     uid,
-			Balance: balanceMsg.Balance,
-		},
-	)
+	w.Header().Add("Access-Control-Allow-Origin", "*")
+	jsonResp(ctx, w, resCode, postRegResponseBody{
+		Account: account.Address,
+		UID:     uid,
+		Balance: balanceMsg.Balance,
+	})
 }
 
-func handlePostPlay(params operations.PostPlayParams) middleware.Responder {
-	key := params.AccountKey
-	stake := params.Stake
+type postPlayResponseBody struct {
+	Txid string `json:"txid"`
+}
+
+func handlePostPlay(w http.ResponseWriter, r *http.Request) {
+	ctx := appengine.NewContext(r)
+	if r.URL.Path != "/play" {
+		http.NotFound(w, r)
+		return
+	}
+	q := r.URL.Query()
+
+	keys, ok := q["accountKey"]
+	if !ok {
+		http.Error(w, "missing account key", http.StatusBadRequest)
+		return
+	}
+	key := keys[0]
+	stake, ok := q["stake"]
+	if !ok {
+		http.Error(w, "missing account key", http.StatusBadRequest)
+		return
+	}
 
 	_ = stake
 
@@ -303,10 +312,11 @@ func handlePostPlay(params operations.PostPlayParams) middleware.Responder {
 
 	// can't play if player didn't register before
 	if len(accounts) == 0 {
-		return operations.NewPostPlayNotFound()
+		http.NotFound(w, r)
+		return
 	}
 	account := accounts[0]
-	middleware.Logger.Printf("player: %v is about to play", account.Address)
+	app_log.Infof(ctx, "player: %v is about to play", account.Address)
 	leader := p2p.Peer{
 		IP:   account.Leader,
 		Port: account.Port,
@@ -316,34 +326,65 @@ func handlePostPlay(params operations.PostPlayParams) middleware.Responder {
 	go restclient.PlayGame(leader, key, fmt.Sprintf("%v", stake), rpcDone)
 	msg := <-rpcDone
 	if msg.Err != nil {
-		middleware.Logger.Printf("playHandler PlayGame failed: %v", msg.Err)
-		return operations.NewPostPlayGatewayTimeout().WithPayload(
-			&operations.PostPlayGatewayTimeoutBody{
-				Msg: "play failure",
-			},
-		)
+		app_log.Infof(ctx, "playHandler PlayGame failed: %v", msg.Err)
+		http.Error(w, "play failure", http.StatusGatewayTimeout)
+		return
 	}
 
-	return operations.NewPostPlayCreated().WithPayload(
-		&operations.PostPlayCreatedBody{
-			Txid: msg.Txid,
-		},
-	)
+	jsonResp(ctx, w, http.StatusCreated, &postPlayResponseBody{
+		Txid: msg.Txid,
+	})
 }
 
-func handlePostFinish(params operations.PostFinishParams) middleware.Responder {
-	key := params.AccountKey
+type postFinishResponseBody struct {
+	Reward string `json:"reward"`
+	Txid   string `json:"txid"`
+}
+
+func handlePostFinish(w http.ResponseWriter, r *http.Request) {
+	ctx := appengine.NewContext(r)
+	if r.URL.Path != "/play" {
+		http.NotFound(w, r)
+		return
+	}
+	q := r.URL.Query()
+
+	keys, ok := q["accountKey"]
+	if !ok {
+		http.Error(w, "missing account key", http.StatusBadRequest)
+		return
+	}
+	key := keys[0]
+
+	heightStrs, ok := q["height"]
+	if !ok {
+		http.Error(w, "missing height", http.StatusBadRequest)
+		return
+	}
+	height, err := strconv.ParseInt(heightStrs[0], 10, 64)
+	if err != nil {
+		http.Error(w, "invalid height", http.StatusBadRequest)
+		return
+	}
+
+	sequences, ok := q["sequence"]
+	if !ok {
+		http.Error(w, "missing sequence", http.StatusBadRequest)
+		return
+	}
+	sequence := sequences[0]
 
 	// find the existing account from firebase DB
 	accounts := db.FindAccount("privkey", key)
 
 	// can't play if player didn't register before
 	if len(accounts) == 0 {
-		return operations.NewPostPlayNotFound()
+		http.NotFound(w, r)
+		return
 	}
 
 	account := accounts[0]
-	middleware.Logger.Printf("player: %v/%v is about to get paid", account.Address, params.Height)
+	app_log.Infof(ctx, "player: %v/%v is about to get paid", account.Address, height)
 
 	leader := p2p.Peer{
 		IP:   account.Leader,
@@ -351,16 +392,13 @@ func handlePostFinish(params operations.PostFinishParams) middleware.Responder {
 	}
 
 	rpcDone := make(chan (restclient.RPCMsg))
-	go restclient.PayOut(leader, key, *params.Height, params.Sequence, rpcDone)
+	go restclient.PayOut(leader, key, height, sequence, rpcDone)
 	msg := <-rpcDone
 
 	if msg.Err != nil {
-		middleware.Logger.Printf("/finish PayOut failed: %v", msg.Err)
-		return operations.NewPostFinishGatewayTimeout().WithPayload(
-			&operations.PostFinishGatewayTimeoutBody{
-				Msg: "payout failure",
-			},
-		)
+		app_log.Infof(ctx, "/finish PayOut failed: %v", msg.Err)
+		http.Error(w, "payout failure", http.StatusGatewayTimeout)
+		return
 	}
 
 	rpcEndDone := make(chan (restclient.RPCMsg))
@@ -368,18 +406,24 @@ func handlePostFinish(params operations.PostFinishParams) middleware.Responder {
 	msgEnd := <-rpcEndDone
 
 	if msgEnd.Err != nil {
-		middleware.Logger.Printf("/finish EndGame failed: %v", msgEnd.Err)
-		return operations.NewPostFinishGatewayTimeout().WithPayload(
-			&operations.PostFinishGatewayTimeoutBody{
-				Msg: "endgame failure",
-			},
-		)
+		app_log.Infof(ctx, "/finish EndGame failed: %v", msgEnd.Err)
+		http.Error(w, "endgame failure", http.StatusGatewayTimeout)
+		return
 	}
 
-	return operations.NewPostFinishOK().WithPayload(
-		&operations.PostFinishOKBody{
-			Reward: "",
-			Txid:   msg.Txid,
-		},
-	)
+	jsonResp(ctx, w, http.StatusOK, postFinishResponseBody{
+		Reward: "",
+		Txid:   msg.Txid,
+	})
+}
+
+func jsonResp(
+	ctx context.Context, w http.ResponseWriter, code int, res interface{},
+) {
+	resBytes, err := json.Marshal(res)
+	if err != nil {
+		app_log.Errorf(ctx, "cannot marshal response %#v: %v", res, err)
+		http.Error(w, "", http.StatusInternalServerError)
+	}
+	_, _ = w.Write(resBytes)
 }
