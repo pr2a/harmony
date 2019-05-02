@@ -71,6 +71,9 @@ footer {
   max-width: 600px;
   margin: 0 auto;
 }
+.info-item > .content {
+  font-size: 1.4em;
+}
 </style>
 
 <template >
