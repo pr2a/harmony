@@ -4,7 +4,7 @@
   flex-wrap: wrap;
   align-content: flex-start;
   align-items: space-around;
-  background-color: #c9c0bb;
+  background-color: white;
   outline: none;
   position: absolute;
   border-radius: 0.5em;
@@ -15,7 +15,7 @@
     position: relative;
     border-radius: 7%;
     &.selected {
-      box-shadow: 0 0 0 0.4em rgba(255, 255, 255, 0.8);
+      box-shadow: 0 0 0 0.4em rgba(0, 0, 0, 0.8);
     }
     .chip {
       position: absolute;

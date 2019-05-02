@@ -13,7 +13,7 @@
   border-radius: 0.5em;
   color: #59504d;
   font-family: Fira Sans, sans-serif;
-  border: 0.15em solid #979797;
+  // border: 0.15em solid #979797;
   overflow: auto;
   background-color: #fff;
   margin: 0 auto;

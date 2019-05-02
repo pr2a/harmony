@@ -4,7 +4,8 @@
 }
 .email-input {
   border-radius: 0.5em;
-  border: 0.15em solid #979797;
+  border: 0;
+  // border: 0.15em solid #979797;
   padding: 1em;
   background-color: #fff;
   display: block;
