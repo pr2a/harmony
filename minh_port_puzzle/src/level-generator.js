@@ -42,15 +42,25 @@ export function levels() {
   var difficulty;
   for (var i = 1; i < 101; i++) {
     // Figure out a number to end on
+    
     difficulty = getDifficulty(i)
     var minMoves = difficulty*3
     var maxMoves = difficulty*4
-    var parity = difficulty
+    var parity = i + 3
     var moves = randRange(minMoves, maxMoves);
     var levelDict = {}
     // Create the end of the level
     var data = [];
-    var colors = [];
+    
+    // // Figure out the number of moves
+    if ( i == 1){
+      data = [1,0,0,1,1,0,1,1,0];
+      levelDict['contents'] = data
+      levelDict["initialSelected"] = {}
+      levelDict["initialSelected"]["x"] = 0
+      levelDict["initialSelected"]["y"] = 0
+      outputArray[i-1] = levelDict
+    } else {
     for (var j = 0; j < 9; j++) {
       data.push(parity);
     }
@@ -59,46 +69,43 @@ export function levels() {
 
     data[selected] -= 1;
 
-    // // Figure out the number of moves
-   
-    var j = 0; 
-    var hitZero = 0;
-    var maxZero = 1;
-  
-    while (j < maxMoves) {
+    for (var j = 0; j < moves; j++) {
       // Decide which "direction" I'm going to move by rolling a dice
       var roll = -1;
       do {
         roll = randRange(0,4);
       } while(!possible(data, selected, roll))
-      j = j + 1;
-      
+
       switch(roll) {
         case 0: // Up
           selected -= 3;
           solution.push("\"d\"");
+          if(j+1 != moves) {
+              data[selected] -= 1;
+          }
           break;
         case 1: // Down
           selected += 3;
           solution.push("\"u\"");
+          if(j+1 != moves) {
+          data[selected] -= 1;
+          }
           break;
         case 2: // Left
           selected -= 1;
           solution.push("\"r\"");
+          if(j+1 != moves) {
+              data[selected] -= 1;
+          }
           break;
         case 3: // Right
           selected += 1;
           solution.push("\"l\"");
+          if(j+1 != moves) {
+              data[selected] -= 1;
+          }
           break;
       }
-      // if(j+1 <= maxMoves ) {
-      //   data[selected] -= 1;
-      //   if (data[selected] == 0){
-      //       hitZero += 1;
-      //   }
-      //  }
-
-       
     }
 
     // Record the ending location
@@ -108,10 +115,11 @@ export function levels() {
     // Get the solution
     solution = solution.reverse();
     levelDict["contents"] = data;
-    levelDict["initialSelected"] = {}
-    levelDict["initialSelected"]["x"] = x
-    levelDict["initialSelected"]["y"] = y
+    levelDict["initialSelected"] = {};
+    levelDict["initialSelected"]["x"] = x;
+    levelDict["initialSelected"]["y"] = y;
     outputArray[i-1] = levelDict
   }
+}
   return outputArray
 }
