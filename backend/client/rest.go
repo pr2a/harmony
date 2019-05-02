@@ -24,6 +24,7 @@ type Winner struct {
 	Players  string `json:players`
 	Balances string `json:balances`
 	Success  bool   `json:success`
+	Txid     string `json:txid`
 }
 
 //Player is the structure returned from /result rest call
@@ -32,6 +33,7 @@ type Player struct {
 	Players  []string `json:players`
 	Balances []string `json:balances`
 	Success  bool     `json:success`
+	Txid     string   `json:txid`
 }
 
 //PlayResp is the structure returned from /play rest call
@@ -39,6 +41,7 @@ type PlayResp struct {
 	Players  []string `json:players`
 	Balances []string `json:balances`
 	Success  bool     `json:success`
+	Txid     string   `json:txid`
 }
 
 // RPCMsg is a structure to exchange info between RPC client
@@ -66,9 +69,7 @@ func GetLeaders() []p2p.Peer {
 
 // PickALeader return a random leader from the leader list
 func PickALeader() p2p.Peer {
-	//	return leaders[rand.Intn(len(leaders))]
-	// FIXME: leo testing only
-	return leaders[0]
+	return leaders[rand.Intn(len(leaders))]
 }
 
 //GetWinner return the result of a rest api call
@@ -188,6 +189,7 @@ func FundMe(leader p2p.Peer, account string, done chan (RPCMsg)) {
 	}
 }
 
+// AccountBalanceMsg ...
 type AccountBalanceMsg struct {
 	Balance string // Account balance
 	Err     error  // Error
