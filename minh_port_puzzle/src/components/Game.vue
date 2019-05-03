@@ -36,18 +36,40 @@
     }
   }
 }
+
+.demo-arrow-1 {
+  position: absolute;
+  z-index: 2;
+  display: inline-block;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0.5;
+  background-size: cover;
+  background-image: url(../assets/pointer-dark.png);
+  transform: translateX(5%);
+}
+
+.demo-arrow-2 {
+  position: absolute;
+  z-index: 2;
+  display: inline-block;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0.5;
+  background-size: cover;
+  background-image: url(../assets/arrow-loop-dark-further.png);
+  transform: translateX(5%);
+}
 </style>
 
 <template>
   <div class="board" :tabindex="tabIndex" :style="boardStyle">
-    <div v-if="gameLevel === 1"
-      class="demo-arrow-1"
-    >
-    </div>
-        <div v-if="gameLevel === 2"
-      class="demo-arrow-2"
-    >
-    </div>
+    <div v-if="gameLevel === 1" class="demo-arrow-1"></div>
+    <div v-if="gameLevel === 2" class="demo-arrow-2"></div>
     <div
       ref="cells"
       v-for="(value, i) in cells"
