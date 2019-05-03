@@ -301,13 +301,12 @@ func handlePostPlay(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	key := keys[0]
-	stake, ok := q["stake"]
+	stakes, ok := q["stake"]
 	if !ok {
 		http.Error(w, "missing account key", http.StatusBadRequest)
 		return
 	}
-
-	_ = stake
+	stake := stakes[0]
 
 	// find the existing account from firebase DB
 	accounts := db.FindAccount("privkey", key)
