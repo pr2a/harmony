@@ -79,13 +79,9 @@ func main() {
 
 	var err error
 	db, err = fdb.NewFdb(dbKeyFile, dbProject)
-
 	if err != nil || db == nil {
 		log.Fatalf("Failed to create Fdb client: %v", err)
-		os.Exit(1)
 	}
-
-	// Close FDB when done.
 	defer db.CloseFdb()
 
 	http.HandleFunc("/reg", handlePostReg)
