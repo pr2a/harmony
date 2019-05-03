@@ -232,7 +232,7 @@ footer {
         <stake-row v-if="!gameStarted" @stake="startGame" :style="{ width: boardSizePx + 'px' }"></stake-row>
         <footer class="flex-vertical" :style="{ width: boardSizePx + 'px' }" v-if="gameStarted">
           <div class="flex-horizontal action-row">
-            <span class="flex-grow level-text">Lv: {{ levelIndex + 1 }} / {{ levels.length }}</span>
+            <span class="flex-grow level-text">Level: {{ levelIndex + 1 }} / {{ levels.length }}</span>
             <button
               class="btn-primary"
               @click="resetLevel"
