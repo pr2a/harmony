@@ -169,7 +169,7 @@ footer {
   <div id="app">
     <div class="main-container appearing">
       <div class="game-container" ref="gameContainer">
-        <a :href="'https://0.harmony.one/#/address/0x' + globalData.account" class="logo"></a>
+        <a :href="'https://0.harmony.one/#/address/0x' + globalData.address" class="logo"></a>
         <div class="score-container" :style="{ width: boardSizePx + 'px' }">
           <div class="balance info-item">
             <div class="label">
@@ -356,7 +356,7 @@ export default {
         return;
       }
       service
-        .completeLevel(this.levelIndex, this.level, moves)
+        .completeLevel(this.globalData.account, this.levelIndex, moves)
         .then(rewards => {
           this.levelIndex++;
           let timeChange = 15;

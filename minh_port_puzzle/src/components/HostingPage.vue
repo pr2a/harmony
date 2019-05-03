@@ -55,8 +55,8 @@ export default {
         this.step++;
       });
     },
-    stake(value) {
-      service.stakeToken(value).then(() => {
+    stake(key, value) {
+      service.stakeToken(key, value).then(() => {
         this.step = PuzzlePageIndex;
       });
     },

@@ -1,75 +1,70 @@
 import axios from "axios";
 import store from "./store";
 
-const HTTP_BACKEND_URL = `https://us-central1-harmony-puzzle.cloudfunctions.net`;
-// const HTTP_BACKEND_URL = 'https://harmony-puzzle-backend.appspot.com'
+//const HTTP_BACKEND_URL = `https://us-central1-harmony-puzzle.cloudfunctions.net`;
+//const HTTP_BACKEND_URL = `https://harmony-puzzle-backend.appspot.com`;
+const HTTP_BACKEND_URL = `https://d17b3244-d36f-40a1-959d-6a289de67a5b.mock.pstmn.io`;
 function sendPost(url, params) {
     params.key = PRIV_KEY;
     // return Promise.resolve('fake data');
     return axios.post(HTTP_BACKEND_URL + url, params, {
-            headers : {
-                'Content-Type' : 'application/x-www-form-urlencoded; charset=UTF-8'
-            }
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'
+        }
     });
 }
 
 const PRIV_KEY = '1';
 export default {
-    register(email) {
+    register(token) {
         return sendPost(
             "/reg",
             {
-                id: email
+                token: token
             }
         ).then((res) => {
             console.log("register", res.data);
             store.addTx({
                 action: "Register",
-                email: res.data.email,
-                account: res.data.account,
-                timestamp: res.data.timestamp,
+                address: res.data.address,
+                account: res.data.privkey,
                 id: res.data.txid,
-                tokenChange: 100
+                uid: res.data.uid,
+                tokenChange: res.data.balance
             });
         })
     },
-    stakeToken(value) {
+    stakeToken(key, stakeAmount) {
         return sendPost(
             "/play",
             {
-                stake: value
+                accountKey: key,
+                stake: stakeAmount
             }
         ).then((res) => {
             console.log("stakeToken", res.data);
             store.addTx({
                 action: "Stake",
-                timestamp: res.data.timestamp,
-                value: value,
                 id: res.data.txid,
-                tokenChange: -value
             });
         });
     },
-    completeLevel(levelIndex, board, moves) {
+    completeLevel(key, height, moves) {
         return sendPost(
             "/finish",
             {
-                level: levelIndex,
-                board: board,
-                moves: moves,
-                txId: store.getStakeTxId()
+                accountKey: key,
+                height: height,
+                sequence: moves
             }
         ).then((res) => {
             console.log('completeLevel', res.data);
             let rewards = 5 * store.getMultiplier();
             store.addTx({
                 action: "CompleteLevel",
-                timestamp: res.data.timestamp,
-                tokenChange: rewards,
                 id: res.data.txid,
-                level: res.data.level
-             });
-             return rewards
+            });
+            return rewards
         });
     }
 };
