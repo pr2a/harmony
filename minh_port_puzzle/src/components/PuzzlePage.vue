@@ -222,6 +222,7 @@ footer {
               :board-size-px="boardSizePx"
               :game="level"
               :gameLevel="levelIndex+1"
+              :gameStarted="gameStarted"
               :gameEnded="gameEnded"
               @completeLevel="onLevelComplete"
               v-if="i === levelIndex"

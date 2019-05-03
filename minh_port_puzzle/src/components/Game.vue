@@ -151,7 +151,8 @@ export default {
     tabIndex: { type: Number, default: 1 },
     boardSizePx: { type: Number, default: 0 },
     animationTimeMs: { type: Number, default: 150 },
-    gameEnded: Boolean
+    gameEnded: Boolean,
+    gameStarted: Boolean
   },
   data() {
     return {
@@ -217,7 +218,8 @@ export default {
     },
     runKeyboardControl(move) {
       var listenKeysOn = this.listenOwnKeyEventsOnly ? this.$el : document;
-      var h = function(e) {
+      var h = e => {
+        if (!this.gameStarted) return;
         var m = keyMap[e.keyCode];
         if (m == null) return;
         e.preventDefault();
@@ -233,7 +235,8 @@ export default {
     },
 
     runTouchControl(move) {
-      var sw = createSwipeListener(function(m) {
+      var sw = createSwipeListener(m => {
+        if (!this.gameStarted) return;
         // Add sound before any move.
         playMoveSound();
         move(m);
