@@ -2,6 +2,7 @@
 .host {
   max-width: 600px;
   margin: 0 auto;
+  height: 100%;
 }
 </style>
 
