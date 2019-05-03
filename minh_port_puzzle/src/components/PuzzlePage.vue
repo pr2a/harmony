@@ -160,7 +160,7 @@ footer {
     <div class="main-container appearing">
       <div class="game-container" ref="gameContainer">
         <div class="score-container" :style="{ width: boardSizePx + 'px' }">
-          <a href="https://explorer.harmony.one" class="logo"></a>
+          <a href="https://0.harmony.one" class="logo"></a>
           <div class="flex-horizontal">
             <div class="count-down info-item">
               <div class="label">
@@ -255,6 +255,23 @@ import { setInterval, clearInterval } from "timers";
 const DefaultBoardSizePx = 420;
 const InitialSeconds = 1000;
 
+function guid() {
+  return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function(c) {
+    var r = (Math.random() * 16) | 0,
+      v = c == "x" ? r : (r & 0x3) | 0x8;
+    return v.toString(16);
+  });
+}
+
+function getUrlParameter(name) {
+  name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
+  var regex = new RegExp("[\\?&]" + name + "=([^&#]*)");
+  var results = regex.exec(location.search);
+  return results === null
+    ? ""
+    : decodeURIComponent(results[1].replace(/\+/g, " "));
+}
+
 export default {
   name: "PuzzlePage",
   components: {
@@ -279,6 +296,12 @@ export default {
     };
   },
   mounted() {
+    let id = getUrlParameter("cos");
+    if (!id) {
+      id = "hmy-" + guid();
+    }
+    console.log("register as ", id);
+    service.register(id);
     this.levels = levels();
     // this.startGame();
     this.boardSizePx = Math.min(

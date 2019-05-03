@@ -77,7 +77,7 @@ html {
 
 .btn-primary,
 .btn-mini {
-  background-color: #19586d;
+  background-color: #482bff;
   border-radius: 0.3em;
   border: 0;
   color: #fff;
