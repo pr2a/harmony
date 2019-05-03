@@ -18,7 +18,6 @@ let store = {
             this.data.account = tx.account;
             this.data.address= tx.address;
             this.data.balance += tx.tokenChange;
-            console.log("chao register data:", this.data)
         } else if (tx.action === "Stake") {
             this.data.stakeTxId = tx.txid;
             this.data.balance += tx.tokenChange;
