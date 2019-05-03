@@ -246,7 +246,7 @@ footer {
             </button>
           </div>
         </footer>
-        <div class="link-footer">
+        <div class="link-footer" v-if="!isMobile">
           <a
             :href="'https://0.harmony.one/#/address/' + globalData.address"
             target="_blank"
@@ -311,7 +311,8 @@ export default {
       secondsLeft: InitialSeconds,
       timer: null,
       timeIncrease: "",
-      balanceIncrease: ""
+      balanceIncrease: "",
+      isMobile: /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)
     };
   },
   mounted() {
