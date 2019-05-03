@@ -242,9 +242,6 @@ footer {
             </button>
           </div>
         </footer>
-        <div class="link-footer">
-          <a class="link" href="https://0.harmony.one">View Transactions</a>
-        </div>
       </div>
     </div>
   </div>
