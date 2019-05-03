@@ -193,6 +193,9 @@ type postRegResponseBody struct {
 }
 
 func handlePostReg(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Methods", "POST,GET,OPTIONS,PUT,DELETE")
+	w.Header().Set("Access-Control-Allow-Headers", "Content-Type,Accept")
 	ctx := appengine.NewContext(r)
 	if r.URL.Path != "/reg" {
 		http.NotFound(w, r)
@@ -295,6 +298,10 @@ type postPlayResponseBody struct {
 }
 
 func handlePostPlay(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Methods", "POST,GET,OPTIONS,PUT,DELETE")
+	w.Header().Set("Access-Control-Allow-Headers", "Content-Type,Accept")
+
 	ctx := appengine.NewContext(r)
 	if r.URL.Path != "/play" {
 		http.NotFound(w, r)
@@ -350,6 +357,9 @@ type postFinishResponseBody struct {
 }
 
 func handlePostFinish(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Methods", "POST,GET,OPTIONS,PUT,DELETE")
+	w.Header().Set("Access-Control-Allow-Headers", "Content-Type,Accept")
 	ctx := appengine.NewContext(r)
 	if r.URL.Path != "/finish" {
 		http.NotFound(w, r)
@@ -428,9 +438,6 @@ func handlePostFinish(w http.ResponseWriter, r *http.Request) {
 func jsonResp(
 	ctx context.Context, w http.ResponseWriter, code int, res interface{},
 ) {
-	w.Header().Set("Access-Control-Allow-Origin", "*")
-	w.Header().Set("Access-Control-Allow-Methods", "POST,GET,OPTIONS,PUT,DELETE")
-	w.Header().Set("Access-Control-Allow-Headers", "Content-Type,Accept")
 	resBytes, err := json.Marshal(res)
 	if err != nil {
 		app_log.Errorf(ctx, "cannot marshal response %#v: %v", res, err)
