@@ -225,6 +225,8 @@ func handlePostReg(w http.ResponseWriter, r *http.Request) {
 	if len(accounts) == 0 { // didn't find the account
 		// generate the key
 		resBody.Account, resBody.PrivKey = utils.GenereateKeys()
+		// TODO ek – fix this later somehow...
+		resBody.Balance = "10000000000000000000"
 		leader := restclient.PickALeader()
 
 		go restclient.FundMe(leader, resBody.Account, rpcDone)
@@ -264,20 +266,21 @@ func handlePostReg(w http.ResponseWriter, r *http.Request) {
 		resBody.Account = account.Address
 		resBody.PrivKey = account.PrivKey
 		resCode = http.StatusOK
-	}
 
-	leader = p2p.Peer{
-		IP:   account.Leader,
-		Port: account.Port,
-	}
+		leader = p2p.Peer{
+			IP:   account.Leader,
+			Port: account.Port,
+		}
 
-	chanBalanceMsg := make(chan restclient.AccountBalanceMsg)
-	go restclient.GetBalance(leader, account.Address, chanBalanceMsg)
-	balanceMsg := <-chanBalanceMsg
-	if balanceMsg.Err != nil {
-		app_log.Infof(ctx, "get balance failure: %#v", balanceMsg.Err)
-		http.Error(w, "get balance failure", http.StatusGatewayTimeout)
-		return
+		chanBalanceMsg := make(chan restclient.AccountBalanceMsg)
+		go restclient.GetBalance(leader, account.Address, chanBalanceMsg)
+		balanceMsg := <-chanBalanceMsg
+		if balanceMsg.Err != nil {
+			app_log.Infof(ctx, "get balance failure: %#v", balanceMsg.Err)
+			http.Error(w, "get balance failure", http.StatusGatewayTimeout)
+			return
+		}
+		resBody.Balance = balanceMsg.Balance
 	}
 
 	jsonResp(ctx, w, resCode, resBody)
