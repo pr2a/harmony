@@ -350,7 +350,7 @@ export default {
         return;
       }
       service
-        .completeLevel(this.globalData.account, this.levelIndex, moves)
+        .completeLevel(this.globalData.account, this.levelIndex + 1, moves)
         .then(rewards => {
           this.levelIndex++;
           let timeChange = 15;
