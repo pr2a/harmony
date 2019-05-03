@@ -188,6 +188,7 @@ type postRegResponseBody struct {
 	Account string `json:"address"`
 	PrivKey string `json:"privkey"`
 	UID     string `json:"uid"`
+	Txid    string `json:"txid"`
 	Balance string `json:"balance"`
 }
 
@@ -220,19 +221,19 @@ func handlePostReg(w http.ResponseWriter, r *http.Request) {
 	var resCode int
 
 	// register the new account
-	var address, priv string
+	var resBody postRegResponseBody
 	if len(accounts) == 0 { // didn't find the account
 		// generate the key
-		address, priv = utils.GenereateKeys()
+		resBody.Account, resBody.PrivKey = utils.GenereateKeys()
 		leader := restclient.PickALeader()
 
-		go restclient.FundMe(leader, address, rpcDone)
+		go restclient.FundMe(leader, resBody.Account, rpcDone)
 
 		player := fdb.PzPlayer{
 			Email:   "",
 			CosID:   uid,
-			PrivKey: priv,
-			Address: address,
+			PrivKey: resBody.PrivKey,
+			Address: resBody.Account,
 			Leader:  leader.IP,
 			Port:    leader.Port,
 		}
@@ -247,6 +248,8 @@ func handlePostReg(w http.ResponseWriter, r *http.Request) {
 		if msg := <-rpcDone; msg.Err != nil {
 			http.Error(w, "fund me failure", http.StatusGatewayTimeout)
 			return
+		} else {
+			resBody.Txid = msg.Txid
 		}
 
 		//TODO: send email to player
@@ -258,8 +261,8 @@ func handlePostReg(w http.ResponseWriter, r *http.Request) {
 	} else {
 		// we should find only one account, if more than one, just get the first one
 		account = accounts[0]
-		address = account.Address
-		priv = account.PrivKey
+		resBody.Account = account.Address
+		resBody.PrivKey = account.PrivKey
 		resCode = http.StatusOK
 	}
 
@@ -278,12 +281,7 @@ func handlePostReg(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Add("Access-Control-Allow-Origin", "*")
-	jsonResp(ctx, w, resCode, postRegResponseBody{
-		Account: address,
-		PrivKey: priv,
-		UID:     uid,
-		Balance: balanceMsg.Balance,
-	})
+	jsonResp(ctx, w, resCode, resBody)
 }
 
 type postPlayResponseBody struct {
