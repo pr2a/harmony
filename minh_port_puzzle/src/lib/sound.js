@@ -15,6 +15,11 @@ playAudio = audio => {
   audio.play();
 };
 
+playAudioLoop =  audio => {
+  audio.play();
+  audio.loop = true;
+}
+
 stopAudio = audio => {
   audio.pause();
   audio.currentTime = 0;
@@ -38,7 +43,7 @@ playEndSound = () => {
 };
 
 playBackgroundMusic = () => {
-  playAudio(backgroundMusicAudio);
+  playAudioLoop(backgroundMusicAudio);
 };
 
 stopBackgroundMusic = () => {
