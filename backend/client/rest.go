@@ -185,7 +185,7 @@ func getClient(url string, prefix string, result interface{}) error {
 
 // FundMe call /fundme rest call on leader
 func FundMe(leader p2p.Peer, account string, done chan (RPCMsg)) {
-	url := fmt.Sprintf("http://%s:%s/fundme?key=0x%s", leader.IP, leader.Port, account)
+	url := fmt.Sprintf("http://%s:%s/fundme?key=%s", leader.IP, leader.Port, account)
 	var player = new(Player)
 
 	err := getClient(url, "/fundme", player)
@@ -205,7 +205,7 @@ type AccountBalanceMsg struct {
 
 // GetBalance call /balance rest call on leader
 func GetBalance(leader p2p.Peer, account string, done chan AccountBalanceMsg) {
-	url := fmt.Sprintf("http://%s:%s/balance?key=0x%s", leader.IP, leader.Port, account)
+	url := fmt.Sprintf("http://%s:%s/balance?key=%s", leader.IP, leader.Port, account)
 	var player = new(Player)
 	var msg AccountBalanceMsg
 

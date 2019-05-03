@@ -28,5 +28,5 @@ func GenereateKeys() (string, string) {
 	privateKey := crypto.FromECDSA(priKey)
 	address := crypto.PubkeyToAddress(priKey.PublicKey)
 
-	return hex.EncodeToString(address.Bytes()), hex.EncodeToString(privateKey)
+	return address.Hex(), hex.EncodeToString(privateKey)
 }
