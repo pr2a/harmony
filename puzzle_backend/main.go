@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
+	"math/rand"
 	"net/http"
 	"os"
 	"path"
@@ -180,6 +181,14 @@ func getUID(token string) (string, error) {
 	return resBody.Data.UID, nil
 }
 
+func getRandomFakeUID() string {
+    var bytes []byte
+	for i := 0; i < 16; i++ {
+        bytes = append(bytes, byte(rand.Intn(256)))
+	}
+	return hexutil.Encode(bytes[:])
+}
+
 type msgBody struct {
 	Msg string `json:"msg"`
 }
@@ -193,6 +202,9 @@ type postRegResponseBody struct {
 }
 
 func handlePostReg(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Methods", "POST,GET,OPTIONS,PUT,DELETE")
+	w.Header().Set("Access-Control-Allow-Headers", "Content-Type,Accept")
 	ctx := appengine.NewContext(r)
 	if r.URL.Path != "/reg" {
 		http.NotFound(w, r)
@@ -200,41 +212,51 @@ func handlePostReg(w http.ResponseWriter, r *http.Request) {
 	}
 	q := r.URL.Query()
 
-	tokens, ok := q["token"]
-	if !ok {
-		http.Error(w, "missing token", http.StatusBadRequest)
-		return
+	var err error
+	var uid string
+	var account *fdb.PzPlayer
+	var accounts []*fdb.PzPlayer
+	if tokens, ok := q["token"]; !ok {
+		app_log.Infof(ctx, "handlePostReg: no token; entering guest mode")
+		uid = ""
+	} else {
+		token := tokens[0]
+		uid, err = getUID(token)
+		if err != nil {
+			app_log.Infof(ctx, "handlePostReg: getUID returned %v", err)
+			http.Error(w, "", http.StatusUnauthorized)
+			return
+		}
+		app_log.Infof(ctx, "handlePostReg: UID %#v logging in", uid)
+		// find the existing account from firebase DB
+		accounts = db.FindAccount("cosid", uid)
 	}
-	token := tokens[0]
-	uid, err := getUID(token)
-	if err != nil {
-		app_log.Infof(ctx, "handlePostReg: getUID returned %#v", err)
-		http.Error(w, "", http.StatusUnauthorized)
-		return
-	}
-	app_log.Infof(ctx, "handlePostReg: UID %#v logging in", uid)
 
 	rpcDone := make(chan (restclient.RPCMsg))
-
-	var account *fdb.PzPlayer
-	// find the existing account from firebase DB
-	accounts := db.FindAccount("cosid", uid)
-	var resCode int
-
-	// register the new account
 	resBody := postRegResponseBody{UID: uid}
-	if len(accounts) == 0 { // didn't find the account
+	var resCode int
+	if len(accounts) == 0 {
+		// didn't find the account (uid != "") or guest mode (uid == "")
 		// generate the key
 		resBody.Account, resBody.PrivKey = utils.GenereateKeys()
 		// TODO ek – fix this later somehow...
-		resBody.Balance = "10000000000000000000"
+		resBody.Balance = "100000000000000000000"
 		leader := restclient.PickALeader()
 
 		go restclient.FundMe(leader, resBody.Account, rpcDone)
 
+		// register the new account
+		var cosid string
+		if uid == "" {
+			// guest mode; try to create a unique account
+			cosid = getRandomFakeUID()
+			app_log.Infof(ctx, "handlePostReg: using guest UID %#v", cosid)
+		} else {
+			cosid = uid
+		}
 		player := fdb.PzPlayer{
 			Email:   "",
-			CosID:   uid,
+			CosID:   cosid,
 			PrivKey: resBody.PrivKey,
 			Address: resBody.Account,
 			Leader:  leader.IP,
@@ -295,6 +317,10 @@ type postPlayResponseBody struct {
 }
 
 func handlePostPlay(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Methods", "POST,GET,OPTIONS,PUT,DELETE")
+	w.Header().Set("Access-Control-Allow-Headers", "Content-Type,Accept")
+
 	ctx := appengine.NewContext(r)
 	if r.URL.Path != "/play" {
 		http.NotFound(w, r)
@@ -350,6 +376,9 @@ type postFinishResponseBody struct {
 }
 
 func handlePostFinish(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Methods", "POST,GET,OPTIONS,PUT,DELETE")
+	w.Header().Set("Access-Control-Allow-Headers", "Content-Type,Accept")
 	ctx := appengine.NewContext(r)
 	if r.URL.Path != "/finish" {
 		http.NotFound(w, r)
@@ -428,9 +457,6 @@ func handlePostFinish(w http.ResponseWriter, r *http.Request) {
 func jsonResp(
 	ctx context.Context, w http.ResponseWriter, code int, res interface{},
 ) {
-	w.Header().Set("Access-Control-Allow-Origin", "*")
-	w.Header().Set("Access-Control-Allow-Methods", "POST,GET,OPTIONS,PUT,DELETE")
-	w.Header().Set("Access-Control-Allow-Headers", "Content-Type,Accept")
 	resBytes, err := json.Marshal(res)
 	if err != nil {
 		app_log.Errorf(ctx, "cannot marshal response %#v: %v", res, err)
