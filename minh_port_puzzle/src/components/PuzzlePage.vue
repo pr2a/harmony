@@ -329,6 +329,7 @@ export default {
   },
   methods: {
     startGame() {
+      playBackgroundMusic();
       this.gameStarted = true;
       this.gameEnded = false;
       this.levelIndex = 0;
@@ -364,11 +365,13 @@ export default {
         });
     },
     endGame() {
+      stopBackgroundMusic()
       this.gameEnded = true;
       this.gameStarted = false;
       store.data.stake = 20;
       clearInterval(this.timer);
       this.timer = null;
+      playPostGameMusic();
     },
     restart() {
       this.gameEnded = false;
