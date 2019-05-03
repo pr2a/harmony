@@ -136,7 +136,7 @@ export default {
       this.globalData.stake += 20;
     },
     stakeToken() {
-      service.stakeToken(this.globalData.stake).then(() => {
+      service.stakeToken(this.globalData.account, this.globalData.stake).then(() => {
         this.$emit("stake", this.globalData.stake);
       });
     }
