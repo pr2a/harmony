@@ -142,7 +142,6 @@ html {
   color: #fff;
   padding: 0.5em;
   width: 5em;
-  margin-left: 1em;
   text-align: center;
   .content {
     margin-left: 0.5em;

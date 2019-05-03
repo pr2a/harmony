@@ -69,6 +69,7 @@ footer {
   height: 1.2em;
   width: 1.2em;
   background-image: url(../assets/dark-token.svg);
+  background-repeat: no-repeat;
   margin-right: 0.5em;
 }
 .stake-buttons {

@@ -1,6 +1,7 @@
 <style scoped lang="less">
 .score-container {
   margin: 0 auto 1em;
+  justify-content: space-between;
 }
 
 footer {
@@ -66,6 +67,7 @@ footer {
   margin-top: 1em;
 }
 .info-item {
+  font-size: 1.3em;
   .content {
     position: relative;
   }
@@ -153,47 +155,53 @@ footer {
 .level-text {
   font-weight: bold;
 }
+.logo {
+  display: block;
+}
+.link {
+  font-size: 0.8em;
+  text-align: center;
+  text-decoration: none;
+}
 </style>
 
 <template>
   <div id="app">
     <div class="main-container appearing">
       <div class="game-container" ref="gameContainer">
+        <a href="https://0.harmony.one" class="logo"></a>
         <div class="score-container" :style="{ width: boardSizePx + 'px' }">
-          <a href="https://0.harmony.one" class="logo"></a>
-          <div class="flex-horizontal">
-            <div class="count-down info-item">
-              <div class="label">
-                <div class="icon-clock"></div>
-              </div>
-              <div class="content">
-                <div
-                  class="seconds-left"
-                  :class="{ 'hurry-up': secondsLeft && secondsLeft <= 12, 'game-over': !secondsLeft }"
-                >{{ secondsLeft | time }}</div>
-                <transition>
-                  <span v-if="timeIncrease!=''" class="number-increase">
-                    {{
-                    timeIncrease
-                    }}
-                  </span>
-                </transition>
-              </div>
+          <div class="balance info-item">
+            <div class="label">
+              <div class="icon-token"></div>
             </div>
-            <div class="balance info-item">
-              <div class="label">
-                <div class="icon-token"></div>
-              </div>
-              <div class="content">
-                {{ globalData.balance }}
-                <transition>
-                  <span v-if="balanceIncrease!=''" class="number-increase">
-                    {{
-                    balanceIncrease
-                    }}
-                  </span>
-                </transition>
-              </div>
+            <div class="content">
+              {{ globalData.balance }}
+              <transition>
+                <span v-if="balanceIncrease!=''" class="number-increase">
+                  {{
+                  balanceIncrease
+                  }}
+                </span>
+              </transition>
+            </div>
+          </div>
+          <div class="count-down info-item">
+            <div class="label">
+              <div class="icon-clock"></div>
+            </div>
+            <div class="content">
+              <div
+                class="seconds-left"
+                :class="{ 'hurry-up': secondsLeft && secondsLeft <= 12, 'game-over': !secondsLeft }"
+              >{{ secondsLeft | time }}</div>
+              <transition>
+                <span v-if="timeIncrease!=''" class="number-increase">
+                  {{
+                  timeIncrease
+                  }}
+                </span>
+              </transition>
             </div>
           </div>
         </div>
@@ -233,7 +241,7 @@ footer {
           </div>
         </footer>
         <div class="link-footer">
-          <tx-history-link></tx-history-link>
+          <a class="link" href="https://0.harmony.one">View Transactions</a>
         </div>
       </div>
     </div>
@@ -253,7 +261,7 @@ import { levels } from "../level-generator";
 import { setInterval, clearInterval } from "timers";
 
 const DefaultBoardSizePx = 420;
-const InitialSeconds = 1000;
+const InitialSeconds = 30;
 
 function guid() {
   return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function(c) {
