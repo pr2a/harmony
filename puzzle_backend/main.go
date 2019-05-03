@@ -437,16 +437,16 @@ func handlePostFinish(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "payout failure", http.StatusGatewayTimeout)
 		return
 	}
-
-	rpcEndDone := make(chan (restclient.RPCMsg))
-	go restclient.EndGame(leader, key, rpcEndDone)
-	msgEnd := <-rpcEndDone
-
-	if msgEnd.Err != nil {
-		app_log.Infof(ctx, "/finish EndGame failed: %v", msgEnd.Err)
-		http.Error(w, "endgame failure", http.StatusGatewayTimeout)
-		return
-	}
+	//
+	//rpcEndDone := make(chan (restclient.RPCMsg))
+	//go restclient.EndGame(leader, key, rpcEndDone)
+	//msgEnd := <-rpcEndDone
+	//
+	//if msgEnd.Err != nil {
+	//	app_log.Infof(ctx, "/finish EndGame failed: %v", msgEnd.Err)
+	//	http.Error(w, "endgame failure", http.StatusGatewayTimeout)
+	//	return
+	//}
 
 	jsonResp(ctx, w, http.StatusOK, postFinishResponseBody{
 		Reward: "",
