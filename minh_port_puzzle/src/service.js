@@ -2,6 +2,7 @@ import axios from "axios";
 import store from "./store";
 
 const HTTP_BACKEND_URL = `https://us-central1-harmony-puzzle.cloudfunctions.net`;
+// const HTTP_BACKEND_URL = 'https://harmony-puzzle-backend.appspot.com'
 function sendPost(url, params) {
     params.key = PRIV_KEY;
     // return Promise.resolve('fake data');
@@ -60,14 +61,15 @@ export default {
             }
         ).then((res) => {
             console.log('completeLevel', res.data);
-            res.data.rewards = 4;
+            let rewards = 5 * store.getMultiplier();
             store.addTx({
                 action: "CompleteLevel",
                 timestamp: res.data.timestamp,
-                tokenChange: res.data.rewards,
+                tokenChange: rewards,
                 id: res.data.txid,
                 level: res.data.level
              });
+             return rewards
         });
     }
 };

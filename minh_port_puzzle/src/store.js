@@ -5,7 +5,8 @@ let store = {
         stakeTxId: '',
         balance: 100,
         email: '',
-        account: ''
+        account: '',
+        stake: 20
     },
     addTx(tx) {
         this.data.txs.push(tx);
@@ -22,6 +23,9 @@ let store = {
     },
     getStakeTxId() {
         return this.data.stakeTxId;
+    },
+    getMultiplier() {
+        return this.data.stake / 20;
     }
 };
 

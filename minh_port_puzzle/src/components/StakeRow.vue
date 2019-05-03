@@ -97,14 +97,14 @@ footer {
 <template >
   <div class="flex-horizontal stake-row">
     <div class="stake-buttons flex-horizontal">
-      <button class="btn-mini" @click="minus" :disabled="stake <= 20">
+      <button class="btn-mini" @click="minus" :disabled="globalData.stake <= 20">
         <font-awesome-icon icon="minus"></font-awesome-icon>
       </button>
       <div class="stake-amount flex-hv-center">
         <div class="icon-dark-token"></div>
-        {{ stake }}
+        {{ globalData.stake }}
       </div>
-      <button class="btn-mini" @click="plus" :disabled="stake + 20 > globalData.balance">
+      <button class="btn-mini" @click="plus" :disabled="globalData.stake + 20 > globalData.balance">
         <font-awesome-icon icon="plus"></font-awesome-icon>
       </button>
     </div>
@@ -123,22 +123,21 @@ export default {
   name: "StakeRow",
   data() {
     return {
-      globalData: store.data,
-      stake: 20
+      globalData: store.data
     };
   },
   methods: {
     minus() {
-      if (this.stake <= 20) return;
-      this.stake -= 20;
+      if (this.globalData.stake <= 20) return;
+      this.globalData.stake -= 20;
     },
     plus() {
-      if (this.stake + 20 > this.globalData.balance) return;
-      this.stake += 20;
+      if (this.globalData.stake + 20 > this.globalData.balance) return;
+      this.globalData.stake += 20;
     },
     stakeToken() {
-      service.stakeToken(this.stake).then(() => {
-        this.$emit("stake", this.stake);
+      service.stakeToken(this.globalData.stake).then(() => {
+        this.$emit("stake", this.globalData.stake);
       });
     }
   }

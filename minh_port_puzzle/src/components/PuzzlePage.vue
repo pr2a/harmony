@@ -353,23 +353,24 @@ export default {
         this.endGame();
         return;
       }
-      service.completeLevel(this.levelIndex, this.level, moves).then(() => {
-        this.levelIndex++;
-        let timeChange = 15;
-        this.secondsLeft += timeChange;
-        this.timeIncrease = `+${timeChange}`;
-        let balanceChange = 4;
-        // this.globalData.balance += balanceChange;
-        this.balanceIncrease = `+${balanceChange}`;
-        Vue.nextTick(() => {
-          this.timeIncrease = "";
-          this.balanceIncrease = "";
+      service
+        .completeLevel(this.levelIndex, this.level, moves)
+        .then(rewards => {
+          this.levelIndex++;
+          let timeChange = 15;
+          this.secondsLeft += timeChange;
+          this.timeIncrease = `+${timeChange}`;
+          this.balanceIncrease = `+${rewards}`;
+          Vue.nextTick(() => {
+            this.timeIncrease = "";
+            this.balanceIncrease = "";
+          });
         });
-      });
     },
     endGame() {
       this.gameEnded = true;
       this.gameStarted = false;
+      store.data.stake = 20;
       clearInterval(this.timer);
       this.timer = null;
     },
