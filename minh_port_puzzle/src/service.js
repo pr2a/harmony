@@ -33,7 +33,6 @@ export default {
         return sendPost(
             `/play?accountKey=${key}&stake=${stakeAmount}`,
         ).then((res) => {
-            console.log("stakeToken", res.data);
             store.addTx({
                 action: "Stake",
                 id: res.data.txid,
@@ -50,7 +49,6 @@ export default {
                 sequence: moves
             }
         ).then((res) => {
-            console.log('completeLevel', res.data);
             let rewards = 5 * store.getMultiplier();
             store.addTx({
                 action: "CompleteLevel",

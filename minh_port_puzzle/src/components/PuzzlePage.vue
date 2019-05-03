@@ -305,7 +305,6 @@ export default {
   },
   mounted() {
     let id = getParameterByName("cos");
-    console.log("register as ", id);
     service.register(id);
     this.levels = levels();
     // this.startGame();

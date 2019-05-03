@@ -250,7 +250,6 @@ export default {
       this.$emit("completeLevel", this.moves);
     },
     move(dir) {
-      console.log("minh move", this.moves);
       this.moves += dir;
       let diff = actions[dir];
       let x = clamp(this.position.x + diff.x, 0, 2);
