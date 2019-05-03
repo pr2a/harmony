@@ -183,7 +183,9 @@ definitions:
         description: user's account private key, hex-encoded
       txid:
         type: string
-        description: The player's Harmony account address.
+        description: |
+          ID of a transaction that funds the player account;
+          empty if funding has not occurred.
       balance:
         type: string
         description: |
