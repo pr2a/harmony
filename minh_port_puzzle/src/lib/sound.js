@@ -2,7 +2,9 @@ const moveSound = require('../assets/move.wav');
 const beginSound = require('../assets/begin.wav');
 const endSound = require('../assets/end.wav');
 const backgroundMusic = require('../assets/cryptic.mp3');
-const backgroundMusicAudio = new Audio(backgroundMusic)
+const postGameMusic = require('../assets/introspection.mp3')
+const backgroundMusicAudio = new Audio(backgroundMusic);
+const postGameMusicAudio = new Audio(postGameMusic);
 
 playSound = sound => {
   var audio = new Audio(sound);
@@ -41,6 +43,10 @@ playBackgroundMusic = () => {
 
 stopBackgroundMusic = () => {
   stopSound(backgroundMusicAudio);
+};
+
+playPostGameMusic = () => {
+  playAudio(postGameMusicAudio);
 };
 
 module.exports = {
