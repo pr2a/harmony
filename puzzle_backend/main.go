@@ -240,7 +240,7 @@ func handlePostReg(w http.ResponseWriter, r *http.Request) {
 		// generate the key
 		resBody.Account, resBody.PrivKey = utils.GenereateKeys()
 		// TODO ek – fix this later somehow...
-		resBody.Balance = "10000000000000000000"
+		resBody.Balance = "100000000000000000000"
 		leader := restclient.PickALeader()
 
 		go restclient.FundMe(leader, resBody.Account, rpcDone)
