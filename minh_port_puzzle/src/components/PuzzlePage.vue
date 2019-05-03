@@ -169,7 +169,11 @@ footer {
   <div id="app">
     <div class="main-container appearing">
       <div class="game-container" ref="gameContainer">
-        <a :href="'https://0.harmony.one/#/address/0x' + globalData.address" class="logo"></a>
+        <a
+          :href="'https://0.harmony.one/#/address/0x' + globalData.address"
+          class="logo"
+          target="_blank"
+        ></a>
         <div class="score-container" :style="{ width: boardSizePx + 'px' }">
           <div class="balance info-item">
             <div class="label">
@@ -365,7 +369,7 @@ export default {
         });
     },
     endGame() {
-      stopBackgroundMusic()
+      stopBackgroundMusic();
       this.gameEnded = true;
       this.gameStarted = false;
       store.data.stake = 20;
