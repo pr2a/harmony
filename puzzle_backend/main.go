@@ -210,6 +210,7 @@ func handlePostReg(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		app_log.Infof(ctx, "handlePostReg: getUID returned %#v", err)
 		http.Error(w, "", http.StatusUnauthorized)
+		return
 	}
 	app_log.Infof(ctx, "handlePostReg: UID %#v logging in", uid)
 
@@ -221,7 +222,7 @@ func handlePostReg(w http.ResponseWriter, r *http.Request) {
 	var resCode int
 
 	// register the new account
-	var resBody postRegResponseBody
+	resBody := postRegResponseBody{UID: uid}
 	if len(accounts) == 0 { // didn't find the account
 		// generate the key
 		resBody.Account, resBody.PrivKey = utils.GenereateKeys()
@@ -251,6 +252,9 @@ func handlePostReg(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "fund me failure", http.StatusGatewayTimeout)
 			return
 		} else {
+			app_log.Infof(ctx,
+				"handlePostReg: account %v has been funded in Tx %v",
+				resBody.Account, msg.Txid)
 			resBody.Txid = msg.Txid
 		}
 
