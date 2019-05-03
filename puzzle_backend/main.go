@@ -182,9 +182,9 @@ func getUID(token string) (string, error) {
 }
 
 func getRandomFakeUID() string {
-    var bytes []byte
+	var bytes []byte
 	for i := 0; i < 16; i++ {
-        bytes = append(bytes, byte(rand.Intn(256)))
+		bytes = append(bytes, byte(rand.Intn(256)))
 	}
 	return hexutil.Encode(bytes[:])
 }
