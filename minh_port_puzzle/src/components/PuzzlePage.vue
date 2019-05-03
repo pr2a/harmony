@@ -371,7 +371,7 @@ export default {
       store.data.stake = 20;
       clearInterval(this.timer);
       this.timer = null;
-      playPostGameMusic();
+      //playPostGameMusic();
     },
     restart() {
       this.gameEnded = false;
