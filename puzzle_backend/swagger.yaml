@@ -178,6 +178,9 @@ definitions:
       account:
         type: string
         description: The player's Harmony account address.
+      privkey:
+        type: string
+        description: user's account private key, hex-encoded
       txid:
         type: string
         description: The player's Harmony account address.
