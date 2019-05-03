@@ -270,12 +270,13 @@ function guid() {
   });
 }
 
-function getUrlParameter(name) {
+function getParameterByName(name) {
+  var undefined;
   name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
-  var regex = new RegExp("[\\?&]" + name + "=([^&#]*)");
-  var results = regex.exec(location.search);
+  var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"),
+    results = regex.exec(location.search);
   return results === null
-    ? ""
+    ? undefined
     : decodeURIComponent(results[1].replace(/\+/g, " "));
 }
 
@@ -303,10 +304,7 @@ export default {
     };
   },
   mounted() {
-    let id = getUrlParameter("cos");
-    if (!id) {
-      id = "hmy-" + guid();
-    }
+    let id = getParameterByName("cos");
     console.log("register as ", id);
     service.register(id);
     this.levels = levels();
