@@ -280,7 +280,6 @@ func handlePostReg(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.Header().Add("Access-Control-Allow-Origin", "*")
 	jsonResp(ctx, w, resCode, resBody)
 }
 
@@ -423,6 +422,9 @@ func handlePostFinish(w http.ResponseWriter, r *http.Request) {
 func jsonResp(
 	ctx context.Context, w http.ResponseWriter, code int, res interface{},
 ) {
+	w.Header().Add("Access-Control-Allow-Origin", "*")
+	w.Header().Add("Access-Control-Allow-Methods", "POST,GET,OPTIONS,PUT,DELETE")
+	w.Header().Add("Access-Control-Allow-Headers", "Content-Type,Accept")
 	resBytes, err := json.Marshal(res)
 	if err != nil {
 		app_log.Errorf(ctx, "cannot marshal response %#v: %v", res, err)
