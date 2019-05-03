@@ -351,7 +351,7 @@ type postFinishResponseBody struct {
 
 func handlePostFinish(w http.ResponseWriter, r *http.Request) {
 	ctx := appengine.NewContext(r)
-	if r.URL.Path != "/play" {
+	if r.URL.Path != "/finish" {
 		http.NotFound(w, r)
 		return
 	}
