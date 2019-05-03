@@ -186,6 +186,7 @@ type msgBody struct {
 
 type postRegResponseBody struct {
 	Account string `json:"address"`
+	PrivKey string `json:"privkey"`
 	UID     string `json:"uid"`
 	Balance string `json:"balance"`
 }
@@ -219,9 +220,10 @@ func handlePostReg(w http.ResponseWriter, r *http.Request) {
 	var resCode int
 
 	// register the new account
+	var address, priv string
 	if len(accounts) == 0 { // didn't find the account
 		// generate the key
-		address, priv := utils.GenereateKeys()
+		address, priv = utils.GenereateKeys()
 		leader := restclient.PickALeader()
 
 		go restclient.FundMe(leader, address, rpcDone)
@@ -256,6 +258,8 @@ func handlePostReg(w http.ResponseWriter, r *http.Request) {
 	} else {
 		// we should find only one account, if more than one, just get the first one
 		account = accounts[0]
+		address = account.Address
+		priv = account.PrivKey
 		resCode = http.StatusOK
 	}
 
@@ -275,7 +279,8 @@ func handlePostReg(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Add("Access-Control-Allow-Origin", "*")
 	jsonResp(ctx, w, resCode, postRegResponseBody{
-		Account: account.Address,
+		Account: address,
+		PrivKey: priv,
 		UID:     uid,
 		Balance: balanceMsg.Balance,
 	})
