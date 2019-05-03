@@ -69,7 +69,6 @@
 <template>
   <div class="board" :tabindex="tabIndex" :style="boardStyle">
     <div v-if="gameLevel === 1" class="demo-arrow-1"></div>
-    <div v-if="gameLevel === 2" class="demo-arrow-2"></div>
     <div
       ref="cells"
       v-for="(value, i) in cells"
