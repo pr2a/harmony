@@ -14,6 +14,7 @@ import (
 	"os"
 	"path"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/ethereum/go-ethereum/common/hexutil"
@@ -210,6 +211,16 @@ func handlePostReg(w http.ResponseWriter, r *http.Request) {
 		http.NotFound(w, r)
 		return
 	}
+
+	switch strings.ToUpper(r.Method) {
+	case "OPTIONS":
+		return
+	case "POST":
+	default:
+		sendMethodNotAllowed(w, "POST", "OPTIONS")
+		return
+	}
+
 	q := r.URL.Query()
 
 	var err error
@@ -326,6 +337,16 @@ func handlePostPlay(w http.ResponseWriter, r *http.Request) {
 		http.NotFound(w, r)
 		return
 	}
+
+	switch strings.ToUpper(r.Method) {
+	case "OPTIONS":
+		return
+	case "POST":
+	default:
+		sendMethodNotAllowed(w, "POST", "OPTIONS")
+		return
+	}
+
 	q := r.URL.Query()
 
 	keys, ok := q["accountKey"]
@@ -384,6 +405,16 @@ func handlePostFinish(w http.ResponseWriter, r *http.Request) {
 		http.NotFound(w, r)
 		return
 	}
+
+	switch strings.ToUpper(r.Method) {
+	case "OPTIONS":
+		return
+	case "POST":
+	default:
+		sendMethodNotAllowed(w, "POST", "OPTIONS")
+		return
+	}
+
 	q := r.URL.Query()
 
 	keys, ok := q["accountKey"]
@@ -463,4 +494,9 @@ func jsonResp(
 		http.Error(w, "", http.StatusInternalServerError)
 	}
 	_, _ = w.Write(resBytes)
+}
+
+func sendMethodNotAllowed(w http.ResponseWriter, methods ...string) {
+	w.Header().Add("Allow", strings.Join(methods, ", "))
+	w.WriteHeader(http.StatusMethodNotAllowed)
 }
