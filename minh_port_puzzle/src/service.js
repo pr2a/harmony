@@ -2,8 +2,8 @@ import axios from "axios";
 import store from "./store";
 
 // const HTTP_BACKEND_URL = `https://us-central1-harmony-puzzle.cloudfunctions.net`;
-// const HTTP_BACKEND_URL = `https://harmony-puzzle-backend.appspot.com`;
-const HTTP_BACKEND_URL = `https://d17b3244-d36f-40a1-959d-6a289de67a5b.mock.pstmn.io/`;
+const HTTP_BACKEND_URL = `https://harmony-puzzle-backend.appspot.com`;
+// const HTTP_BACKEND_URL = `https://d17b3244-d36f-40a1-959d-6a289de67a5b.mock.pstmn.io/`;
 function sendPost(url, params) {
     params.key = PRIV_KEY;
     // return Promise.resolve('fake data');
