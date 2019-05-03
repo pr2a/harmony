@@ -61,7 +61,7 @@ export function levels() {
       levelDict["initialSelected"]["y"] = 0
       outputArray[i-1] = levelDict
     } else if ( i == 2){
-      data = [1,0,0,0,0,0,1,1,1];
+      data = [2,1,1,1,0,1,2,2,2];
       levelDict['contents'] = data
       levelDict["initialSelected"] = {}
       levelDict["initialSelected"]["x"] = 2

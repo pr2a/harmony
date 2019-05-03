@@ -135,7 +135,7 @@ html {
   height: 400px;
   opacity: 0.5;
   background-size: cover;
-  background-image: url(./assets/pointer.png);
+  background-image: url(./assets/arrow.png);
 }
 
 .flex-veritcal {
