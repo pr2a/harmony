@@ -170,7 +170,7 @@ footer {
     <div class="main-container appearing">
       <div class="game-container" ref="gameContainer">
         <a
-          :href="'https://0.harmony.one/#/address/0x' + globalData.address"
+          :href="'https://0.harmony.one/#/address/' + globalData.address"
           class="logo"
           target="_blank"
         ></a>
