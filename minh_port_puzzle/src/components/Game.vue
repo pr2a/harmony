@@ -40,6 +40,14 @@
 
 <template>
   <div class="board" :tabindex="tabIndex" :style="boardStyle">
+    <div v-if="gameLevel === 1"
+      class="demo-arrow-1"
+    >
+    </div>
+        <div v-if="gameLevel === 2"
+      class="demo-arrow-2"
+    >
+    </div>
     <div
       ref="cells"
       v-for="(value, i) in cells"
@@ -116,6 +124,7 @@ export default {
 
   props: {
     game: { contents: Array, initialSelected: { x: Number, y: Number } },
+    gameLevel: Number,
     listenOwnKeyEventsOnly: { type: Boolean, default: false },
     tabIndex: { type: Number, default: 1 },
     boardSizePx: { type: Number, default: 0 },

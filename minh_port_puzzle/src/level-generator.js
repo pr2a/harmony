@@ -42,6 +42,7 @@ export function levels() {
   var difficulty;
   for (var i = 1; i < 101; i++) {
     // Figure out a number to end on
+    
     difficulty = getDifficulty(i)
     var minMoves = difficulty*3
     var maxMoves = difficulty*4
@@ -50,7 +51,23 @@ export function levels() {
     var levelDict = {}
     // Create the end of the level
     var data = [];
-    var colors = [];
+    
+    // // Figure out the number of moves
+    if ( i == 1){
+      data = [1,0,0,1,1,0,1,1,0];
+      levelDict['contents'] = data
+      levelDict["initialSelected"] = {}
+      levelDict["initialSelected"]["x"] = 0
+      levelDict["initialSelected"]["y"] = 0
+      outputArray[i-1] = levelDict
+    } else if ( i == 2){
+      data = [2,1,1,1,0,1,2,2,2];
+      levelDict['contents'] = data
+      levelDict["initialSelected"] = {}
+      levelDict["initialSelected"]["x"] = 2
+      levelDict["initialSelected"]["y"] = 0
+      outputArray[i-1] = levelDict
+    } else  { 
     for (var j = 0; j < 9; j++) {
       data.push(parity);
     }
@@ -58,9 +75,6 @@ export function levels() {
     var solution = [];
 
     data[selected] -= 1;
-
-    // // Figure out the number of moves
-   
 
     for (var j = 0; j < moves; j++) {
       // Decide which "direction" I'm going to move by rolling a dice
@@ -108,10 +122,11 @@ export function levels() {
     // Get the solution
     solution = solution.reverse();
     levelDict["contents"] = data;
-    levelDict["initialSelected"] = {}
-    levelDict["initialSelected"]["x"] = x
-    levelDict["initialSelected"]["y"] = y
+    levelDict["initialSelected"] = {};
+    levelDict["initialSelected"]["x"] = x;
+    levelDict["initialSelected"]["y"] = y;
     outputArray[i-1] = levelDict
   }
+}
   return outputArray
 }
