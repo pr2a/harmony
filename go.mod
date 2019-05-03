@@ -8,6 +8,7 @@ require (
 	github.com/btcsuite/goleveldb v0.0.0-20160330041536-7834afc9e8cd
 	github.com/ethereum/go-ethereum v1.8.27
 	github.com/golang/protobuf v1.3.0
+	github.com/gorilla/mux v1.7.1
 	github.com/hashicorp/golang-lru v0.5.1 // indirect
 	github.com/kr/pretty v0.1.0 // indirect
 	github.com/sendgrid/smtpapi-go v0.6.0 // indirect

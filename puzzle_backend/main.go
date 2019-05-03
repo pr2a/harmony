@@ -18,6 +18,7 @@ import (
 	"time"
 
 	"github.com/ethereum/go-ethereum/common/hexutil"
+	"github.com/gorilla/mux"
 	"google.golang.org/appengine"
 	app_log "google.golang.org/appengine/log"
 
@@ -84,9 +85,13 @@ func main() {
 	}
 	defer db.CloseFdb()
 
-	http.HandleFunc("/reg", handlePostReg)
-	http.HandleFunc("/play", handlePostPlay)
-	http.HandleFunc("/finish", handlePostFinish)
+	r := mux.NewRouter()
+
+	r.HandleFunc("/reg", handlePostReg)
+	r.HandleFunc("/play", handlePostPlay)
+	r.HandleFunc("/finish", handlePostFinish)
+
+	http.Handle("/", r)
 
 	leader = readProfile(*profile)
 
