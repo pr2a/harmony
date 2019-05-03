@@ -3,6 +3,7 @@
   padding: 3em 1em;
   height: 100%;
   overflow: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .table-wrapper {

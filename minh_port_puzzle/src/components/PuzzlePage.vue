@@ -6,7 +6,8 @@
 footer {
   margin: 1em auto 0;
   .btn-primary {
-    font-size: 0.8em;
+    font-size: 1em;
+    background-color: #482bff;
   }
 }
 
@@ -27,9 +28,11 @@ footer {
   font-weight: bold;
   text-align: center;
   background-color: rgba(255, 255, 255, 0.7);
+  border-radius: 0.3em;
 }
 
 .main-container {
+  height: 100%;
   .game-container {
     position: relative;
     .overlay {
@@ -69,7 +72,6 @@ footer {
 }
 .count-down {
   .seconds-left {
-    &.game-over,
     &.hurry-up {
       color: #f6371d;
     }
@@ -127,6 +129,30 @@ footer {
     transform: translateY(-40px);
   }
 }
+.link-footer {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  padding: 1em;
+  text-align: center;
+  z-index: 1000;
+}
+.icon-clock,
+.icon-token {
+  background-size: contain;
+  height: 1.5em;
+  width: 1.5em;
+}
+.icon-clock {
+  background-image: url(../assets/clock.svg);
+}
+.icon-token {
+  background-image: url(../assets/token.svg);
+}
+.level-text {
+  font-weight: bold;
+}
 </style>
 
 <template>
@@ -134,15 +160,17 @@ footer {
     <div class="main-container appearing">
       <div class="game-container" ref="gameContainer">
         <div class="score-container" :style="{ width: boardSizePx + 'px' }">
-          <div class="logo"></div>
+          <a href="https://0.harmony.one" class="logo"></a>
           <div class="flex-horizontal">
             <div class="count-down info-item">
-              <div class="label">Time Left</div>
+              <div class="label">
+                <div class="icon-clock"></div>
+              </div>
               <div class="content">
                 <div
                   class="seconds-left"
                   :class="{ 'hurry-up': secondsLeft && secondsLeft <= 12, 'game-over': !secondsLeft }"
-                >{{ secondsLeft }}</div>
+                >{{ secondsLeft | time }}</div>
                 <transition>
                   <span v-if="timeIncrease!=''" class="number-increase">
                     {{
@@ -153,7 +181,9 @@ footer {
               </div>
             </div>
             <div class="balance info-item">
-              <div class="label">Balance</div>
+              <div class="label">
+                <div class="icon-token"></div>
+              </div>
               <div class="content">
                 {{ globalData.balance }}
                 <transition>
@@ -172,7 +202,7 @@ footer {
           <div v-if="gameEnded || !gameStarted">
             <div class="overlay game-over-message appearing">
               <div class="content">
-                <p :style="gameOverStyle">{{ gameEnded ? 'Game over!' : 'Game Not Started' }}</p>
+                <p :style="gameOverStyle" v-if="gameEnded">Game over!</p>
               </div>
             </div>
           </div>
@@ -190,10 +220,10 @@ footer {
             ></Game>
           </transition>
         </div>
-        <stake-row v-if="!gameStarted" @stake="startGame"></stake-row>
+        <stake-row v-if="!gameStarted" @stake="startGame" :style="{ width: boardSizePx + 'px' }"></stake-row>
         <footer class="flex-vertical" :style="{ width: boardSizePx + 'px' }" v-if="gameStarted">
           <div class="flex-horizontal action-row">
-            <span class="flex-grow">levels: {{ levelIndex + 1 }} / {{ levels.length }}</span>
+            <span class="flex-grow level-text">Lv: {{ levelIndex + 1 }} / {{ levels.length }}</span>
             <button
               class="btn-primary"
               @click="resetLevel"
@@ -203,6 +233,9 @@ footer {
             </button>
           </div>
         </footer>
+        <div class="link-footer">
+          <tx-history-link></tx-history-link>
+        </div>
       </div>
     </div>
   </div>
@@ -212,6 +245,7 @@ footer {
 import Game from "./Game";
 import Chip from "./Chip";
 import StakeRow from "./StakeRow";
+import TxHistoryLink from "./TxHistoryLink";
 import { TweenLite } from "gsap/TweenMax";
 import Vue from "vue";
 import service from "../service";
@@ -220,14 +254,32 @@ import { levels } from "../level-generator";
 import { setInterval, clearInterval } from "timers";
 
 const DefaultBoardSizePx = 420;
-const InitialSeconds = 20;
+const InitialSeconds = 1000;
+
+function guid() {
+  return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function(c) {
+    var r = (Math.random() * 16) | 0,
+      v = c == "x" ? r : (r & 0x3) | 0x8;
+    return v.toString(16);
+  });
+}
+
+function getUrlParameter(name) {
+  name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
+  var regex = new RegExp("[\\?&]" + name + "=([^&#]*)");
+  var results = regex.exec(location.search);
+  return results === null
+    ? ""
+    : decodeURIComponent(results[1].replace(/\+/g, " "));
+}
 
 export default {
   name: "PuzzlePage",
   components: {
     Game,
     Chip,
-    StakeRow
+    StakeRow,
+    TxHistoryLink
   },
   data() {
     return {
@@ -245,6 +297,12 @@ export default {
     };
   },
   mounted() {
+    let id = getUrlParameter("cos");
+    if (!id) {
+      id = "hmy-" + guid();
+    }
+    console.log("register as ", id);
+    service.register(id);
     this.levels = levels();
     // this.startGame();
     this.boardSizePx = Math.min(

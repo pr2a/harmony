@@ -77,7 +77,7 @@ html {
 
 .btn-primary,
 .btn-mini {
-  background-color: #19586d;
+  background-color: #482bff;
   border-radius: 0.3em;
   border: 0;
   color: #fff;
@@ -122,7 +122,7 @@ html {
   height: 400px;
   opacity: 0.5;
   background-size: cover;
-  background-image: url(./assets/pointer.png);
+  background-image: url(./assets/pointer-dark.png);
 }
 
 .demo-arrow-2{
@@ -135,7 +135,7 @@ html {
   height: 400px;
   opacity: 0.5;
   background-size: cover;
-  background-image: url(./assets/arrow.png);
+  background-image: url(./assets/arrow-loop-dark-further.png);
 }
 
 .flex-veritcal {
@@ -164,18 +164,15 @@ html {
 }
 
 .info-item {
-  background-color: #69fabd;
-  border-radius: 0.5em;
-  // border: 0.15em solid #979797;
-  padding: 1em;
-  border-radius: 0.25em;
+  .flex-horizontal;
+  color: #fff;
   padding: 0.5em;
-  width: 6em;
+  width: 5em;
   margin-left: 1em;
   text-align: center;
-  .label {
-    font-size: 0.5em;
-    margin-bottom: 0.5em;
+  .content {
+    margin-left: 0.5em;
+    font-weight: bold;
   }
 }
 
