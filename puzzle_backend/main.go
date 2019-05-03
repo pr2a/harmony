@@ -18,7 +18,6 @@ import (
 	"time"
 
 	"github.com/ethereum/go-ethereum/common/hexutil"
-	_ "github.com/go-openapi/swag"
 	"google.golang.org/appengine"
 	app_log "google.golang.org/appengine/log"
 
