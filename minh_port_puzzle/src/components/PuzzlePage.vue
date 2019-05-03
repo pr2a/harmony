@@ -246,6 +246,13 @@ footer {
             </button>
           </div>
         </footer>
+        <div class="link-footer">
+          <a
+            :href="'https://0.harmony.one/#/address/' + globalData.address"
+            target="_blank"
+            class="link"
+          >View Transactions</a>
+        </div>
       </div>
     </div>
   </div>
