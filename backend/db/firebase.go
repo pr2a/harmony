@@ -84,10 +84,13 @@ type Fdb struct {
 func NewFdb(key, project string) (*Fdb, error) {
 	ctx = context.Background()
 
-	opt := option.WithCredentialsFile(key)
+	var opts []option.ClientOption
+	if key != "" {
+		opts = append(opts, option.WithCredentialsFile(key))
+	}
 	fdb := new(Fdb)
 
-	client, err := firestore.NewClient(ctx, project, opt)
+	client, err := firestore.NewClient(ctx, project, opts...)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to create client: %v", err)
 	}
