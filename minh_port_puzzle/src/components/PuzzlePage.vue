@@ -217,7 +217,7 @@ footer {
               <div class="content">
                 <p :style="gameOverStyle" v-if="!globalData.account">Logging in...</p>
                 <p :style="gameOverStyle" v-else-if="gameEnded">Game over!</p>
-                <p :style="gameOverStyle" v-else-if="!gameStarted">Bet then click start</p>
+                <p :style="gameOverStyle" v-else-if="!gameStarted">Bet then click start1</p>
               </div>
             </div>
           </div>
@@ -347,6 +347,7 @@ export default {
   methods: {
     startGame() {
       playBackgroundMusic();
+
       this.gameStarted = true;
       this.gameEnded = false;
       this.levelIndex = 0;

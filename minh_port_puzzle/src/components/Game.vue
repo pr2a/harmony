@@ -281,7 +281,7 @@ export default {
       var tp = createTapListener(
         m => {
           if (!this.gameStarted) return;
-          playMoveSound();
+          //playMoveSound();
           move(m);
         },
         getPosition,
