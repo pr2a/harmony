@@ -10,14 +10,18 @@ import (
 	"io/ioutil"
 	"log"
 	"math/rand"
+	"mime"
 	"net/http"
+	"net/mail"
 	"os"
 	"path"
 	"strconv"
 	"strings"
 	"time"
 
+	"cloud.google.com/go/firestore"
 	"github.com/ethereum/go-ethereum/common/hexutil"
+	"github.com/gorilla/mux"
 	"google.golang.org/appengine"
 	app_log "google.golang.org/appengine/log"
 
@@ -79,18 +83,19 @@ func main() {
 
 	var err error
 	db, err = fdb.NewFdb(dbKeyFile, dbProject)
-
 	if err != nil || db == nil {
 		log.Fatalf("Failed to create Fdb client: %v", err)
-		os.Exit(1)
 	}
-
-	// Close FDB when done.
 	defer db.CloseFdb()
 
-	http.HandleFunc("/reg", handlePostReg)
-	http.HandleFunc("/play", handlePostPlay)
-	http.HandleFunc("/finish", handlePostFinish)
+	r := mux.NewRouter()
+
+	r.HandleFunc("/reg", handlePostReg)
+	r.HandleFunc("/play", handlePostPlay)
+	r.HandleFunc("/finish", handlePostFinish)
+	r.HandleFunc("/user/{key}/email", handleUserEmail)
+
+	http.Handle("/", r)
 
 	leader = readProfile(*profile)
 
@@ -196,15 +201,14 @@ type msgBody struct {
 type postRegResponseBody struct {
 	Account string `json:"address"`
 	PrivKey string `json:"privkey"`
+	Email   string `json:"email"`
 	UID     string `json:"uid"`
 	Txid    string `json:"txid"`
 	Balance string `json:"balance"`
 }
 
 func handlePostReg(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Access-Control-Allow-Origin", "*")
-	w.Header().Set("Access-Control-Allow-Methods", "POST,GET,OPTIONS,PUT,DELETE")
-	w.Header().Set("Access-Control-Allow-Headers", "Content-Type,Accept")
+	allowCORS(w)
 	ctx := appengine.NewContext(r)
 	if r.URL.Path != "/reg" {
 		http.NotFound(w, r)
@@ -301,6 +305,7 @@ func handlePostReg(w http.ResponseWriter, r *http.Request) {
 		account = accounts[0]
 		resBody.Account = account.Address
 		resBody.PrivKey = account.PrivKey
+		resBody.Email = account.Email
 		resCode = http.StatusOK
 
 		leader = p2p.Peer{
@@ -327,9 +332,7 @@ type postPlayResponseBody struct {
 }
 
 func handlePostPlay(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Access-Control-Allow-Origin", "*")
-	w.Header().Set("Access-Control-Allow-Methods", "POST,GET,OPTIONS,PUT,DELETE")
-	w.Header().Set("Access-Control-Allow-Headers", "Content-Type,Accept")
+	allowCORS(w)
 
 	ctx := appengine.NewContext(r)
 	if r.URL.Path != "/play" {
@@ -396,9 +399,7 @@ type postFinishResponseBody struct {
 }
 
 func handlePostFinish(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Access-Control-Allow-Origin", "*")
-	w.Header().Set("Access-Control-Allow-Methods", "POST,GET,OPTIONS,PUT,DELETE")
-	w.Header().Set("Access-Control-Allow-Headers", "Content-Type,Accept")
+	allowCORS(w)
 	ctx := appengine.NewContext(r)
 	if r.URL.Path != "/finish" {
 		http.NotFound(w, r)
@@ -482,6 +483,118 @@ func handlePostFinish(w http.ResponseWriter, r *http.Request) {
 		Reward: "",
 		Txid:   msg.Txid,
 	})
+}
+
+type HTTPError interface {
+	Code() int
+	Error() string
+}
+
+type httpError struct {
+	code    int
+	message string
+}
+
+func (e httpError) Code() int {
+	return e.code
+}
+
+func (e httpError) Error() string {
+	return e.message
+}
+
+func sendError(w http.ResponseWriter, err error) {
+	code := http.StatusInternalServerError
+	if err, ok := err.(HTTPError); ok {
+		code = err.Code()
+	}
+	http.Error(w, err.Error(), code)
+}
+
+func handleUserEmail(w http.ResponseWriter, r *http.Request) {
+	allowCORS(w)
+	ctx := appengine.NewContext(r)
+	vars := mux.Vars(r)
+	key := vars["key"]
+	switch strings.ToUpper(r.Method) {
+	case "OPTIONS":
+		return
+	case "PUT":
+		var emailPtr *string
+		if err := jsonRequestBody(r, &emailPtr); err != nil {
+			sendError(w, err)
+			return
+		}
+		if emailPtr == nil {
+			http.Error(w, "empty email address", http.StatusBadRequest)
+			return
+		}
+		email, err := mail.ParseAddress(*emailPtr)
+		if err != nil {
+			http.Error(w, "invalid email address", http.StatusBadRequest)
+			return
+		}
+		players, err := db.UpdatePzPlayers(ctx,
+			func(q firestore.Query) firestore.Query {
+				return q.Where("privkey", "==", key)
+			},
+			[]firestore.Update{
+				{FieldPath: []string{"email"}, Value: email.Address},
+			},
+		)
+		if err != nil {
+			sendError(w, err)
+			return
+		}
+		if len(players) > 0 {
+			for _, player := range players {
+				app_log.Debugf(ctx, "updated player %#v with email %#v",
+					player, email.Address)
+			}
+			w.WriteHeader(http.StatusNoContent)
+		} else {
+			http.NotFound(w, r)
+		}
+	default:
+		sendMethodNotAllowed(w, "POST", "OPTIONS")
+	}
+}
+
+func allowCORS(w http.ResponseWriter) {
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Methods", "POST,GET,OPTIONS,PUT,DELETE")
+	w.Header().Set("Access-Control-Allow-Headers", "Content-Type,Accept")
+}
+
+func jsonRequestBody(r *http.Request, v interface{}) error {
+	if contentType, _, err := getContentType(r); err != nil {
+		return err
+	} else if contentType != "application/json" {
+		return httpError{http.StatusBadRequest, "wrong Content-Type"}
+	}
+	if body, err := ioutil.ReadAll(r.Body); err != nil {
+		return err
+	} else if err := json.Unmarshal(body, v); err != nil {
+		return httpError{http.StatusBadRequest, "cannot parse request"}
+	}
+	return nil
+}
+
+func getContentType(r *http.Request) (string, map[string]string, error) {
+	contentTypes := r.Header[http.CanonicalHeaderKey("Content-Type")]
+	switch len(contentTypes) {
+	case 0:
+		return "", nil, httpError{http.StatusBadRequest, "missing Content-Type"}
+	case 1:
+		// OK; proceed
+	default:
+		return "", nil, httpError{http.StatusBadRequest, "ambiguous Content-Type"}
+	}
+	mediaType, params, err := mime.ParseMediaType(contentTypes[0])
+	if err != nil {
+		return "", nil, httpError{http.StatusBadRequest, "invalid Content-Type"}
+	}
+	return mediaType, params, nil
 }
 
 func jsonResp(

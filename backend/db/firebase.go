@@ -6,13 +6,14 @@ import (
 	"fmt"
 	"log"
 	"math/big"
+	"reflect"
 	"time"
 
 	"cloud.google.com/go/firestore"
 	"google.golang.org/api/iterator"
 	"google.golang.org/api/option"
 
-	"github.com/harmony-one/demo-apps/backend/client"
+	restclient "github.com/harmony-one/demo-apps/backend/client"
 )
 
 var (
@@ -45,14 +46,14 @@ func (p *Player) String() string {
 
 // PzPlayer represents the struct of puzzle player in the players db
 type PzPlayer struct {
-	Email   string
-	CosID   string
-	PrivKey string
-	Address string
-	Highest int64
-	Rewards int64
-	Leader  string
-	Port    string
+	Email   string `firestore:"email"`
+	CosID   string `firestore:"cosid"`
+	PrivKey string `firestore:"privkey"`
+	Address string `firestore:"address"`
+	Highest int64  `firestore:"highest"`
+	Rewards int64  `firestore:"rewards"`
+	Leader  string `firestore:"leader"`
+	Port    string `firestore:"port"`
 }
 
 func (p *PzPlayer) String() string {
@@ -283,75 +284,108 @@ func (fdb *Fdb) GetPlayers(key, op string, value interface{}) []*Player {
 	return players
 }
 
+func validateDocsType(docs interface{},
+) (slice reflect.Value, elemType reflect.Type, ok bool) {
+	var v reflect.Value
+	if v = reflect.ValueOf(docs); v.Kind() != reflect.Ptr {
+		return
+	}
+	if v = v.Elem(); v.Kind() != reflect.Slice {
+		return
+	}
+	slice = v
+	t := v.Type()
+	if t = t.Elem(); t.Kind() != reflect.Ptr {
+		return
+	}
+	if t = t.Elem(); t.Kind() != reflect.Struct {
+		return
+	}
+	elemType = t
+	ok = true
+	return
+}
+
+// QueryFunc is a function that extends the given query.
+// It is used as a query filter in Find* methods.
+type QueryFunc func(q firestore.Query) firestore.Query
+
+// Find queries the given collection with the given query,
+// and appends docs with the documents found.
+// docs should be a *[]*DocType, where DocType is a struct.
+func (fdb *Fdb) Find(
+	ctx context.Context, collection string, queryFunc QueryFunc,
+	docs interface{},
+) error {
+	return fdb.Update(ctx, collection, queryFunc, nil, docs)
+}
+
+// Update updates all documents in the given collection that match the given
+// query, and appends docs with the documents found.
+// The returned documents are at their old values, before updates occurred.
+// docs should be a *[]*DocType, where DocType is a struct.
+func (fdb *Fdb) Update(
+	ctx context.Context, collection string, queryFunc QueryFunc,
+	updates []firestore.Update, docs interface{},
+) error {
+	slice, elemType, ok := validateDocsType(docs)
+	if !ok {
+		return fmt.Errorf("docs is not a *[]*StructType but a %T", docs)
+	}
+	query := queryFunc(fdb.client.Collection(collection).Query)
+	iter := query.Documents(ctx)
+	for fdbDoc, err := iter.Next(); err != iterator.Done; fdbDoc, err = iter.Next() {
+		if err != nil {
+			return err
+		}
+		docPtr := reflect.New(elemType)
+		if err := fdbDoc.DataTo(docPtr.Interface()); err != nil {
+			return err
+		}
+		if len(updates) > 0 {
+			// Prevent update races by requiring that the update time is intact.
+			_, err := fdbDoc.Ref.Update(ctx, updates,
+				firestore.LastUpdateTime(fdbDoc.UpdateTime))
+			if err != nil {
+				return err
+			}
+		}
+		slice.Set(reflect.Append(slice, docPtr))
+	}
+	return nil
+}
+
+// FindPzPlayers queries the puzzle player collection with the given query,
+// and returns the documents found.
+func (fdb *Fdb) FindPzPlayers(
+	ctx context.Context, queryFunc QueryFunc,
+) (pzPlayers []*PzPlayer, err error) {
+	return fdb.UpdatePzPlayers(ctx, queryFunc, nil)
+}
+
+// UpdatePzPlayers queries the puzzle player collection with the given query,
+// and returns the documents found, and updates them too.
+func (fdb *Fdb) UpdatePzPlayers(
+	ctx context.Context, queryFunc QueryFunc, updates []firestore.Update,
+) (pzPlayers []*PzPlayer, err error) {
+	err = fdb.Update(ctx, pzPlayersCollection, queryFunc, updates, &pzPlayers)
+	fmt.Printf("(*Fdb).UpdatePzPlayers: pzPlayers=%#v err=%#v\n",
+		pzPlayers, err)
+	return
+}
+
 // FindAccount find the account and leader info from the db
 // Assuming the search condition is "key == value"
 // Only return the first one account found
 func (fdb *Fdb) FindAccount(key string, value string) []*PzPlayer {
-	var iter *firestore.DocumentIterator
-	var ok bool
-
-	iter = fdb.client.Collection(pzPlayersCollection).Where(key, "==", value).Limit(1).Documents(ctx)
-
-	// We should have only one player returned
-	players := make([]*PzPlayer, 0)
-
-	for {
-		doc, err := iter.Next()
-		if err == iterator.Done {
-			break
-		}
-		if err != nil {
-			fmt.Printf("Failed to iterate: %v", err)
-			continue
-		}
-		data := doc.Data()
-		one := new(PzPlayer)
-
-		one.Email, ok = data["email"].(string)
-		if !ok {
-			fmt.Printf("Failed to convert \"email\": %v\n")
-			continue
-		}
-		one.CosID, ok = data["cosid"].(string)
-		if !ok {
-			fmt.Printf("Failed to convert \"cosid\": %v\n")
-			continue
-		}
-		one.PrivKey, ok = data["privkey"].(string)
-		if !ok {
-			fmt.Printf("Failed to convert \"privkey\": %v\n")
-			continue
-		}
-		one.Address, ok = data["address"].(string)
-		if !ok {
-			fmt.Printf("Failed to convert \"address\": %v\n")
-			continue
-		}
-		one.Highest, ok = data["highest"].(int64)
-		if !ok {
-			fmt.Printf("Failed to convert \"highest\": %v\n")
-			continue
-		}
-		one.Rewards, ok = data["rewards"].(int64)
-		if !ok {
-			fmt.Printf("Failed to convert \"rewards\": %v\n")
-			continue
-		}
-		one.Leader, ok = data["leader"].(string)
-		if !ok {
-			fmt.Printf("Failed to convert \"leader\": %v\n")
-			continue
-		}
-		one.Port, ok = data["port"].(string)
-		if !ok {
-			fmt.Printf("Failed to convert \"port\": %v\n")
-			continue
-		}
-
-		players = append(players, one)
+	pzPlayers, err := fdb.FindPzPlayers(ctx, func(q firestore.Query) firestore.Query {
+		return q.Where(key, "==", value).Limit(1)
+	})
+	if err != nil {
+		fmt.Printf("FindAccount: %s\n", err)
+		return nil
 	}
-
-	return players
+	return pzPlayers
 }
 
 // RegisterAccount register user account into db
