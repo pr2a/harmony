@@ -378,71 +378,14 @@ func (fdb *Fdb) UpdatePzPlayers(
 // Assuming the search condition is "key == value"
 // Only return the first one account found
 func (fdb *Fdb) FindAccount(key string, value string) []*PzPlayer {
-	var iter *firestore.DocumentIterator
-	var ok bool
-
-	iter = fdb.client.Collection(pzPlayersCollection).Where(key, "==", value).Limit(1).Documents(ctx)
-
-	// We should have only one player returned
-	players := make([]*PzPlayer, 0)
-
-	for {
-		doc, err := iter.Next()
-		if err == iterator.Done {
-			break
-		}
-		if err != nil {
-			fmt.Printf("Failed to iterate: %v", err)
-			continue
-		}
-		data := doc.Data()
-		one := new(PzPlayer)
-
-		one.Email, ok = data["email"].(string)
-		if !ok {
-			fmt.Printf("Failed to convert \"email\": %v\n")
-			continue
-		}
-		one.CosID, ok = data["cosid"].(string)
-		if !ok {
-			fmt.Printf("Failed to convert \"cosid\": %v\n")
-			continue
-		}
-		one.PrivKey, ok = data["privkey"].(string)
-		if !ok {
-			fmt.Printf("Failed to convert \"privkey\": %v\n")
-			continue
-		}
-		one.Address, ok = data["address"].(string)
-		if !ok {
-			fmt.Printf("Failed to convert \"address\": %v\n")
-			continue
-		}
-		one.Highest, ok = data["highest"].(int64)
-		if !ok {
-			fmt.Printf("Failed to convert \"highest\": %v\n")
-			continue
-		}
-		one.Rewards, ok = data["rewards"].(int64)
-		if !ok {
-			fmt.Printf("Failed to convert \"rewards\": %v\n")
-			continue
-		}
-		one.Leader, ok = data["leader"].(string)
-		if !ok {
-			fmt.Printf("Failed to convert \"leader\": %v\n")
-			continue
-		}
-		one.Port, ok = data["port"].(string)
-		if !ok {
-			fmt.Printf("Failed to convert \"port\": %v\n")
-			continue
-		}
-
-		players = append(players, one)
+	pzPlayers, err := fdb.FindPzPlayers(ctx, func(q firestore.Query) firestore.Query {
+		return q.Where(key, "==", value).Limit(1)
+	})
+	if err != nil {
+		fmt.Printf("FindAccount: %s\n", err)
+		return nil
 	}
-
-	return players
+	return pzPlayers
 }
 
 // RegisterAccount register user account into db
