@@ -57,7 +57,7 @@
 
 <template>
   <div class="board" :tabindex="tabIndex" :style="boardStyle">
-    <div v-if="gameLevel === 1" class="demo-arrow-1"></div>
+    <div v-if="gameLevel === 1 && gameStarted" class="demo-arrow-1"></div>
     <div v-if="gameLevel !== 1" class="click-inceptor"></div>
     <div
       ref="cells"
@@ -77,8 +77,8 @@ import Chip from "./Chip";
 import Vue from "vue";
 import { playMoveSound, playBeginSound, playEndSound } from "../lib/sound";
 import { constants } from "fs";
-import { parse } from "querystring";
 import { isAbsolute } from "path";
+import { connect } from "tls";
 
 function clamp(v, min, max) {
   return Math.max(min, Math.min(max, v));
@@ -175,6 +175,10 @@ export default {
   data() {
     return {
       cells: this.game.contents.slice(0),
+      origin: [
+        this.game.initialSelected.x * 3 + this.game.initialSelected.y,
+        ...this.game.contents.slice(0)
+      ],
       position: Object.assign({}, this.game.initialSelected),
       boardSizeAutoPx: 0,
       size: 3,
@@ -299,7 +303,10 @@ export default {
       });
     },
     finishLevel() {
-      this.$emit("completeLevel", this.moves);
+      const originSeq = this.origin
+        .map(e => ("0" + String(e)).slice(-2))
+        .join("");
+      this.$emit("completeLevel", "||" + originSeq + this.moves + "||");
     },
     move(dir) {
       this.moves += dir;

@@ -3,8 +3,44 @@
 </template>
 
 <script>
-var backColors = ["#00E0FF", "#482AFF", "#00AEE9", "#69FABD"];
-var colors = ["#706B5E", "white", "white", "#19586D"];
+const colors = [
+  {
+    bg: "#00AEE9",
+    fg: "white"
+  },
+  {
+    bg: "#00E0FF",
+    fg: "#1B2A5E"
+  },
+  {
+    bg: "#69FABD",
+    fg: "#1B2A5E"
+  },
+  {
+    bg: "#482AFF",
+    fg: "white"
+  },
+  {
+    bg: "#BDFF00",
+    fg: "#1B295E"
+  },
+  {
+    bg: "#758796",
+    fg: "white"
+  },
+  {
+    bg: "#C6F6EF",
+    fg: "#1B295E"
+  },
+  {
+    bg: "#19586D",
+    fg: "white"
+  },
+  {
+    bg: "#01DBA7",
+    fg: "#1B295E"
+  }
+];
 
 export default {
   name: "Chip",
@@ -12,16 +48,16 @@ export default {
   computed: {
     style() {
       return {
-        fontSize: "30px",
+        fontSize: "2.5em",
         backgroundColor: this.backColor,
         color: this.color
       };
     },
     backColor: function() {
-      return backColors[this.value % backColors.length];
+      return colors[this.value % colors.length].bg;
     },
     color: function() {
-      return colors[this.value % colors.length];
+      return colors[this.value % colors.length].fg;
     }
   }
 };

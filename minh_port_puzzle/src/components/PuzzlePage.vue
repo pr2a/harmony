@@ -169,6 +169,7 @@ footer {
   <div id="app">
     <div class="main-container appearing">
       <div class="game-container" ref="gameContainer">
+        <redeem-panel v-if="gameEnded && !globalData.email" :reward="reward"></redeem-panel>
         <a
           :href="'https://0.harmony.one/#/address/' + globalData.address"
           class="logo"
@@ -214,7 +215,9 @@ footer {
           <div v-if="gameEnded || !gameStarted">
             <div class="overlay game-over-message appearing">
               <div class="content">
-                <p :style="gameOverStyle" v-if="gameEnded">Game over!</p>
+                <p :style="gameOverStyle" v-if="!globalData.account">Logging in...</p>
+                <p :style="gameOverStyle" v-else-if="gameEnded">Game over!</p>
+                <p :style="gameOverStyle" v-else-if="!gameStarted">Bet then click start</p>
               </div>
             </div>
           </div>
@@ -246,7 +249,7 @@ footer {
             </button>
           </div>
         </footer>
-        <div class="link-footer">
+        <div class="link-footer" v-if="!isMobile">
           <a
             :href="'https://0.harmony.one/#/address/' + globalData.address"
             target="_blank"
@@ -263,6 +266,7 @@ import Game from "./Game";
 import Chip from "./Chip";
 import StakeRow from "./StakeRow";
 import TxHistoryLink from "./TxHistoryLink";
+import RedeemPanel from "./RedeemPanel";
 import { TweenLite } from "gsap/TweenMax";
 import Vue from "vue";
 import service from "../service";
@@ -297,7 +301,8 @@ export default {
     Game,
     Chip,
     StakeRow,
-    TxHistoryLink
+    TxHistoryLink,
+    RedeemPanel
   },
   data() {
     return {
@@ -311,18 +316,19 @@ export default {
       secondsLeft: InitialSeconds,
       timer: null,
       timeIncrease: "",
-      balanceIncrease: ""
+      balanceIncrease: "",
+      isMobile: /iPhone|iPad|iPod|Android/i.test(navigator.userAgent),
+      reward: 0
     };
   },
   mounted() {
     let id = getParameterByName("cos");
-    service.register(id);
     this.levels = levels();
-    // this.startGame();
     this.boardSizePx = Math.min(
       this.$refs.gameContainer.clientWidth,
       DefaultBoardSizePx
     );
+    service.register(id);
   },
   computed: {
     gameOverStyle() {
@@ -344,6 +350,7 @@ export default {
       this.gameStarted = true;
       this.gameEnded = false;
       this.levelIndex = 0;
+      this.reward = 0;
       this.levels = levels();
       this.secondsLeft = InitialSeconds;
       this.timer = setInterval(() => {
@@ -357,6 +364,7 @@ export default {
       this.$refs[`game${this.levelIndex}`][0].reset();
     },
     onLevelComplete(moves) {
+      console.log(moves);
       if (this.levelIndex === this.levels.length - 1) {
         this.endGame();
         return;
@@ -369,6 +377,7 @@ export default {
           this.secondsLeft += timeChange;
           this.timeIncrease = `+${timeChange}`;
           this.balanceIncrease = `+${rewards}`;
+          this.reward += rewards;
           Vue.nextTick(() => {
             this.timeIncrease = "";
             this.balanceIncrease = "";
@@ -382,7 +391,6 @@ export default {
       store.data.stake = 20;
       clearInterval(this.timer);
       this.timer = null;
-      //playPostGameMusic();
     },
     restart() {
       this.gameEnded = false;
