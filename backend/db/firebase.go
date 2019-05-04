@@ -6,13 +6,14 @@ import (
 	"fmt"
 	"log"
 	"math/big"
+	"reflect"
 	"time"
 
 	"cloud.google.com/go/firestore"
 	"google.golang.org/api/iterator"
 	"google.golang.org/api/option"
 
-	"github.com/harmony-one/demo-apps/backend/client"
+	restclient "github.com/harmony-one/demo-apps/backend/client"
 )
 
 var (
@@ -45,14 +46,14 @@ func (p *Player) String() string {
 
 // PzPlayer represents the struct of puzzle player in the players db
 type PzPlayer struct {
-	Email   string
-	CosID   string
-	PrivKey string
-	Address string
-	Highest int64
-	Rewards int64
-	Leader  string
-	Port    string
+	Email   string `firestore:"email"`
+	CosID   string `firestore:"cosid"`
+	PrivKey string `firestore:"privkey"`
+	Address string `firestore:"address"`
+	Highest int64  `firestore:"highest"`
+	Rewards int64  `firestore:"rewards"`
+	Leader  string `firestore:"leader"`
+	Port    string `firestore:"port"`
 }
 
 func (p *PzPlayer) String() string {
@@ -281,6 +282,96 @@ func (fdb *Fdb) GetPlayers(key, op string, value interface{}) []*Player {
 		players = append(players, one)
 	}
 	return players
+}
+
+func validateDocsType(docs interface{},
+) (slice reflect.Value, elemType reflect.Type, ok bool) {
+	var v reflect.Value
+	if v = reflect.ValueOf(docs); v.Kind() != reflect.Ptr {
+		return
+	}
+	if v = v.Elem(); v.Kind() != reflect.Slice {
+		return
+	}
+	slice = v
+	t := v.Type()
+	if t = t.Elem(); t.Kind() != reflect.Ptr {
+		return
+	}
+	if t = t.Elem(); t.Kind() != reflect.Struct {
+		return
+	}
+	elemType = t
+	ok = true
+	return
+}
+
+// QueryFunc is a function that extends the given query.
+// It is used as a query filter in Find* methods.
+type QueryFunc func(q firestore.Query) firestore.Query
+
+// Find queries the given collection with the given query,
+// and appends docs with the documents found.
+// docs should be a *[]*DocType, where DocType is a struct.
+func (fdb *Fdb) Find(
+	ctx context.Context, collection string, queryFunc QueryFunc,
+	docs interface{},
+) error {
+	return fdb.Update(ctx, collection, queryFunc, nil, docs)
+}
+
+// Update updates all documents in the given collection that match the given
+// query, and appends docs with the documents found.
+// The returned documents are at their old values, before updates occurred.
+// docs should be a *[]*DocType, where DocType is a struct.
+func (fdb *Fdb) Update(
+	ctx context.Context, collection string, queryFunc QueryFunc,
+	updates []firestore.Update, docs interface{},
+) error {
+	slice, elemType, ok := validateDocsType(docs)
+	if !ok {
+		return fmt.Errorf("docs is not a *[]*StructType but a %T", docs)
+	}
+	query := queryFunc(fdb.client.Collection(collection).Query)
+	iter := query.Documents(ctx)
+	for fdbDoc, err := iter.Next(); err != iterator.Done; fdbDoc, err = iter.Next() {
+		if err != nil {
+			return err
+		}
+		docPtr := reflect.New(elemType)
+		if err := fdbDoc.DataTo(docPtr.Interface()); err != nil {
+			return err
+		}
+		if len(updates) > 0 {
+			// Prevent update races by requiring that the update time is intact.
+			_, err := fdbDoc.Ref.Update(ctx, updates,
+				firestore.LastUpdateTime(fdbDoc.UpdateTime))
+			if err != nil {
+				return err
+			}
+		}
+		slice.Set(reflect.Append(slice, docPtr))
+	}
+	return nil
+}
+
+// FindPzPlayers queries the puzzle player collection with the given query,
+// and returns the documents found.
+func (fdb *Fdb) FindPzPlayers(
+	ctx context.Context, queryFunc QueryFunc,
+) (pzPlayers []*PzPlayer, err error) {
+	return fdb.UpdatePzPlayers(ctx, queryFunc, nil)
+}
+
+// UpdatePzPlayers queries the puzzle player collection with the given query,
+// and returns the documents found, and updates them too.
+func (fdb *Fdb) UpdatePzPlayers(
+	ctx context.Context, queryFunc QueryFunc, updates []firestore.Update,
+) (pzPlayers []*PzPlayer, err error) {
+	err = fdb.Update(ctx, pzPlayersCollection, queryFunc, updates, &pzPlayers)
+	fmt.Printf("(*Fdb).UpdatePzPlayers: pzPlayers=%#v err=%#v\n",
+		pzPlayers, err)
+	return
 }
 
 // FindAccount find the account and leader info from the db
