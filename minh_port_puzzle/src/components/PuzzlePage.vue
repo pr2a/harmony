@@ -211,7 +211,7 @@ footer {
         </div>
 
         <div class="board-wrapper" id="board-wrapper" :style="boardWrapperStyle">
-          <div v-if="gameEnded || !gameStarted">
+          <div v-if="gameEnded">
             <div class="overlay game-over-message appearing">
               <div class="content">
                 <p :style="gameOverStyle" v-if="!globalData.account">Logging in...</p>
