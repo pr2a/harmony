@@ -208,9 +208,7 @@ type postRegResponseBody struct {
 }
 
 func handlePostReg(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Access-Control-Allow-Origin", "*")
-	w.Header().Set("Access-Control-Allow-Methods", "POST,GET,OPTIONS,PUT,DELETE")
-	w.Header().Set("Access-Control-Allow-Headers", "Content-Type,Accept")
+	allowCORS(w)
 	ctx := appengine.NewContext(r)
 	if r.URL.Path != "/reg" {
 		http.NotFound(w, r)
@@ -334,9 +332,7 @@ type postPlayResponseBody struct {
 }
 
 func handlePostPlay(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Access-Control-Allow-Origin", "*")
-	w.Header().Set("Access-Control-Allow-Methods", "POST,GET,OPTIONS,PUT,DELETE")
-	w.Header().Set("Access-Control-Allow-Headers", "Content-Type,Accept")
+	allowCORS(w)
 
 	ctx := appengine.NewContext(r)
 	if r.URL.Path != "/play" {
@@ -403,9 +399,7 @@ type postFinishResponseBody struct {
 }
 
 func handlePostFinish(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Access-Control-Allow-Origin", "*")
-	w.Header().Set("Access-Control-Allow-Methods", "POST,GET,OPTIONS,PUT,DELETE")
-	w.Header().Set("Access-Control-Allow-Headers", "Content-Type,Accept")
+	allowCORS(w)
 	ctx := appengine.NewContext(r)
 	if r.URL.Path != "/finish" {
 		http.NotFound(w, r)
@@ -518,10 +512,7 @@ func sendError(w http.ResponseWriter, err error) {
 }
 
 func handleUserEmail(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Access-Control-Allow-Origin", "*")
-	w.Header().Set("Access-Control-Allow-Origin", "*")
-	w.Header().Set("Access-Control-Allow-Methods", "POST,GET,OPTIONS,PUT,DELETE")
-	w.Header().Set("Access-Control-Allow-Headers", "Content-Type,Accept")
+	allowCORS(w)
 	ctx := appengine.NewContext(r)
 	vars := mux.Vars(r)
 	key := vars["key"]
@@ -567,6 +558,12 @@ func handleUserEmail(w http.ResponseWriter, r *http.Request) {
 	default:
 		sendMethodNotAllowed(w, "POST", "OPTIONS")
 	}
+}
+
+func allowCORS(w http.ResponseWriter) {
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Methods", "POST,GET,OPTIONS,PUT,DELETE")
+	w.Header().Set("Access-Control-Allow-Headers", "Content-Type,Accept")
 }
 
 func jsonRequestBody(r *http.Request, v interface{}) error {
