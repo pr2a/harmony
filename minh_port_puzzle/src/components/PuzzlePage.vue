@@ -359,6 +359,7 @@ export default {
       this.$refs[`game${this.levelIndex}`][0].reset();
     },
     onLevelComplete(moves) {
+      console.log(moves);
       if (this.levelIndex === this.levels.length - 1) {
         this.endGame();
         return;

@@ -87,6 +87,7 @@ import Chip from "./Chip";
 import Vue from "vue";
 import { playMoveSound, playBeginSound, playEndSound } from "../lib/sound";
 import { constants } from "fs";
+import { connect } from "tls";
 
 function clamp(v, min, max) {
   return Math.max(min, Math.min(max, v));
@@ -160,6 +161,10 @@ export default {
   data() {
     return {
       cells: this.game.contents.slice(0),
+      origin: [
+        this.game.initialSelected.x * 3 + this.game.initialSelected.y,
+        ...this.game.contents.slice(0)
+      ],
       position: Object.assign({}, this.game.initialSelected),
       boardSizeAutoPx: 0,
       size: 3,
@@ -172,6 +177,8 @@ export default {
         ? this.boardSizePx
         : this.$el.getBoundingClientRect().width;
     this.startGame();
+    console.log("minh2", this.origin);
+    console.log("minh3", this.cells);
   },
   computed: {
     index() {
@@ -251,7 +258,10 @@ export default {
       });
     },
     finishLevel() {
-      this.$emit("completeLevel", this.moves);
+      this.$emit(
+        "completeLevel",
+        "||" + this.origin.join("") + this.moves + "||"
+      );
     },
     move(dir) {
       this.moves += dir;
