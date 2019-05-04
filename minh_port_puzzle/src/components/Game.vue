@@ -37,38 +37,28 @@
   }
 }
 
-.demo-arrow-1 {
+.demo-arrow-1,
+.click-inceptor {
   position: absolute;
   z-index: 2;
-  display: inline-block;
+  display: block;
   left: 0;
   top: 0;
   width: 100%;
   height: 100%;
   opacity: 0.5;
   background-size: cover;
-  background-image: url(../assets/pointer-dark.png);
   transform: translateX(5%);
 }
-
-.demo-arrow-2 {
-  position: absolute;
-  z-index: 2;
-  display: inline-block;
-  left: 0;
-  top: 0;
-  width: 100%;
-  height: 100%;
-  opacity: 0.5;
-  background-size: cover;
-  background-image: url(../assets/arrow-loop-dark-further.png);
-  transform: translateX(5%);
+.demo-arrow-1 {
+  background-image: url(../assets/pointer-dark.png);
 }
 </style>
 
 <template>
   <div class="board" :tabindex="tabIndex" :style="boardStyle">
     <div v-if="gameLevel === 1 && gameStarted" class="demo-arrow-1"></div>
+    <div v-if="gameLevel !== 1" class="click-inceptor"></div>
     <div
       ref="cells"
       v-for="(value, i) in cells"
@@ -87,6 +77,7 @@ import Chip from "./Chip";
 import Vue from "vue";
 import { playMoveSound, playBeginSound, playEndSound } from "../lib/sound";
 import { constants } from "fs";
+import { isAbsolute } from "path";
 import { connect } from "tls";
 
 function clamp(v, min, max) {
@@ -122,6 +113,29 @@ function createSwipeListener(onSwipe) {
     detach(el) {
       el.removeEventListener("touchstart", onStart);
       el.removeEventListener("touchend", onEnd);
+    }
+  };
+}
+
+function createTapListener(onTap, getPosition, getTapLoc) {
+  function onEnd(e) {
+    let cx = e.offsetX,
+      cy = e.offsetY;
+    let newPos = getTapLoc(cx, cy);
+    let pos = getPosition();
+    let dx = newPos.x - pos.x;
+    let dy = newPos.y - pos.y;
+    if (Math.abs(dx) + Math.abs(dy) != 1) return;
+    let d = dx == 0 ? (dy > 0 ? "R" : "L") : dx > 0 ? "D" : "U";
+    onTap(d);
+  }
+
+  return {
+    attach(el) {
+      el.addEventListener("mouseup", onEnd, false);
+    },
+    detach(el) {
+      el.removeEventListener("mouseup", onEnd);
     }
   };
 }
@@ -222,6 +236,7 @@ export default {
       // Add begin sound.
       playBeginSound();
       this.runKeyboardControl(this.move);
+      this.runTapControl(this.move);
       this.runTouchControl(this.move);
     },
     runKeyboardControl(move) {
@@ -239,6 +254,38 @@ export default {
       // TODO: on game end, remove listeners.
       this.$once("completeLevel", function() {
         listenKeysOn.removeEventListener("keydown", h);
+      });
+    },
+
+    runTapControl(move) {
+      var getPosition = () => {
+        return this.position;
+      };
+      let w = parseInt(this.boardStyle.width);
+      let h = parseInt(this.boardStyle.height);
+      let cw =
+        (w * parseFloat(this.cellStyle.width + this.cellStyle.marginLeft)) /
+        100;
+      let ch =
+        (h * parseFloat(this.cellStyle.height + this.cellStyle.marginTop)) /
+        100;
+      var getTapLoc = (x, y) => {
+        return { y: parseInt(x / cw), x: parseInt(y / ch) };
+      };
+
+      var tp = createTapListener(
+        m => {
+          if (!this.gameStarted) return;
+          playMoveSound();
+          move(m);
+        },
+        getPosition,
+        getTapLoc
+      );
+      var listenKeysOn = this.listenOwnKeyEventsOnly ? this.$el : document;
+      tp.attach(listenKeysOn);
+      this.$once("completeLevel", function() {
+        tp.detach(listenKeysOn);
       });
     },
 
