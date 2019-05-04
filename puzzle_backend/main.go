@@ -10,7 +10,9 @@ import (
 	"io/ioutil"
 	"log"
 	"math/rand"
+	"mime"
 	"net/http"
+	"net/mail"
 	"os"
 	"path"
 	"strconv"
@@ -90,6 +92,7 @@ func main() {
 	r.HandleFunc("/reg", handlePostReg)
 	r.HandleFunc("/play", handlePostPlay)
 	r.HandleFunc("/finish", handlePostFinish)
+	r.HandleFunc("/user/{key}/email", handleUserEmail)
 
 	http.Handle("/", r)
 
@@ -483,6 +486,96 @@ func handlePostFinish(w http.ResponseWriter, r *http.Request) {
 		Reward: "",
 		Txid:   msg.Txid,
 	})
+}
+
+type HTTPError interface {
+	Code() int
+	Error() string
+}
+
+type httpError struct {
+	code    int
+	message string
+}
+
+func (e httpError) Code() int {
+	return e.code
+}
+
+func (e httpError) Error() string {
+	return e.message
+}
+
+func sendError(w http.ResponseWriter, err error) {
+	code := http.StatusInternalServerError
+	if err, ok := err.(HTTPError); ok {
+		code = err.Code()
+	}
+	http.Error(w, err.Error(), code)
+}
+
+func handleUserEmail(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Methods", "POST,GET,OPTIONS,PUT,DELETE")
+	w.Header().Set("Access-Control-Allow-Headers", "Content-Type,Accept")
+	ctx := appengine.NewContext(r)
+	vars := mux.Vars(r)
+	key := vars["key"]
+	switch strings.ToUpper(r.Method) {
+	case "OPTIONS":
+		return
+	case "PUT":
+		var emailPtr *string
+		if err := jsonRequestBody(r, &emailPtr); err != nil {
+			sendError(w, err)
+			return
+		}
+		if emailPtr == nil {
+			http.Error(w, "empty email address", http.StatusBadRequest)
+			return
+		}
+		email, err := mail.ParseAddress(*emailPtr)
+		if err != nil {
+			http.Error(w, "invalid email address", http.StatusBadRequest)
+			return
+		}
+		app_log.Infof(ctx, "key=%#v email=%#v", key, email)
+		w.WriteHeader(http.StatusNoContent)
+	default:
+		sendMethodNotAllowed(w, "POST", "OPTIONS")
+	}
+}
+
+func jsonRequestBody(r *http.Request, v interface{}) error {
+	if contentType, _, err := getContentType(r); err != nil {
+		return err
+	} else if contentType != "application/json" {
+		return httpError{http.StatusBadRequest, "wrong Content-Type"}
+	}
+	if body, err := ioutil.ReadAll(r.Body); err != nil {
+		return err
+	} else if err := json.Unmarshal(body, v); err != nil {
+		return httpError{http.StatusBadRequest, "cannot parse request"}
+	}
+	return nil
+}
+
+func getContentType(r *http.Request) (string, map[string]string, error) {
+	contentTypes := r.Header[http.CanonicalHeaderKey("Content-Type")]
+	switch len(contentTypes) {
+	case 0:
+		return "", nil, httpError{http.StatusBadRequest, "missing Content-Type"}
+	case 1:
+		// OK; proceed
+	default:
+		return "", nil, httpError{http.StatusBadRequest, "ambiguous Content-Type"}
+	}
+	mediaType, params, err := mime.ParseMediaType(contentTypes[0])
+	if err != nil {
+		return "", nil, httpError{http.StatusBadRequest, "invalid Content-Type"}
+	}
+	return mediaType, params, nil
 }
 
 func jsonResp(
