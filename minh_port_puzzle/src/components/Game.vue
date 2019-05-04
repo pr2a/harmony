@@ -4,12 +4,16 @@
   flex-wrap: wrap;
   align-content: flex-start;
   align-items: space-around;
-  background-color: white;
+  //background-color: white;
   outline: none;
   position: absolute;
-  border-radius: 0.5em;
+  //border-radius: 0.5em;
   margin: 0 auto;
 
+  background: #AEBCC8;
+  border: 5px solid #FFFFFF;
+  box-sizing: border-box;
+  border-radius: 12px;
   .cell {
     background-color: #ada49f;
     position: relative;

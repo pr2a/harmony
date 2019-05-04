@@ -66,7 +66,7 @@ footer {
 }
 .icon-dark-token {
   background-size: contain;
-  height: 1.2em;
+  height: 1.4em;
   width: 1.2em;
   background-image: url(../assets/dark-token.svg);
   background-repeat: no-repeat;

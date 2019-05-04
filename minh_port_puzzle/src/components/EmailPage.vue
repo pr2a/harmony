@@ -41,7 +41,7 @@
 </style>
 
 <template >
-  <div class="email-pagee">
+  <div class="email-page">
     <div class="content">
       <div class="logo"></div>
       <input

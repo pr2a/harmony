@@ -140,10 +140,14 @@ footer {
   text-align: center;
   z-index: 1000;
 }
-.icon-clock,
+.icon-clock {
+  background-size: contain;
+  height: 1.05em;
+  width: 1.05em;
+}
 .icon-token {
   background-size: contain;
-  height: 1.5em;
+  height: 0.95em;
   width: 1.5em;
 }
 .icon-clock {
@@ -169,7 +173,7 @@ footer {
   <div id="app">
     <div class="main-container appearing">
       <div class="game-container" ref="gameContainer">
-        <redeem-panel v-if="gameEnded && !globalData.email" :reward="reward"></redeem-panel>
+        <!--<redeem-panel v-if="gameEnded && !globalData.email" :reward="reward"></redeem-panel>-->
         <a
           :href="'https://0.harmony.one/#/address/' + globalData.address"
           class="logo"
@@ -263,7 +267,7 @@ import Game from "./Game";
 import Chip from "./Chip";
 import StakeRow from "./StakeRow";
 import TxHistoryLink from "./TxHistoryLink";
-import RedeemPanel from "./RedeemPanel";
+//import RedeemPanel from "./RedeemPanel";
 import { TweenLite } from "gsap/TweenMax";
 import Vue from "vue";
 import service from "../service";
@@ -298,8 +302,8 @@ export default {
     Game,
     Chip,
     StakeRow,
-    TxHistoryLink,
-    RedeemPanel
+    TxHistoryLink
+    //RedeemPanel
   },
   data() {
     return {

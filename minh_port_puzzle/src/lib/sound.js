@@ -6,7 +6,16 @@ const backgroundMusicAudio = new Audio(backgroundMusic);
 
 playSound = sound => {
   var audio = new Audio(sound);
-  audio.play();
+
+  var playPromise = audio.play();
+
+  if (playPromise !== undefined) {
+    playPromise.then(_ => {
+      // Automatic playback started!
+    }).catch(error => {
+      // Auto-play was prevented
+    });
+  }
 };
 
 playAudio = audio => {

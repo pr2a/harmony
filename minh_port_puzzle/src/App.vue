@@ -5,11 +5,7 @@
   padding: 0;
 }
 html {
-  background-image: linear-gradient(
-    180deg,
-    #00aee9 0%,
-    rgba(105, 250, 189, 0) 119.53%
-  );
+  background-image: linear-gradient(180deg, #00AEE9 0%, rgba(105, 250, 189, 0) 119.53%);
   height: 100%;
 }
 body,
@@ -147,6 +143,16 @@ html {
     margin-left: 0.5em;
     font-weight: bold;
   }
+}
+
+.harmony-pattern {
+  position: absolute;
+  width: 1008px;
+  height: 673px;
+  left: -321px;
+  top: 370px;
+
+  background: url(./assets/pattern.svg);
 }
 
 p {
