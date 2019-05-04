@@ -169,10 +169,7 @@ footer {
   <div id="app">
     <div class="main-container appearing">
       <div class="game-container" ref="gameContainer">
-        <redeem-panel
-          v-if="gameEnded && !globalData.email"
-          :reward="reward"
-        ></redeem-panel>
+        <redeem-panel v-if="gameEnded && !globalData.email" :reward="reward"></redeem-panel>
         <a
           :href="'https://0.harmony.one/#/address/' + globalData.address"
           class="logo"
@@ -186,9 +183,7 @@ footer {
             <div class="content">
               {{ globalData.balance }}
               <transition>
-                <span v-if="balanceIncrease != ''" class="number-increase">
-                  {{ balanceIncrease }}
-                </span>
+                <span v-if="balanceIncrease != ''" class="number-increase">{{ balanceIncrease }}</span>
               </transition>
             </div>
           </div>
@@ -203,33 +198,23 @@ footer {
                   'hurry-up': secondsLeft && secondsLeft <= 12,
                   'game-over': !secondsLeft
                 }"
-              >
-                {{ secondsLeft | time }}
-              </div>
+              >{{ secondsLeft | time }}</div>
               <transition>
-                <span v-if="timeIncrease != ''" class="number-increase">
-                  {{ timeIncrease }}
-                </span>
+                <span v-if="timeIncrease != ''" class="number-increase">{{ timeIncrease }}</span>
               </transition>
             </div>
           </div>
         </div>
 
-        <div
-          class="board-wrapper"
-          id="board-wrapper"
-          :style="boardWrapperStyle"
-        >
+        <div class="board-wrapper" id="board-wrapper" :style="boardWrapperStyle">
           <div v-if="gameEnded || !gameStarted">
             <div class="overlay game-over-message appearing">
               <div class="content">
-                <p :style="gameOverStyle" v-if="!globalData.account">
-                  Logging in...
-                </p>
+                <p :style="gameOverStyle" v-if="!globalData.account">Logging in...</p>
                 <p :style="gameOverStyle" v-else-if="gameEnded">Game over!</p>
-                <p :style="gameOverStyle" v-else-if="!gameStarted">
+                <!-- <p :style="gameOverStyle" v-else-if="!gameStarted">
                   Bet then click start
-                </p>
+                </p>-->
               </div>
             </div>
           </div>
@@ -248,20 +233,10 @@ footer {
             ></Game>
           </transition>
         </div>
-        <stake-row
-          v-if="!gameStarted"
-          @stake="startGame"
-          :style="{ width: boardSizePx + 'px' }"
-        ></stake-row>
-        <footer
-          class="flex-vertical"
-          :style="{ width: boardSizePx + 'px' }"
-          v-if="gameStarted"
-        >
+        <stake-row v-if="!gameStarted" @stake="startGame" :style="{ width: boardSizePx + 'px' }"></stake-row>
+        <footer class="flex-vertical" :style="{ width: boardSizePx + 'px' }" v-if="gameStarted">
           <div class="flex-horizontal action-row">
-            <span class="flex-grow level-text"
-              >Level: {{ levelIndex + 1 }} / {{ levels.length }}</span
-            >
+            <span class="flex-grow level-text">Level: {{ levelIndex + 1 }} / {{ levels.length }}</span>
             <button
               class="btn-primary"
               @click="resetLevel"
@@ -276,8 +251,7 @@ footer {
             :href="'https://0.harmony.one/#/address/' + globalData.address"
             target="_blank"
             class="link"
-            >View Transactions</a
-          >
+          >View Transactions</a>
         </div>
       </div>
     </div>
