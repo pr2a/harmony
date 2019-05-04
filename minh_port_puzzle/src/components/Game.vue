@@ -58,7 +58,6 @@
 <template>
   <div class="board" :tabindex="tabIndex" :style="boardStyle">
     <div v-if="gameLevel === 1 && gameStarted" class="demo-arrow-1"></div>
-    <div v-if="gameLevel !== 1" class="click-inceptor"></div>
     <div
       ref="cells"
       v-for="(value, i) in cells"
@@ -117,10 +116,17 @@ function createSwipeListener(onSwipe) {
   };
 }
 
-function createTapListener(onTap, getPosition, getTapLoc) {
+function createTapListener(onTap, getPosition, getTapLoc, getAnchor) {
+  
   function onEnd(e) {
-    let cx = e.offsetX,
-      cy = e.offsetY;
+    var cx, cy;
+    if (e.touches) {
+      cx = e.changedTouches[0].clientX - getAnchor().x;
+      cy = e.changedTouches[0].clientY - getAnchor().y;
+    } else {
+      cx = e.clientX - getAnchor().x;
+      cy = e.clientY - getAnchor().y;
+    }
     let newPos = getTapLoc(cx, cy);
     let pos = getPosition();
     let dx = newPos.x - pos.x;
@@ -133,9 +139,11 @@ function createTapListener(onTap, getPosition, getTapLoc) {
   return {
     attach(el) {
       el.addEventListener("mouseup", onEnd, false);
+      el.addEventListener("touchstart", onEnd, false);
     },
     detach(el) {
       el.removeEventListener("mouseup", onEnd);
+      el.removeEventListener("touchstart", onEnd);
     }
   };
 }
@@ -263,6 +271,11 @@ export default {
     },
 
     runTapControl(move) {
+      var getAnchor = (e) => {
+         var bd = document.querySelector( "#board-wrapper" );
+         var rect = bd.getBoundingClientRect();
+         return {x:rect.x,y:rect.y};
+      };
       var getPosition = () => {
         return this.position;
       };
@@ -285,7 +298,8 @@ export default {
           move(m);
         },
         getPosition,
-        getTapLoc
+        getTapLoc,
+        getAnchor
       );
       var listenKeysOn = this.listenOwnKeyEventsOnly ? this.$el : document;
       tp.attach(listenKeysOn);
