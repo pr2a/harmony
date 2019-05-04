@@ -8,7 +8,8 @@ let store = {
         uid: '',
         account: '',
         address: '',
-        stake: 20
+        stake: 20,
+        email: ''
     },
     addTx(tx) {
         this.data.txs.push(tx);

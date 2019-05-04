@@ -169,6 +169,7 @@ footer {
   <div id="app">
     <div class="main-container appearing">
       <div class="game-container" ref="gameContainer">
+        <redeem-panel v-if="gameEnded && !globalData.email" :reward="reward"></redeem-panel>
         <a
           :href="'https://0.harmony.one/#/address/' + globalData.address"
           class="logo"
@@ -265,6 +266,7 @@ import Game from "./Game";
 import Chip from "./Chip";
 import StakeRow from "./StakeRow";
 import TxHistoryLink from "./TxHistoryLink";
+import RedeemPanel from "./RedeemPanel";
 import { TweenLite } from "gsap/TweenMax";
 import Vue from "vue";
 import service from "../service";
@@ -299,7 +301,8 @@ export default {
     Game,
     Chip,
     StakeRow,
-    TxHistoryLink
+    TxHistoryLink,
+    RedeemPanel
   },
   data() {
     return {
@@ -314,7 +317,8 @@ export default {
       timer: null,
       timeIncrease: "",
       balanceIncrease: "",
-      isMobile: /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)
+      isMobile: /iPhone|iPad|iPod|Android/i.test(navigator.userAgent),
+      reward: 0
     };
   },
   mounted() {
@@ -346,6 +350,7 @@ export default {
       this.gameStarted = true;
       this.gameEnded = false;
       this.levelIndex = 0;
+      this.reward = 0;
       this.levels = levels();
       this.secondsLeft = InitialSeconds;
       this.timer = setInterval(() => {
@@ -372,6 +377,7 @@ export default {
           this.secondsLeft += timeChange;
           this.timeIncrease = `+${timeChange}`;
           this.balanceIncrease = `+${rewards}`;
+          this.reward += rewards;
           Vue.nextTick(() => {
             this.timeIncrease = "";
             this.balanceIncrease = "";
