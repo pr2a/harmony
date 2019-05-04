@@ -155,6 +155,11 @@ keyMap[65] = "L";
 keyMap[87] = "U";
 keyMap[68] = "R";
 keyMap[83] = "D";
+keyMap[72] = "L";
+keyMap[76] = "R";
+keyMap[75] = "U";
+keyMap[74] = "D";
+
 
 export default {
   name: "Game",
