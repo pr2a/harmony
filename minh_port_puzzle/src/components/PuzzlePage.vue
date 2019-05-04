@@ -215,6 +215,7 @@ footer {
             <div class="overlay game-over-message appearing">
               <div class="content">
                 <p :style="gameOverStyle" v-if="gameEnded">Game over!</p>
+                <p :style="gameOverStyle" v-if="!gameStarted && !gameEnded">Bet then click start</p>
               </div>
             </div>
           </div>
