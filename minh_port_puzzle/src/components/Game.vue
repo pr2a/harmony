@@ -319,7 +319,7 @@ export default {
       var sw = createSwipeListener(m => {
         if (!this.gameStarted) return;
         // Add sound before any move.
-        playMoveSound();
+        //playMoveSound();
         move(m);
       });
       var el = this.$el;
