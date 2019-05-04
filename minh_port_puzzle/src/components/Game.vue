@@ -177,8 +177,6 @@ export default {
         ? this.boardSizePx
         : this.$el.getBoundingClientRect().width;
     this.startGame();
-    console.log("minh2", this.origin);
-    console.log("minh3", this.cells);
   },
   computed: {
     index() {
@@ -258,10 +256,10 @@ export default {
       });
     },
     finishLevel() {
-      this.$emit(
-        "completeLevel",
-        "||" + this.origin.join("") + this.moves + "||"
-      );
+      const originSeq = this.origin
+        .map(e => ("0" + String(e)).slice(-2))
+        .join("");
+      this.$emit("completeLevel", "||" + originSeq + this.moves + "||");
     },
     move(dir) {
       this.moves += dir;
