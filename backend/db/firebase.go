@@ -12,6 +12,7 @@ import (
 	"cloud.google.com/go/firestore"
 	"google.golang.org/api/iterator"
 	"google.golang.org/api/option"
+	"google.golang.org/appengine"
 
 	restclient "github.com/harmony-one/demo-apps/backend/client"
 )
@@ -80,7 +81,13 @@ type Fdb struct {
 	Players []Player
 }
 
-//NewFdb start a new fdb connection
+// NewFdb start a new fdb connection.
+//
+// key is the optional credential file pathname.  If key is empty,
+// NewFdb uses the Application Default Credentials (ADC).
+//
+// project is the optional project name.  If project is empty,
+// NewFdb uses the current project name.
 func NewFdb(key, project string) (*Fdb, error) {
 	ctx = context.Background()
 
@@ -90,6 +97,9 @@ func NewFdb(key, project string) (*Fdb, error) {
 	}
 	fdb := new(Fdb)
 
+	if project == "" {
+		project = appengine.AppID(ctx)
+	}
 	client, err := firestore.NewClient(ctx, project, opts...)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to create client: %v", err)
