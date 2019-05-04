@@ -66,9 +66,8 @@ export default {
                 'Content-Type': 'application/json; charset=UTF-8'
             }
         })
-            .then((res) => {
+            .then(() => {
                 store.data.email = email
-                return res.data;
             });
     }
 };

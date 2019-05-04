@@ -93,7 +93,7 @@ export default {
   props: ["reward"],
   data() {
     return {
-      email: "liuzhenglaich@gmail.com"
+      email: ""
     };
   },
   methods: {
