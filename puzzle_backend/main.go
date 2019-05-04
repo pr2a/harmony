@@ -19,6 +19,7 @@ import (
 	"strings"
 	"time"
 
+	"cloud.google.com/go/firestore"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/gorilla/mux"
 	"google.golang.org/appengine"
@@ -540,8 +541,27 @@ func handleUserEmail(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "invalid email address", http.StatusBadRequest)
 			return
 		}
-		app_log.Infof(ctx, "key=%#v email=%#v", key, email)
-		w.WriteHeader(http.StatusNoContent)
+		players, err := db.UpdatePzPlayers(ctx,
+			func(q firestore.Query) firestore.Query {
+				return q.Where("privkey", "==", key)
+			},
+			[]firestore.Update{
+				{FieldPath: []string{"email"}, Value: email.Address},
+			},
+		)
+		if err != nil {
+			sendError(w, err)
+			return
+		}
+		if len(players) > 0 {
+			for _, player := range players {
+				app_log.Debugf(ctx, "updated player %#v with email %#v",
+					player, email.Address)
+			}
+			w.WriteHeader(http.StatusNoContent)
+		} else {
+			http.NotFound(w, r)
+		}
 	default:
 		sendMethodNotAllowed(w, "POST", "OPTIONS")
 	}
