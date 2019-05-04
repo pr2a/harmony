@@ -217,7 +217,7 @@ footer {
               <div class="content">
                 <p :style="gameOverStyle" v-if="!globalData.account">Logging in...</p>
                 <p :style="gameOverStyle" v-else-if="gameEnded">Game over!</p>
-                <p :style="gameOverStyle" v-else-if="!gameStarted">Bet then click start1</p>
+                <p :style="gameOverStyle" v-else-if="!gameStarted">Bet then click start</p>
               </div>
             </div>
           </div>
