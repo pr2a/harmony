@@ -1,7 +1,7 @@
 const moveSound = require('../assets/move.wav');
 const beginSound = require('../assets/begin.wav');
 const endSound = require('../assets/end.wav');
-const backgroundMusic = require('../assets/cryptic.ogg');
+const backgroundMusic = require('../assets/cryptic.mp3');
 const backgroundMusicAudio = new Audio(backgroundMusic);
 
 playSound = sound => {
