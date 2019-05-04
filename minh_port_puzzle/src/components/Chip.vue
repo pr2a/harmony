@@ -29,10 +29,6 @@ const colors = [
     fg: "white"
   },
   {
-    bg: "#1B295E",
-    fg: "white"
-  },
-  {
     bg: "#C6F6EF",
     fg: "#1B295E"
   },
