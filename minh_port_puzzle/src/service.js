@@ -12,14 +12,6 @@ function sendPost(url, params) {
     });
 }
 
-function sendPut(url, data) {
-    return axios.put(HTTP_BACKEND_URL + url, data, {
-        headers: {
-            'Content-Type': 'application/json; charset=UTF-8'
-        }
-    });
-}
-
 export default {
     register(token) {
         return sendPost(
@@ -66,14 +58,17 @@ export default {
         });
     },
     submitEmail(email) {
-        return sendPut(
-            `/user/${store.data.account}/email`,
-            email
-        ).then((res) => {
-            store.data.email = email
-            return res.data;
-        }).catch(() => {
-            store.data.email = email
-        });
+        return axios({
+            url: HTTP_BACKEND_URL + `/user/${store.data.account}/email`,
+            method: 'PUT',
+            data: JSON.stringify(email),
+            headers: {
+                'Content-Type': 'application/json; charset=UTF-8'
+            }
+        })
+            .then((res) => {
+                store.data.email = email
+                return res.data;
+            });
     }
 };
