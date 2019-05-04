@@ -201,6 +201,7 @@ type msgBody struct {
 type postRegResponseBody struct {
 	Account string `json:"address"`
 	PrivKey string `json:"privkey"`
+	Email   string `json:"email"`
 	UID     string `json:"uid"`
 	Txid    string `json:"txid"`
 	Balance string `json:"balance"`
@@ -306,6 +307,7 @@ func handlePostReg(w http.ResponseWriter, r *http.Request) {
 		account = accounts[0]
 		resBody.Account = account.Address
 		resBody.PrivKey = account.PrivKey
+		resBody.Email = account.Email
 		resCode = http.StatusOK
 
 		leader = p2p.Peer{
