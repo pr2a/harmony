@@ -66,7 +66,12 @@
       :key="i"
       :style="cellStyle"
     >
-      <Chip ref="chips" :animation-time-ms="animationTimeMs" :value="value" :size-px="cellSizePx"></Chip>
+      <Chip
+        ref="chips"
+        :animation-time-ms="animationTimeMs"
+        :value="value"
+        :size-px="cellSizePx"
+      ></Chip>
     </div>
   </div>
 </template>
@@ -117,7 +122,6 @@ function createSwipeListener(onSwipe) {
 }
 
 function createTapListener(onTap, getPosition, getTapLoc, getAnchor) {
-  
   function onEnd(e) {
     var cx, cy;
     if (e.touches) {
@@ -139,11 +143,11 @@ function createTapListener(onTap, getPosition, getTapLoc, getAnchor) {
   return {
     attach(el) {
       el.addEventListener("mouseup", onEnd, false);
-      el.addEventListener("touchstart", onEnd, false);
+      //  el.addEventListener("touchstart", onEnd, false);
     },
     detach(el) {
       el.removeEventListener("mouseup", onEnd);
-      el.removeEventListener("touchstart", onEnd);
+      //  el.removeEventListener("touchstart", onEnd);
     }
   };
 }
@@ -167,7 +171,6 @@ keyMap[72] = "L";
 keyMap[76] = "R";
 keyMap[75] = "U";
 keyMap[74] = "D";
-
 
 export default {
   name: "Game",
@@ -271,10 +274,10 @@ export default {
     },
 
     runTapControl(move) {
-      var getAnchor = (e) => {
-         var bd = document.querySelector( "#board-wrapper" );
-         var rect = bd.getBoundingClientRect();
-         return {x:rect.x,y:rect.y};
+      var getAnchor = e => {
+        var bd = document.querySelector("#board-wrapper");
+        var rect = bd.getBoundingClientRect();
+        return { x: rect.x, y: rect.y };
       };
       var getPosition = () => {
         return this.position;
