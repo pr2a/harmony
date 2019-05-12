@@ -295,7 +295,7 @@ footer {
         <div class="fake-footer" v-if="isMobile"></div>
         <div class="link-footer" v-if="!isMobile">
           <a
-            :href="'https://explorer2.harmony.one/#/address/' + globalData.address"
+            :href="'https://explorer.harmony.one/#/address/' + globalData.address"
             target="_blank"
             class="link"
           >View Transactions</a>
