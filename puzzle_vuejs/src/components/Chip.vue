@@ -44,20 +44,25 @@ const colors = [
 
 export default {
   name: "Chip",
-  props: ["value"],
+  props: ["value","boardSizePx"],
+
   computed: {
+    backColor: function() {
+      let idx = this.value % colors.length;
+      if (idx < 0) idx += colors.length;
+      return colors[idx].bg;
+    },
+    color: function() {
+      let idx = this.value % colors.length;
+      if (idx < 0) idx += colors.length;
+      return colors[idx].fg;
+    },
     style() {
       return {
-        fontSize: "2.5em",
+        fontSize: this.boardSizePx/8 + "px",
         backgroundColor: this.backColor,
         color: this.color
       };
-    },
-    backColor: function() {
-      return colors[this.value % colors.length].bg;
-    },
-    color: function() {
-      return colors[this.value % colors.length].fg;
     }
   }
 };

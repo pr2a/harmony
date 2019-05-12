@@ -109,8 +109,8 @@ export function levels() {
     }
 
     // Record the ending location
-    var x = selected % 3;
-    var y = Math.floor(selected / 3);
+    var y = selected % 3;
+    var x = Math.floor(selected / 3);
 
     // Get the solution
     solution = solution.reverse();
