@@ -481,6 +481,7 @@ export default {
         });
     },
     endGame() {
+      stopBackgroundMusic();
       this.gameEnded = true;
       this.gameStarted = false;
       store.data.stake = 20;
