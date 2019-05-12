@@ -266,7 +266,6 @@ export default {
   methods: {
     startGame() {
       // Add begin sound.
-      playBackgroundMusic();
       playBeginSound();
       this.runKeyboardControl(this.move);
       this.runTapControl(this.move);
