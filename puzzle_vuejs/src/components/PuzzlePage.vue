@@ -175,7 +175,7 @@ footer {
       <div class="game-container" ref="gameContainer">
         <!--<redeem-panel v-if="gameEnded && !globalData.email" :reward="reward"></redeem-panel>-->
         <a
-          :href="'https://explorer2.harmony.one/#/address/' + globalData.address"
+          :href="'https://explorer.harmony.one/#/address/' + globalData.address"
           class="logo"
           target="_blank"
         ></a>
@@ -252,7 +252,7 @@ footer {
         </footer>
         <div class="link-footer" v-if="!isMobile">
           <a
-            :href="'https://explorer2.harmony.one/#/address/' + globalData.address"
+            :href="'https://explorer.harmony.one/#/address/' + globalData.address"
             target="_blank"
             class="link"
           >View Transactions</a>
