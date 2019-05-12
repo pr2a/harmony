@@ -170,9 +170,11 @@ footer {
   flex: 1;
 }
 .icon-clock,
+
 .icon-token {
   background-size: contain;
 }
+
 .icon-clock {
   background-image: url(../assets/clock.svg);
 }
@@ -216,20 +218,11 @@ footer {
             <div class="content">
               {{ globalData.balance }}
               <transition>
-                <span v-if="balanceIncrease!=''" class="number-increase">
-                  {{
-                  balanceIncrease
-                  }}
+                <span v-if="balanceIncrease!=''" class="number-increase"> {{ balanceIncrease }}
                 </span>
               </transition>
             </div>
           </div>
-          <a
-            :style="titleStyle"
-            :href="'https://explorer.harmony.one/#/address/' + globalData.address"
-            class="logo"
-            target="_blank"
-          ></a>
           <div class="count-down info-item" :style="infoItemStyle">
             <div class="label">
               <div class="icon-clock" :style="iconTokenStyle"></div>
