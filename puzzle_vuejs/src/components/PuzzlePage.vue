@@ -211,7 +211,7 @@ footer {
           target="_blank"
         ></a>
         <div class="score-container" :style="{ width: boardSizePx + 'px' }">
-          <div class="balance info-item">
+          <div class="balance info-item" :style="infoItemStyle">
             <div class="label">
               <div class="icon-token" :style="iconTokenStyle"></div>
             </div>
@@ -225,7 +225,7 @@ footer {
           </div>
           <div class="count-down info-item" :style="infoItemStyle">
             <div class="label">
-              <div class="icon-clock" :style="iconTokenStyle"></div>
+              <div class="icon-clock" :style="iconClockStyle"></div>
             </div>
             <div class="content">
               <div
@@ -414,6 +414,12 @@ export default {
       };
     },
     iconTokenStyle() {
+      return {
+        width: this.boardSizePx / 7.6 + "px",
+        height: this.boardSizePx / 12 + "px"
+      };
+    },
+    iconClockStyle() {
       return {
         width: this.boardSizePx / 12 + "px",
         height: this.boardSizePx / 12 + "px"
