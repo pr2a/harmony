@@ -153,6 +153,7 @@ html {
   top: 370px;
 
   background: url(./assets/pattern.svg);
+  background-repeat: no-repeat;
 }
 
 p {

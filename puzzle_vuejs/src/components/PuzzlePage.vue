@@ -1,7 +1,12 @@
 <style scoped lang="less">
 .score-container {
-  margin: 0 auto 1em;
+  margin-right: auto;
+  margin-left: auto;
   justify-content: space-between;
+  display: flex;
+  flex: 1;
+  flex-direction: row;
+  min-height: 55px;
 }
 
 footer {
@@ -15,6 +20,8 @@ footer {
 .board-wrapper {
   position: relative;
   margin: 0 auto;
+  flex-grow: 0;
+  flex-shrink: 0;
 }
 
 .fade-enter-active,
@@ -32,10 +39,22 @@ footer {
   border-radius: 0.3em;
 }
 
-.main-container {
+.content-tutorial {
   height: 100%;
+  padding: 0 12px;
+  background: rgba(255, 255, 255, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.main-container {
+  height: 100vh;
   .game-container {
     position: relative;
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
     .overlay {
       width: 100%;
       height: 100%;
@@ -46,6 +65,10 @@ footer {
       justify-content: center;
     }
   }
+}
+
+.blur-text {
+  opacity: 0.8;
 }
 
 .appearing {
@@ -67,7 +90,7 @@ footer {
   margin-top: 1em;
 }
 .info-item {
-  font-size: 1.3em;
+  align-self: flex-end;
   .content {
     position: relative;
   }
@@ -132,24 +155,26 @@ footer {
   }
 }
 .link-footer {
-  position: fixed;
-  bottom: 0;
   left: 0;
   width: 100%;
   padding: 1em;
   text-align: center;
   z-index: 1000;
+  flex: 1;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  min-height: 40px;
 }
-.icon-clock {
-  background-size: contain;
-  height: 1.05em;
-  width: 1.05em;
+.fake-footer {
+  flex: 1;
 }
+.icon-clock,
+
 .icon-token {
   background-size: contain;
-  height: 0.95em;
-  width: 1.5em;
 }
+
 .icon-clock {
   background-image: url(../assets/clock.svg);
 }
@@ -160,7 +185,7 @@ footer {
   font-weight: bold;
 }
 .logo {
-  display: block;
+  align-self: flex-start;
 }
 .link {
   font-size: 0.8em;
@@ -171,6 +196,12 @@ footer {
 
 <template>
   <div id="app">
+    <redeem-panel
+      v-if="gameEnded && !globalData.email && !cancelEmail"
+      :reward="reward"
+      :boardSizePx="boardSizePx"
+      @cancelEmail="closeEmailPopup"
+    ></redeem-panel>
     <div class="main-container appearing">
       <div class="game-container" ref="gameContainer">
         <!--<redeem-panel v-if="gameEnded && !globalData.email" :reward="reward"></redeem-panel>-->
@@ -180,45 +211,50 @@ footer {
           target="_blank"
         ></a>
         <div class="score-container" :style="{ width: boardSizePx + 'px' }">
-          <div class="balance info-item">
+          <div class="balance info-item" :style="infoItemStyle">
             <div class="label">
-              <div class="icon-token"></div>
+              <div class="icon-token" :style="iconTokenStyle"></div>
             </div>
             <div class="content">
               {{ globalData.balance }}
               <transition>
-                <span v-if="balanceIncrease != ''" class="number-increase">{{ balanceIncrease }}</span>
+                <span v-if="balanceIncrease!=''" class="number-increase"> {{ balanceIncrease }}
+                </span>
               </transition>
             </div>
           </div>
-          <div class="count-down info-item">
+          <div class="count-down info-item" :style="infoItemStyle">
             <div class="label">
-              <div class="icon-clock"></div>
+              <div class="icon-clock" :style="iconClockStyle"></div>
             </div>
             <div class="content">
               <div
                 class="seconds-left"
-                :class="{
-                  'hurry-up': secondsLeft && secondsLeft <= 12,
-                  'game-over': !secondsLeft
-                }"
+                :class="{ 'hurry-up': secondsLeft && secondsLeft <= 12, 'game-over': !secondsLeft }"
               >{{ secondsLeft | time }}</div>
               <transition>
-                <span v-if="timeIncrease != ''" class="number-increase">{{ timeIncrease }}</span>
+                <span v-if="timeIncrease!=''" class="number-increase">
+                  {{
+                  timeIncrease
+                  }}
+                </span>
               </transition>
             </div>
           </div>
         </div>
 
-        <div class="board-wrapper" id="board-wrapper" :style="boardWrapperStyle">
-          <div v-if="gameEnded">
+        <div class="board-wrapper" :style="boardWrapperStyle">
+          <div v-if="gameEnded || !gameStarted">
             <div class="overlay game-over-message appearing">
-              <div class="content">
+              <div class="content content-tutorial">
                 <p :style="gameOverStyle" v-if="!globalData.account">Logging in...</p>
                 <p :style="gameOverStyle" v-else-if="gameEnded">Game over!</p>
-                <!-- <p :style="gameOverStyle" v-else-if="!gameStarted">
-                  Bet then click start
-                </p>-->
+                <p class="blur-text" :style="gameTutorialStyle" v-else-if="!gameStarted">
+                  <span :style="gameTutorialSmallStyle"
+                  >Move cursor to adjacent cells to increase the number by 1. Win a level by making all numbers equal!</span>
+                  <br>
+                  <br>Place bet (bottom left) and click “Start"
+                </p>
               </div>
             </div>
           </div>
@@ -229,7 +265,7 @@ footer {
               :tab-index="1"
               :board-size-px="boardSizePx"
               :game="level"
-              :gameLevel="levelIndex + 1"
+              :gameLevel="levelIndex+1"
               :gameStarted="gameStarted"
               :gameEnded="gameEnded"
               @completeLevel="onLevelComplete"
@@ -237,19 +273,26 @@ footer {
             ></Game>
           </transition>
         </div>
-        <stake-row v-if="!gameStarted" @stake="startGame" :style="{ width: boardSizePx + 'px' }"></stake-row>
+        <stake-row v-if="!gameStarted" @stake="startGame" :style="stakeRowStyle" @stakeToken="resetLevel"></stake-row>
         <footer class="flex-vertical" :style="{ width: boardSizePx + 'px' }" v-if="gameStarted">
           <div class="flex-horizontal action-row">
-            <span class="flex-grow level-text">Level: {{ levelIndex + 1 }} / {{ levels.length }}</span>
+            <span
+              class="flex-grow level-text"
+              :style="levelTextStyle"
+            >Level: {{ levelIndex + 1 }} / {{ levels.length }}</span>
             <button
               class="btn-primary"
               @click="resetLevel"
-              :style="{ visibility: gameEnded ? 'hidden' : 'visible' }"
+              :style="{
+                visibility: gameEnded ? 'hidden':'visible',
+                fontSize: boardSizePx / 20 + 'px'
+                }"
             >
               <font-awesome-icon icon="sync"></font-awesome-icon>
             </button>
           </div>
         </footer>
+        <div class="fake-footer" v-if="isMobile"></div>
         <div class="link-footer" v-if="!isMobile">
           <a
             :href="'https://explorer.harmony.one/#/address/' + globalData.address"
@@ -267,7 +310,7 @@ import Game from "./Game";
 import Chip from "./Chip";
 import StakeRow from "./StakeRow";
 import TxHistoryLink from "./TxHistoryLink";
-//import RedeemPanel from "./RedeemPanel";
+import RedeemPanel from "./RedeemPanel";
 import { TweenLite } from "gsap/TweenMax";
 import Vue from "vue";
 import service from "../service";
@@ -275,9 +318,7 @@ import store from "../store";
 import { levels } from "../level-generator";
 import { setInterval, clearInterval } from "timers";
 
-const DefaultBoardSizePx = 420;
 const InitialSeconds = 30;
-
 function guid() {
   return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function(c) {
     var r = (Math.random() * 16) | 0,
@@ -302,8 +343,8 @@ export default {
     Game,
     Chip,
     StakeRow,
-    TxHistoryLink
-    //RedeemPanel
+    TxHistoryLink,
+    RedeemPanel
   },
   data() {
     return {
@@ -319,21 +360,76 @@ export default {
       timeIncrease: "",
       balanceIncrease: "",
       isMobile: /iPhone|iPad|iPod|Android/i.test(navigator.userAgent),
-      reward: 0
+      reward: 0,
+      cancelEmail: false
     };
   },
   mounted() {
     let id = getParameterByName("cos");
     this.levels = levels();
+    //Set board size follow height of screen when change screen size
+    window.addEventListener(
+      "resize",
+      () => {
+        this.boardSizePx = Math.min(
+          this.$refs.gameContainer.clientWidth,
+          window.innerHeight / 1.7
+        );
+        this.$forceUpdate;
+      },
+      false
+    );
+    // Set board size follow height of screen
     this.boardSizePx = Math.min(
       this.$refs.gameContainer.clientWidth,
-      DefaultBoardSizePx
+      window.innerHeight / 1.7
     );
     service.register(id);
   },
   computed: {
     gameOverStyle() {
       return { fontSize: this.boardSizePx / 6 + "px" };
+    },
+    //TODO
+    //can we find a better way to update the styles? 
+    //I don't want to have so many style related code in the view model. 
+    // Ideally it should only contain work-flow related logic. 
+    // Possible solution: setting the font-size of container and use em to control those sizes using css? 
+    ///Then we only need to use JS to change one thing -- font-size of container.
+    gameTutorialStyle() {
+      return { fontSize: this.boardSizePx / 14 + "px" };
+    },
+    gameTutorialSmallStyle() {
+      return { fontSize: this.boardSizePx / 16 + "px" };
+    },
+    infoItemStyle() {
+      return { fontSize: this.boardSizePx / 18 + "px" };
+    },
+    levelTextStyle() {
+      return { fontSize: this.boardSizePx / 18 + "px" };
+    },
+    stakeRowStyle() {
+      return {
+        width: this.boardSizePx + "px",
+        fontSize: this.boardSizePx / 20 + "px"
+      };
+    },
+    titleStyle() {
+      return {
+        fontSize: this.boardSizePx / 20 + "px"
+      };
+    },
+    iconTokenStyle() {
+      return {
+        width: this.boardSizePx / 7.6 + "px",
+        height: this.boardSizePx / 12 + "px"
+      };
+    },
+    iconClockStyle() {
+      return {
+        width: this.boardSizePx / 12 + "px",
+        height: this.boardSizePx / 12 + "px"
+      };
     },
     boardWrapperStyle() {
       return {
@@ -345,12 +441,15 @@ export default {
       return this.levels[this.levelIndex];
     }
   },
+  destroyed() {
+    // Remove event change screen
+    window.removeEventListener("resize", this.handleResize);
+  },
   methods: {
     startGame() {
-      playBackgroundMusic();
-
       this.gameStarted = true;
       this.gameEnded = false;
+      this.cancelEmail = false;
       this.levelIndex = 0;
       this.reward = 0;
       this.levels = levels();
@@ -366,7 +465,7 @@ export default {
       this.$refs[`game${this.levelIndex}`][0].reset();
     },
     onLevelComplete(moves) {
-      console.log(moves);
+
       if (this.levelIndex === this.levels.length - 1) {
         this.endGame();
         return;
@@ -396,6 +495,9 @@ export default {
     },
     restart() {
       this.gameEnded = false;
+    },
+    closeEmailPopup() {
+      this.cancelEmail = true;
     }
   }
 };

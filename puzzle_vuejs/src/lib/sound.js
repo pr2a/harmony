@@ -3,28 +3,35 @@ const beginSound = require('../assets/begin.wav');
 const endSound = require('../assets/end.wav');
 const backgroundMusic = require('../assets/cryptic.mp3');
 const backgroundMusicAudio = new Audio(backgroundMusic);
+var audioClick;
 
 playSound = sound => {
-  var audio = new Audio(sound);
-
-  var playPromise = audio.play();
-
-  if (playPromise !== undefined) {
-    playPromise.then(_ => {
-      // Automatic playback started!
-    }).catch(error => {
-      // Auto-play was prevented
-    });
+  if (audioClick) {
+    audioClick.pause();
+    audioClick.currentTime = 0;
+    audioClick =null;
   }
+  //TODO:Do we really need to destroy and reconstruct every time?
+  let audio = new Audio(sound);
+  audioClick = audio;
+  audio.play();
 };
 
 playAudio = audio => {
   audio.play();
 };
+//todo: remove
+//is this necessary? TODO.
+playAudioLoop = audio => {
+  let promise = audio.play();
+  if (promise !== undefined) {
+    promise.then(_ => {
+      audio.type = "audio/mpeg"
+      audio.loop = true;
+    }).catch(error => {
 
-playAudioLoop =  audio => {
-  audio.play();
-  audio.loop = true;
+    });
+  }
 }
 
 stopAudio = audio => {
