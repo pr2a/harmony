@@ -72,7 +72,7 @@ func readProfile(profile string) p2p.Peer {
 		os.Exit(2)
 	}
 
-	return backendProfile.RPCServer[0][0]
+	return backendProfile.RPCLeader[0]
 }
 
 func main() {
@@ -100,8 +100,8 @@ func main() {
 	leader = readProfile(*profile)
 
 	leaders := make([]p2p.Peer, 0)
-	for _, ldr := range backendProfile.RPCServer {
-		leaders = append(leaders, p2p.Peer{IP: ldr[0].IP, Port: defaultPort})
+	for _, ldr := range backendProfile.RPCLeader {
+		leaders = append(leaders, p2p.Peer{IP: ldr.IP, Port: defaultPort})
 	}
 	restclient.SetLeaders(leaders)
 

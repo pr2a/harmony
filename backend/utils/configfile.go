@@ -15,6 +15,17 @@ type BackendProfile struct {
 	Bootnodes []string
 	Shards    int
 	RPCServer [][]p2p.Peer
+	RPCLeader []p2p.Peer
+}
+
+func parseNodes(s string) (nodes []p2p.Peer) {
+	for _, node := range strings.Fields(s) {
+		v := strings.Split(node, ":")
+		host := v[0]
+        port := v[1]
+        nodes = append(nodes, p2p.Peer{IP: host, Port: port})
+	}
+	return
 }
 
 // ReadBackendProfile reads an ini file and return BackendProfile
@@ -41,6 +52,7 @@ func ReadBackendProfile(fn string, profile string) (*BackendProfile, error) {
 	if sec.HasKey("shards") {
 		config.Shards = sec.Key("shards").MustInt()
 		config.RPCServer = make([][]p2p.Peer, config.Shards)
+		config.RPCLeader = make([]p2p.Peer, config.Shards)
 	} else {
 		return nil, fmt.Errorf("can't find shards key")
 	}
@@ -50,14 +62,24 @@ func ReadBackendProfile(fn string, profile string) (*BackendProfile, error) {
 		if err != nil {
 			return nil, err
 		}
-		rpcKey := rpcSec.Key("rpc").ValueWithShadows()
-		for _, key := range rpcKey {
-			v := strings.Split(key, ":")
-			rpc := p2p.Peer{
-				IP:   v[0],
-				Port: v[1],
-			}
-			config.RPCServer[i] = append(config.RPCServer[i], rpc)
+		for _, n := range rpcSec.Key("rpc").ValueWithShadows() {
+			config.RPCServer[i] = append(config.RPCServer[i], parseNodes(n)...)
+		}
+		var leaders []p2p.Peer
+		if len(config.RPCServer[i]) == 0 {
+			return nil, fmt.Errorf("shard %v has no RPC servers configured", i)
+		}
+		for _, l := range rpcSec.Key("leader").ValueWithShadows() {
+			leaders = append(leaders, parseNodes(l)...)
+		}
+		switch len(leaders) {
+		case 0:
+            // Backward compatibility - use first rpc node listed as the leader
+            config.RPCLeader[i] = config.RPCServer[i][0]
+		case 1:
+			config.RPCLeader[i] = leaders[0]
+		default:
+			return nil, fmt.Errorf("shard %v has multiple leaders configured", i)
 		}
 	}
 
