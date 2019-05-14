@@ -390,6 +390,12 @@ export default {
     gameOverStyle() {
       return { fontSize: this.boardSizePx / 6 + "px" };
     },
+    //TODO
+    //can we find a better way to update the styles? 
+    //I don't want to have so many style related code in the view model. 
+    // Ideally it should only contain work-flow related logic. 
+    // Possible solution: setting the font-size of container and use em to control those sizes using css? 
+    ///Then we only need to use JS to change one thing -- font-size of container.
     gameTutorialStyle() {
       return { fontSize: this.boardSizePx / 14 + "px" };
     },

@@ -11,6 +11,7 @@ playSound = sound => {
     audioClick.currentTime = 0;
     audioClick =null;
   }
+  //TODO:Do we really need to destroy and reconstruct every time?
   let audio = new Audio(sound);
   audioClick = audio;
   audio.play();
@@ -19,7 +20,8 @@ playSound = sound => {
 playAudio = audio => {
   audio.play();
 };
-
+//todo: remove
+//is this necessary? TODO.
 playAudioLoop = audio => {
   let promise = audio.play();
   if (promise !== undefined) {

@@ -94,7 +94,7 @@
           <p>Get your public and private key</p>
           <p>for your claimed token</p>
         </div>
-        <!-- zien change action @input      @input="validateEmail" v-on:keyup.enter="submitEmail"  -->
+        // TODO: remove <!-- zien change action @input      @input="validateEmail" v-on:keyup.enter="submitEmail"  -->
         <input
           type="text"
           class="email-input"
@@ -136,7 +136,6 @@ export default {
       err: ""
     };
   },
-  // mounted: {},
   computed: {
     emphasisStyle() {
       return {

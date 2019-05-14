@@ -113,20 +113,18 @@ function createSwipeListener(onSwipe, getPosition, getTapLoc) {
       let cx = et.clientX || et.pageX,
         cy = et.clientY || et.pageY;
       let newPos = getTapLoc(cx, cy);
+      //TODO nit: always use === or !==. ditto others.
       let pos = getPosition();
       let dx = newPos.x - pos.x;
       let dy = newPos.y - pos.y;
       if (Math.abs(dx) + Math.abs(dy) != 1) return;
       let dClick = dx == 0 ? (dy > 0 ? "R" : "L") : dx > 0 ? "D" : "U";
-      console.log(dClick);
-
       onSwipe(dClick);
     } else {
       var mx = Math.abs(x);
       var my = Math.abs(y);
       if (mx < sens && my < sens) return;
       var d = mx > my ? (x > 0 ? "L" : "R") : y > 0 ? "U" : "D";
-      console.log(d);
       onSwipe(d);
     }
   }
@@ -159,11 +157,9 @@ function createTapListener(onTap, getPosition, getTapLoc) {
   return {
     attach(el) {
       el.addEventListener("mouseup", onEnd, false);
-      // el.addEventListener("click", onEnd, false);
     },
     detach(el) {
       el.removeEventListener("mouseup", onEnd);
-      // el.removeEventListener("click", onEnd);
     }
   };
 }
@@ -400,7 +396,6 @@ export default {
     }
   },
   destroyed(){
-    console.log('destroyed');
   }
 };
 </script>

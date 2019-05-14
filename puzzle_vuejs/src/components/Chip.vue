@@ -45,7 +45,7 @@ const colors = [
 export default {
   name: "Chip",
   props: ["value","boardSizePx"],
-
+  //TODO:nit: extract these two lines as getColorIndex.
   computed: {
     backColor: function() {
       let idx = this.value % colors.length;
