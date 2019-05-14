@@ -65,7 +65,7 @@
           <tr class="container" v-for="(tx, i) in globalData.txs" :key="i">
             <td>{{ tx.timestamp | timestamp }}</td>
             <td>
-              <a :href="'https://explorer.harmony.one/#/tx/' + tx.id">{{tx.id | shorten}}</a>
+              <a :href="'https://explorer2.harmony.one/#/tx/' + tx.id">{{tx.id | shorten}}</a>
             </td>
             <!-- <td>{{ tx.action }}</td> -->
             <!-- <td class="text-right">{{ tx.tokenChange > 0 ? '+' + tx.tokenChange : tx.tokenChange }}</td> -->

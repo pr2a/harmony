@@ -464,7 +464,7 @@ func readProfile(profile string) p2p.Peer {
 		os.Exit(2)
 	}
 
-	return backendProfile.RPCServer[0][0]
+	return backendProfile.RPCLeader[0]
 }
 
 func main() {

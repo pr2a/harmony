@@ -44,7 +44,7 @@ func printVersion(me string) {
 }
 
 var (
-	defaultConfigFile = "./puzzle_backend/.hmy/backend.ini"
+	defaultConfigFile = "./puzzle/puzzle_backend/.hmy/backend.ini"
 	defaultProfile    = "default"
 	defaultPort       = "30000"
 	leader            p2p.Peer
@@ -58,7 +58,7 @@ var (
 
 const (
 	adminKey  = "e401343197a852f361e38ce6b46c99f1d6d1f80499864c6ae7effee42b46ab6b"
-	dbKeyFile = "./puzzle_backend/keys/benchmark-firebase-db-key.json"
+	dbKeyFile = "./puzzle/puzzle_backend/keys/benchmark-firebase-db-key.json"
 	dbProject = "benchmark-209420"
 )
 
@@ -72,7 +72,7 @@ func readProfile(profile string) p2p.Peer {
 		os.Exit(2)
 	}
 
-	return backendProfile.RPCServer[0][0]
+	return backendProfile.RPCLeader[0]
 }
 
 func main() {
@@ -100,8 +100,8 @@ func main() {
 	leader = readProfile(*profile)
 
 	leaders := make([]p2p.Peer, 0)
-	for _, ldr := range backendProfile.RPCServer {
-		leaders = append(leaders, p2p.Peer{IP: ldr[0].IP, Port: defaultPort})
+	for _, ldr := range backendProfile.RPCLeader {
+		leaders = append(leaders, p2p.Peer{IP: ldr.IP, Port: defaultPort})
 	}
 	restclient.SetLeaders(leaders)
 
