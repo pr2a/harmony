@@ -1,8 +1,0 @@
-[debug] [2019-04-22T23:02:11.628Z] ----------------------------------------------------------------------
-[debug] [2019-04-22T23:02:11.630Z] Command:       /usr/local/bin/node /usr/local/bin/firebase deploy
-[debug] [2019-04-22T23:02:11.630Z] CLI Version:   6.5.0
-[debug] [2019-04-22T23:02:11.630Z] Platform:      darwin
-[debug] [2019-04-22T23:02:11.630Z] Node Version:  v10.15.1
-[debug] [2019-04-22T23:02:11.631Z] Time:          Mon Apr 22 2019 16:02:11 GMT-0700 (Pacific Daylight Time)
-[debug] [2019-04-22T23:02:11.631Z] ----------------------------------------------------------------------
-[debug] 
