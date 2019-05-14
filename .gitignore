@@ -9,6 +9,9 @@ puzzle_backend/hexie
 
 package-lock.json
 
+#keys
+benchmark-firebase-db-key.json
+
 # local symlink
 puzzle_backend/puzzle_backend
 

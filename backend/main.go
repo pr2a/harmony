@@ -4,8 +4,6 @@ import (
 	"context"
 	"flag"
 	"fmt"
-	"google.golang.org/appengine/urlfetch"
-	"gopkg.in/sendgrid/sendgrid-go.v2"
 	"io/ioutil"
 	"log"
 	"math/big"
@@ -16,16 +14,20 @@ import (
 	"sync"
 	"time"
 
+	"google.golang.org/appengine/urlfetch"
+	"gopkg.in/sendgrid/sendgrid-go.v2"
+
+	"net/http"
+
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/params"
-	"github.com/harmony-one/demo-apps/backend/client"
-	"github.com/harmony-one/demo-apps/backend/db"
+	restclient "github.com/harmony-one/demo-apps/backend/client"
+	fdb "github.com/harmony-one/demo-apps/backend/db"
 	"github.com/harmony-one/demo-apps/backend/p2p"
 	clientService "github.com/harmony-one/demo-apps/backend/service"
 	"github.com/harmony-one/demo-apps/backend/utils"
 	"google.golang.org/appengine"
 	app_log "google.golang.org/appengine/log"
-	"net/http"
 )
 
 var (
@@ -71,7 +73,7 @@ func printVersion(me string) {
 var (
 	profile    = flag.String("profile", defaultProfile, "name of the profile")
 	collection = flag.String("collection", "players", "name of collection")
-	key        = flag.String("key", "./backend/keys/benchmark_account_key.json", "key filename")
+	key        = flag.String("key", "../secret_keys/firebase/benchmark-firebase-db-key.json", "key filename")
 	project    = flag.String("project", "benchmark-209420", "project ID of firebase")
 	action     = flag.String("action", "player", "action of the program. Valid (player, reg, winner, notify, players, balances)")
 	verbose    = flag.Bool("verbose", true, "verbose log print at every step")
