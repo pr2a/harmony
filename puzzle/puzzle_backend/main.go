@@ -58,7 +58,7 @@ var (
 
 const (
 	adminKey  = "e401343197a852f361e38ce6b46c99f1d6d1f80499864c6ae7effee42b46ab6b"
-	dbKeyFile = "./puzzle/puzzle_backend/keys/benchmark_account_key.json"
+	dbKeyFile = "./puzzle/puzzle_backend/keys/benchmark-firebase-db-key.json"
 	dbProject = "benchmark-209420"
 )
 

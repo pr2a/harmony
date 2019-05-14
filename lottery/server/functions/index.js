@@ -1,7 +1,7 @@
 const axios = require('axios');
 const functions = require('firebase-functions');
 var admin = require('firebase-admin');
-var serviceAccount = require('./keys/benchmark_account_key.json');
+var serviceAccount = require('./keys/benchmark-firebase-db-key.json');
 const { getRandomWallet } = require('./keygen');
 
 admin.initializeApp({
