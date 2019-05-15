@@ -1,5 +1,20 @@
 {
   "projects": {
     "default": "harmony-puzzle"
+  },
+  "targets": {
+    "harmony-puzzle": {
+      "hosting": {
+        "puzzledev": [
+          "puzzledev"
+        ],
+        "harmony-puzzle1": [
+          "harmony-puzzle1"
+        ],
+        "harmony-puzzle": [
+          "harmony-puzzle"
+        ]
+      }
+    }
   }
 }

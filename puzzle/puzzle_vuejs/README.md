@@ -1,12 +1,12 @@
 # Harmony Puzzle
 
-
 ## Introduction
+
 Harmony Puzzle is a simple (but addictive) puzzle game built to demonstrate how Harmony's block-chain ecosystem can be used.
 
 ## Build Setup
 
-``` bash
+```bash
 # install dependencies
 npm install
 
@@ -29,7 +29,28 @@ npm run e2e
 npm test
 ```
 
+## Deploy
+
+### Development deploy
+
+```
+./pushdev
+```
+
+### Deploy to puzzle.harmony.one
+
+```
+./push.sh
+```
+
+### Deploy to puzzle2.harmony.one
+
+```
+./push2.sh
+```
+
 ## Project Structure
+
 ```bash
 src
 ├── App.vue  -- Main app component and global css styles
