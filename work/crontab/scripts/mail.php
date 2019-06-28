@@ -17,4 +17,4 @@ $m->setSubject('test subject');
 $m->setMessageFromString($message);
 
 var_dump($ses->sendEmail($m));
-?>
+?> 
